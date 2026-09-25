@@ -1,0 +1,592 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// Mobile UI kit - shared building blocks for the Ionic mobile screens:
+// bottom sheets, buttons, chips, fields, pager, skeletons and empty states.
+// Global on purpose: inline <ion-modal> content is teleported into <ion-app>,
+// and the next list screens (collections, recovery) reuse the same pieces.
+// ═══════════════════════════════════════════════════════════════════════════
+
+:root {
+  --mk-ink: #0f172a;
+  --mk-text: #334155;
+  --mk-muted: #64748b;
+  --mk-faint: #94a3b8;
+  --mk-line: #e8edf4;
+  --mk-soft: #f4f7fb;
+  --mk-brand: #0d9488;
+  --mk-brand-strong: #0f766e;
+  --mk-brand-soft: #e6f6f4;
+  --mk-brand-grad: linear-gradient(135deg, #0f766e 0%, #0d9488 45%, #0284c7 100%);
+  --mk-brand-shadow: rgba(13, 148, 136, 0.8);
+  --mk-danger: #e11d48;
+  --mk-danger-grad: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+}
+
+// ── Tap target ────────────────────────────────────────────────────────────
+// Neutralises the legacy global `button` / `a` rules in styles.scss.
+// Colour comes from --tap-bg / --tap-fg so hover and focus never repaint it.
+.mk-tap {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  font: inherit;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  color: var(--tap-fg, inherit);
+  background: var(--tap-bg, transparent);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+
+  &:hover,
+  &:focus,
+  &:focus-visible {
+    color: var(--tap-fg, inherit);
+    background: var(--tap-bg, transparent);
+    outline: none;
+    text-decoration: none;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    background: var(--tap-bg, transparent);
+  }
+
+  i {
+    line-height: 1;
+  }
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────
+.mk-btn {
+  min-height: 50px;
+  padding: 0 18px;
+  border-radius: 16px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+
+  i {
+    font-size: 1.15rem;
+  }
+}
+
+.mk-btn--block {
+  width: 100%;
+}
+
+.mk-btn--primary {
+  --tap-bg: var(--mk-brand-grad);
+  --tap-fg: #fff;
+  box-shadow: 0 14px 24px -14px var(--mk-brand-shadow);
+}
+
+.mk-btn--ghost {
+  --tap-bg: var(--mk-soft);
+  --tap-fg: var(--mk-text);
+  box-shadow: inset 0 0 0 1px var(--mk-line);
+}
+
+.mk-btn--danger {
+  --tap-bg: var(--mk-danger-grad);
+  --tap-fg: #fff;
+  box-shadow: 0 14px 24px -14px rgba(225, 29, 72, 0.75);
+}
+
+.mk-icon-btn {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  font-size: 1.2rem;
+  --tap-bg: var(--mk-soft);
+  --tap-fg: var(--mk-text);
+}
+
+// ── Bottom sheet (inline ion-modal) ───────────────────────────────────────
+ion-modal.mk-sheet {
+  --height: auto;
+  --width: 100%;
+  --max-width: 640px;
+  --border-radius: 28px;
+  --background: #ffffff;
+  --backdrop-opacity: 0.48;
+  --box-shadow: 0 -20px 50px -24px rgba(15, 23, 42, 0.45);
+
+  // --border-radius rounds every corner of the wrapper; a bottom sheet sits
+  // flush on the screen edge, so only the top corners stay rounded.
+  &::part(content) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  &::part(handle) {
+    top: 8px;
+    width: 44px;
+    height: 5px;
+    background: #cbd5e1;
+  }
+
+  // Auto-height sheets: let the page size to its content.
+  .ion-page {
+    position: relative;
+    display: block;
+    contain: content;
+  }
+}
+
+// Full-height variant for long previews (invoice).
+ion-modal.mk-sheet.mk-sheet--tall {
+  --height: calc(100% - var(--safe-area-top) - 12px);
+
+  .ion-page {
+    height: 100%;
+  }
+
+  .mk-sheet-wrap {
+    height: 100%;
+    max-height: none;
+  }
+}
+
+.mk-sheet-wrap {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - var(--safe-area-top) - 28px);
+  color: var(--mk-ink);
+}
+
+.mk-sheet-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 26px 18px 12px;
+}
+
+.mk-sheet-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.mk-sheet-title {
+  display: block;
+  margin: 0;
+  color: var(--mk-ink);
+  font-size: 1.14rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.mk-sheet-sub {
+  display: block;
+  margin: 2px 0 0;
+  color: var(--mk-muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+// Scroll area - `ion-content-scroll-host` lets the sheet drag gesture yield
+// to scrolling, the same way it does for ion-content.
+.mk-sheet-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 18px 18px;
+
+  // No footer below it: clear the home indicator / nav bar itself.
+  &:last-child {
+    padding-bottom: calc(18px + var(--safe-area-bottom));
+  }
+}
+
+.mk-sheet-foot {
+  flex-shrink: 0;
+  display: flex;
+  gap: 10px;
+  padding: 12px 18px calc(14px + var(--safe-area-bottom));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), #fff 30%);
+  box-shadow: 0 -1px 0 var(--mk-line);
+
+  > * {
+    flex: 1;
+  }
+}
+
+// ── Section label ─────────────────────────────────────────────────────────
+.mk-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 10px;
+  color: var(--mk-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  i {
+    font-size: 0.86rem;
+    color: var(--mk-brand);
+  }
+
+  small {
+    margin-left: auto;
+    color: var(--mk-faint);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+}
+
+// ── Fields ────────────────────────────────────────────────────────────────
+.mk-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  > i {
+    position: absolute;
+    left: 14px;
+    color: var(--mk-faint);
+    font-size: 1.05rem;
+    pointer-events: none;
+  }
+
+  > i ~ .mk-input {
+    padding-left: 40px;
+  }
+}
+
+// Doubled class: outranks the legacy `input[type=...]` / `input:focus` rules
+// that styles.scss declares after this file.
+.mk-input.mk-input {
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1.5px solid var(--mk-line);
+  border-radius: 14px;
+  background: var(--mk-soft);
+  color: var(--mk-ink);
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.3;
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: var(--mk-faint);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--mk-brand);
+    background: #fff;
+    box-shadow: 0 0 0 4px var(--mk-brand-soft);
+  }
+}
+
+// ── Chips ─────────────────────────────────────────────────────────────────
+.mk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mk-chip {
+  min-height: 38px;
+  max-width: 100%;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  --tap-bg: #fff;
+  --tap-fg: var(--mk-text);
+  box-shadow: inset 0 0 0 1.5px var(--mk-line);
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &.is-active {
+    --tap-bg: var(--mk-brand-grad);
+    --tap-fg: #fff;
+    box-shadow: 0 8px 16px -10px var(--mk-brand-shadow);
+  }
+}
+
+// ── Pager ─────────────────────────────────────────────────────────────────
+.mk-pager {
+  margin: 18px 0 6px;
+  padding: 14px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 18px 34px -24px rgba(15, 23, 42, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+}
+
+.mk-pager-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mk-pager-pages {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.mk-page {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 6px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  --tap-bg: transparent;
+  --tap-fg: var(--mk-text);
+
+  &.is-active {
+    --tap-bg: var(--mk-brand-grad);
+    --tap-fg: #fff;
+    box-shadow: 0 8px 16px -8px var(--mk-brand-shadow);
+  }
+}
+
+.mk-page-gap {
+  min-width: 18px;
+  color: var(--mk-faint);
+  font-weight: 800;
+  text-align: center;
+}
+
+.mk-pager-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--mk-muted);
+  font-size: 0.72rem;
+
+  strong {
+    color: var(--mk-ink);
+    font-weight: 800;
+  }
+}
+
+// ── Skeleton card ─────────────────────────────────────────────────────────
+.mk-skel {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 14px 30px -24px rgba(15, 23, 42, 0.4);
+
+  ion-skeleton-text {
+    margin: 0;
+    border-radius: 8px;
+    --background: #e9eef5;
+    --background-rgb: 226, 232, 240;
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────
+.mk-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0;
+  padding: 36px 24px;
+  border-radius: 28px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.85);
+
+  .mk-empty-art {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    margin-bottom: 8px;
+    border-radius: 28px;
+    display: grid;
+    place-items: center;
+    color: var(--mk-brand);
+    font-size: 2.2rem;
+    background: var(--mk-brand-soft);
+    box-shadow: 0 0 0 10px var(--mk-brand-soft);
+  }
+
+  strong {
+    color: var(--mk-ink);
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  p {
+    max-width: 260px;
+    margin: 0 0 10px;
+    color: var(--mk-muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+}
+
+// ── ng-bootstrap modal shown as a full-screen mobile sheet ────────────────
+// Used via NgbModal `windowClass: 'mk-sheet-window'` + `fullscreen: 'md'`.
+@media (max-width: 767.98px) {
+  .modal.mk-sheet-window {
+    // See .mk-bottom-window: nothing for the auto-focus to scroll.
+    overflow: hidden;
+    overflow: clip;
+
+    // The window itself slides, not the dialog: ng-bootstrap waits for this
+    // element's transition, so the close slide plays out in full instead of
+    // being cut short by Bootstrap's 0.15s fade.
+    &.fade {
+      opacity: 1;
+      transform: translate3d(0, 100%, 0);
+      // Closing: quick, accelerating away.
+      transition: transform 0.3s cubic-bezier(0.4, 0, 1, 1);
+      // Rasterise the sheet up front so the first frames do not stutter.
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+
+    &.fade.show {
+      transform: none;
+      // Opening: iOS-style sheet curve, fast start and a long soft landing.
+      transition: transform 0.46s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    &.fade .modal-dialog {
+      margin: 0;
+      transform: none;
+      transition: none;
+    }
+
+    .modal-content {
+      border: 0;
+      border-radius: 0;
+      background: #f2f5fa;
+    }
+  }
+}
+
+.modal.mk-sheet-window .modal-content {
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .modal.mk-sheet-window .modal-content {
+    border: 0;
+    border-radius: 28px;
+    box-shadow: 0 30px 80px -30px rgba(15, 23, 42, 0.45);
+  }
+}
+
+// ── ng-bootstrap modal shown as a bottom sheet (confirmations) ────────────
+// Used via NgbModal `windowClass: 'mk-bottom-window'`. The dialog slides; the
+// window does not fade, and ng-bootstrap waits for the dialog's transition,
+// so both the open and the close slide play out in full.
+.modal.mk-bottom-window {
+  // Not a scroll container at all. With `overflow: hidden` it still is one,
+  // and ng-bootstrap focuses the first button the moment the slide starts:
+  // that button is still below the screen, so the browser scrolls the window
+  // to show it and the sheet jumps. `clip` leaves nothing to scroll.
+  overflow: hidden;
+  overflow: clip;
+
+  &.fade {
+    opacity: 1;
+    transition: none;
+  }
+
+  .modal-dialog {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    margin: 0;
+    transform: translate3d(0, 100%, 0);
+    // Closing: quick, accelerating away.
+    transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1);
+    will-change: transform;
+  }
+
+  &.show .modal-dialog {
+    transform: none;
+    // Opening: iOS-style sheet curve.
+    transition: transform 0.44s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .modal-content {
+    overflow: hidden;
+    padding-bottom: var(--safe-area-bottom);
+    border: 0;
+    border-radius: 28px 28px 0 0;
+    background: #fff;
+    box-shadow: 0 -20px 50px -24px rgba(15, 23, 42, 0.45);
+  }
+
+  // Wider screens: a floating card above the bottom edge.
+  @media (min-width: 576px) {
+    .modal-dialog {
+      left: 50%;
+      right: auto;
+      bottom: 24px;
+      width: 420px;
+      margin-left: -210px;
+      transform: translate3d(0, calc(100% + 24px), 0);
+    }
+
+    .modal-content {
+      padding-bottom: 0;
+      border-radius: 28px;
+      box-shadow: 0 30px 80px -30px rgba(15, 23, 42, 0.45);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-tap,
+  .modal.mk-sheet-window.fade,
+  .modal.mk-sheet-window.fade.show,
+  .modal.mk-bottom-window .modal-dialog,
+  .modal.mk-bottom-window.show .modal-dialog {
+    transition: none;
+  }
+}

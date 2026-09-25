@@ -1,0 +1,468 @@
+/* ═══════════════════════════════════════
+   LOGIN - mobile first
+   Light, like the app shell: the status bar keeps dark icons (SystemBars
+   style LIGHT in capacitor.config.ts). Inputs and buttons come from
+   src/styles/_mobile-kit.scss.
+   ═══════════════════════════════════════ */
+
+// The router outlet gives the host `.ion-page` (absolute, overflow hidden),
+// so the page scrolls itself - needed once the keyboard shrinks the view.
+.lg {
+  position: relative;
+  isolation: isolate;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  color: #0f172a;
+  background: #f2f5fa;
+}
+
+// ── Background decoration ────────────────────────────────────────────────
+
+.lg-aurora {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(6px);
+  pointer-events: none;
+
+  &--1 {
+    top: -130px;
+    left: -110px;
+    width: 340px;
+    height: 340px;
+    background: radial-gradient(circle, rgba(45, 212, 191, 0.34), transparent 68%);
+    animation: lgDrift 9s ease-in-out infinite;
+  }
+
+  &--2 {
+    top: 120px;
+    right: -150px;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.28), transparent 68%);
+    animation: lgDrift 11s ease-in-out infinite reverse;
+  }
+}
+
+.lg-dots {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 420px;
+  background-image: radial-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1.3px);
+  background-size: 16px 16px;
+  -webkit-mask-image: linear-gradient(180deg, #000, transparent 85%);
+  mask-image: linear-gradient(180deg, #000, transparent 85%);
+  pointer-events: none;
+}
+
+.lg-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Brand ────────────────────────────────────────────────────────────────
+
+.lg-hero {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding:
+    calc(32px + var(--safe-area-top))
+    calc(24px + var(--safe-area-right))
+    56px
+    calc(24px + var(--safe-area-left));
+  text-align: center;
+  animation: lgRise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.lg-logo {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  margin-bottom: 20px;
+
+  img {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 26px;
+    background: #fff;
+    box-shadow:
+      0 22px 36px -16px rgba(15, 118, 110, 0.6),
+      0 0 0 4px #fff;
+  }
+}
+
+// Signal rings pulsing out of the logo.
+.lg-wave {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid rgba(13, 148, 136, 0.45);
+  border-radius: 30px;
+  animation: lgPulse 2.8s ease-out infinite;
+
+  &--2 {
+    animation-delay: 1.4s;
+  }
+}
+
+.lg-name {
+  margin: 0;
+  color: #0f172a;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+
+  span {
+    background: linear-gradient(90deg, #0d9488, #0284c7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.lg-tagline {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lg-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    color: #334155;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: inset 0 0 0 1px #e8edf4, 0 8px 18px -14px rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  i {
+    color: var(--mk-brand);
+    font-size: 0.9rem;
+  }
+}
+
+// ── Sign-in sheet ────────────────────────────────────────────────────────
+
+.lg-sheet {
+  position: relative;
+  flex: 0 0 auto;
+  margin-top: -28px;
+  padding:
+    28px
+    calc(20px + var(--safe-area-right))
+    calc(20px + var(--safe-area-bottom))
+    calc(20px + var(--safe-area-left));
+  border-radius: 32px 32px 0 0;
+  background: #fff;
+  box-shadow: 0 -20px 44px -26px rgba(15, 23, 42, 0.4);
+  animation: lgSheetIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.08s both;
+
+  // Grab-handle look, matching the app's bottom sheets.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 44px;
+    height: 5px;
+    margin-left: -22px;
+    border-radius: 999px;
+    background: #e2e8f0;
+  }
+}
+
+.lg-head {
+  margin-bottom: 20px;
+
+  h2 {
+    margin: 6px 0 4px;
+    color: #0f172a;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+}
+
+.lg-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--mk-brand);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--mk-brand-soft);
+
+  i {
+    font-size: 0.86rem;
+  }
+}
+
+.lg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lg-label {
+  margin: 0;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+// Taller, easier-to-hit fields than the kit default.
+.lg-form .mk-input.mk-input {
+  min-height: 54px;
+  font-size: 1rem;
+}
+
+.lg-form .mk-input-wrap > i {
+  z-index: 1;
+  font-size: 1.15rem;
+  transition: color 0.15s ease;
+}
+
+.lg-form .mk-input-wrap:focus-within > i {
+  color: var(--mk-brand);
+}
+
+.mk-input.lg-input-pass {
+  padding-right: 56px;
+}
+
+.lg-eye {
+  position: absolute;
+  right: 5px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  --tap-bg: transparent;
+  --tap-fg: #94a3b8;
+
+  &[aria-pressed='true'] {
+    --tap-fg: var(--mk-brand);
+  }
+}
+
+.lg-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  color: #be123c;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.4;
+  background: #fff1f2;
+  box-shadow: inset 0 0 0 1px #fecdd3;
+  animation: lgShake 0.38s ease;
+
+  i {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 1.05rem;
+  }
+}
+
+.lg-submit {
+  min-height: 54px;
+  margin-top: 6px;
+  font-size: 1rem;
+
+  i {
+    transition: transform 0.2s ease;
+  }
+
+  &:active:not(:disabled) i {
+    transform: translateX(3px);
+  }
+
+  .spinner-border {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+  }
+}
+
+.lg-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 22px;
+  text-align: center;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #64748b;
+    font-size: 0.74rem;
+    font-weight: 700;
+
+    i {
+      color: #16a34a;
+    }
+  }
+
+  small {
+    color: #94a3b8;
+    font-size: 0.7rem;
+  }
+}
+
+// ── Motion ───────────────────────────────────────────────────────────────
+
+@keyframes lgDrift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-18px, 16px) scale(1.08); }
+}
+
+@keyframes lgPulse {
+  from { opacity: 0.9; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.55); }
+}
+
+@keyframes lgRise {
+  from { opacity: 0; transform: translateY(-14px); }
+}
+
+@keyframes lgSheetIn {
+  from { opacity: 0; transform: translateY(40px); }
+}
+
+@keyframes lgShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+// ── Sizes ────────────────────────────────────────────────────────────────
+
+// Short viewports (small phones, keyboard open): compact brand, form first.
+@media (max-height: 640px) {
+  .lg-hero {
+    padding-top: calc(20px + var(--safe-area-top));
+    padding-bottom: 44px;
+  }
+
+  .lg-logo {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 12px;
+
+    img {
+      border-radius: 19px;
+    }
+  }
+
+  .lg-wave {
+    border-radius: 22px;
+  }
+
+  .lg-name {
+    font-size: 1.5rem;
+  }
+
+  .lg-chips {
+    display: none;
+  }
+}
+
+@media (max-height: 480px) {
+  .lg-tagline {
+    display: none;
+  }
+
+  .lg-hero {
+    padding-bottom: 36px;
+  }
+}
+
+// Tablets and wider: the sheet becomes a centred card.
+@media (min-width: 768px) {
+  .lg-screen {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .lg-hero {
+    flex: 0 0 auto;
+    padding: 0 0 56px;
+  }
+
+  .lg-sheet {
+    width: 100%;
+    max-width: 420px;
+    padding: 32px 28px 24px;
+    border-radius: 32px;
+    box-shadow: 0 40px 80px -36px rgba(15, 23, 42, 0.45);
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lg-aurora,
+  .lg-wave,
+  .lg-hero,
+  .lg-sheet,
+  .lg-error {
+    animation: none;
+  }
+}

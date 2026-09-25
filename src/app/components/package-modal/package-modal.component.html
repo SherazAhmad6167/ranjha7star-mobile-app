@@ -1,0 +1,137 @@
+<div class="pkm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="pkm-header">
+    <div class="pkm-header-left">
+      <div class="pkm-header-icon"><i class="ri-price-tag-3-line"></i></div>
+      <div>
+        <h4 class="pkm-title">{{ editMode ? 'Update' : 'Add' }} Package</h4>
+        <p class="pkm-subtitle">{{ editMode ? 'Edit package details below' : 'Fill in the package details below' }}</p>
+      </div>
+    </div>
+    <button class="pkm-close-btn" type="button" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading overlay ── -->
+  <div *ngIf="isLoading" class="pkm-loading">
+    <div class="spinner-border" style="color:#db2777" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="pkm-body">
+
+      <!-- Section: Package Info -->
+      <div class="pkm-section">
+        <div class="pkm-section-head">
+          <div class="pkm-section-icon si-pink"><i class="ri-price-tag-3-line"></i></div>
+          <span class="pkm-section-title">Package Information</span>
+        </div>
+        <div class="pkm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-6 col-12">
+              <label class="pkm-label">Package Name <span class="req">*</span></label>
+              <input type="text" class="pkm-input"
+                [class.pkm-invalid]="userForm.get('package_name')?.invalid && userForm.get('package_name')?.touched"
+                formControlName="package_name" placeholder="Enter Package Name">
+              <span class="pkm-err"
+                *ngIf="userForm.get('package_name')?.hasError('required') && userForm.get('package_name')?.touched">
+                Package Name is required
+              </span>
+            </div>
+
+            <div class="col-md-6 col-12">
+              <label class="pkm-label">Package Type <span class="req">*</span></label>
+              <select class="pkm-input pkm-select"
+                [class.pkm-invalid]="userForm.get('package_type')?.invalid && userForm.get('package_type')?.touched"
+                formControlName="package_type">
+                <option value="" disabled>Select Package Type</option>
+                <option value="tv_cable">TV Cable</option>
+                <option value="internet">Internet</option>
+              </select>
+              <span class="pkm-err"
+                *ngIf="userForm.get('package_type')?.hasError('required') && userForm.get('package_type')?.touched">
+                Package Type is required
+              </span>
+            </div>
+
+            <div class="col-md-6 col-12">
+              <label class="pkm-label">Company Name <span class="req">*</span></label>
+              <input type="text" class="pkm-input"
+                [class.pkm-invalid]="userForm.get('company_name')?.invalid && userForm.get('company_name')?.touched"
+                formControlName="company_name" placeholder="Enter Company Name">
+              <span class="pkm-err"
+                *ngIf="userForm.get('company_name')?.hasError('required') && userForm.get('company_name')?.touched">
+                Company Name is required
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Pricing -->
+      <div class="pkm-section">
+        <div class="pkm-section-head">
+          <div class="pkm-section-icon si-rose"><i class="ri-money-dollar-circle-line"></i></div>
+          <span class="pkm-section-title">Pricing</span>
+        </div>
+        <div class="pkm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-6 col-12">
+              <label class="pkm-label">Sales Price <span class="req">*</span></label>
+              <div class="pkm-prefix-wrap">
+                <span class="pkm-prefix">Rs</span>
+                <input type="number" class="pkm-input pkm-prefixed"
+                  [class.pkm-invalid]="userForm.get('sales_price')?.invalid && userForm.get('sales_price')?.touched"
+                  formControlName="sales_price" placeholder="0">
+              </div>
+              <span class="pkm-err"
+                *ngIf="userForm.get('sales_price')?.hasError('required') && userForm.get('sales_price')?.touched">
+                Sales Price is required
+              </span>
+            </div>
+
+            <div class="col-md-6 col-12">
+              <label class="pkm-label">Purchase Price <span class="req">*</span></label>
+              <div class="pkm-prefix-wrap">
+                <span class="pkm-prefix">Rs</span>
+                <input type="number" class="pkm-input pkm-prefixed"
+                  [class.pkm-invalid]="userForm.get('purchase_price')?.invalid && userForm.get('purchase_price')?.touched"
+                  formControlName="purchase_price" placeholder="0">
+              </div>
+              <span class="pkm-err"
+                *ngIf="userForm.get('purchase_price')?.hasError('required') && userForm.get('purchase_price')?.touched">
+                Purchase Price is required
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="pkm-footer">
+      <button type="button" class="pkm-btn pkm-btn-cancel" (click)="activeModal.close()">
+        Cancel
+      </button>
+      <button type="submit" class="pkm-btn pkm-btn-save" [disabled]="isLoading || isSaving">
+        <span *ngIf="!isSaving">
+          <i class="ri-save-line me-1"></i>{{ editMode ? 'Update' : 'Save' }}
+        </span>
+        <span *ngIf="isSaving" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          {{ editMode ? 'Updating...' : 'Saving...' }}
+        </span>
+      </button>
+    </div>
+  </form>
+
+</div>

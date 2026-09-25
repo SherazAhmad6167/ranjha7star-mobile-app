@@ -1,0 +1,196 @@
+<div class="container-fluid ror-wrapper">
+
+  <!-- ── Page Header ── -->
+  <div class="ror-page-header mb-4">
+    <div class="ror-header-left">
+      <div class="ror-header-icon"><i class="ri-bar-chart-box-line"></i></div>
+      <div>
+        <h1 class="ror-title">RO Reports</h1>
+        <p class="ror-sub">Generate and view recovery officer performance reports</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Filter Panel ── -->
+  <div class="ror-card mb-4">
+    <div class="ror-panel-header">
+      <i class="ri-filter-3-line"></i> Report Filters
+    </div>
+    <div class="ror-filter-grid">
+      <div class="ror-field-group">
+        <label class="ror-filter-label"><i class="ri-calendar-event-line"></i> Start Date</label>
+        <input type="date" class="ror-input" [(ngModel)]="filters.startDate">
+      </div>
+      <div class="ror-field-group">
+        <label class="ror-filter-label"><i class="ri-calendar-check-line"></i> End Date</label>
+        <input type="date" class="ror-input" [(ngModel)]="filters.endDate">
+      </div>
+      <div class="ror-field-group">
+        <label class="ror-filter-label"><i class="ri-map-pin-2-line"></i> Sublocality</label>
+        <app-search-select
+          [(ngModel)]="filters.sublocality"
+          [options]="internetAreas"
+          valueKey="sublocality"
+          displayKey="sublocality"
+          placeholder="All"
+          emptyLabel="All"
+          [allowEmpty]="true">
+        </app-search-select>
+      </div>
+      <div class="ror-field-group">
+        <label class="ror-filter-label"><i class="ri-wifi-line"></i> Connection Type</label>
+        <select class="ror-select" [(ngModel)]="filters.connectionType">
+          <option value="">Both</option>
+          <option value="internet">Internet</option>
+          <option value="tv_cable">TV/Cable</option>
+        </select>
+      </div>
+      <div class="ror-field-group">
+        <label class="ror-filter-label"><i class="ri-user-star-line"></i> Recovery Officer</label>
+        <select class="ror-select" [(ngModel)]="filters.operator">
+          <option value="">All</option>
+          <option *ngFor="let op of operators" [value]="op.user_name">{{ op.name || op.user_name }}</option>
+        </select>
+      </div>
+      <div class="ror-field-group ror-btn-group">
+        <button class="btn-ror-show" (click)="generateReport()">
+          <i class="ri-play-circle-line"></i> Generate Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="ror-loading">
+    <div class="spinner-border ror-spinner" role="status"></div>
+    <span class="ror-loading-text">Generating report...</span>
+  </div>
+
+  <!-- ── Report Summary ── -->
+  <div *ngIf="reportData" class="mb-4">
+    <div class="ror-section-header mb-3">
+      <div class="ror-section-icon"><i class="ri-pie-chart-2-line"></i></div>
+      <h2 class="ror-section-title">Report Summary</h2>
+    </div>
+    <div class="ror-summary-grid">
+      <div class="ror-stat-card blue">
+        <div class="ror-stat-icon"><i class="ri-group-line"></i></div>
+        <div class="ror-stat-body">
+          <div class="ror-stat-label">Total Users</div>
+          <div class="ror-stat-value">{{ reportData.totalUsers }}</div>
+        </div>
+      </div>
+      <div class="ror-stat-card indigo">
+        <div class="ror-stat-icon"><i class="ri-money-dollar-circle-line"></i></div>
+        <div class="ror-stat-body">
+          <div class="ror-stat-label">Total Amount</div>
+          <div class="ror-stat-value">Rs. {{ reportData.totalAmount }}</div>
+        </div>
+      </div>
+      <div class="ror-stat-card green">
+        <div class="ror-stat-icon"><i class="ri-check-double-line"></i></div>
+        <div class="ror-stat-body">
+          <div class="ror-stat-label">Paid Users</div>
+          <div class="ror-stat-value">{{ reportData.totalPaidUsers }}</div>
+        </div>
+      </div>
+      <div class="ror-stat-card emerald">
+        <div class="ror-stat-icon"><i class="ri-wallet-3-line"></i></div>
+        <div class="ror-stat-body">
+          <div class="ror-stat-label">Total Paid</div>
+          <div class="ror-stat-value">Rs. {{ reportData.totalPaid }}</div>
+        </div>
+      </div>
+      <div class="ror-stat-card red">
+        <div class="ror-stat-icon"><i class="ri-close-circle-line"></i></div>
+        <div class="ror-stat-body">
+          <div class="ror-stat-label">Unpaid Users</div>
+          <div class="ror-stat-value">{{ reportData.totalUnpaidUsers }}</div>
+        </div>
+      </div>
+      <div class="ror-stat-card rose">
+        <div class="ror-stat-icon"><i class="ri-error-warning-line"></i></div>
+        <div class="ror-stat-body">
+          <div class="ror-stat-label">Total Unpaid</div>
+          <div class="ror-stat-value">Rs. {{ reportData.totalUnpaid }}</div>
+        </div>
+      </div>
+      <div class="ror-stat-card cyan">
+        <div class="ror-stat-icon"><i class="ri-time-line"></i></div>
+        <div class="ror-stat-body">
+          <div class="ror-stat-label">Advance Users</div>
+          <div class="ror-stat-value">{{ reportData.totalAdvanceUsers }}</div>
+        </div>
+      </div>
+      <div class="ror-stat-card teal">
+        <div class="ror-stat-icon"><i class="ri-funds-line"></i></div>
+        <div class="ror-stat-body">
+          <div class="ror-stat-label">Advance Amount</div>
+          <div class="ror-stat-value">Rs. {{ reportData.totalAdvanceAmount }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── User Details Table ── -->
+  <div *ngIf="filteredUsers && filteredUsers.length > 0">
+    <div class="ror-section-header mb-3">
+      <div class="ror-section-icon"><i class="ri-table-line"></i></div>
+      <h2 class="ror-section-title">User Details</h2>
+      <span class="ror-count-pill">{{ filteredUsers.length }} users</span>
+    </div>
+    <div class="ror-card">
+      <div class="table-responsive">
+        <table class="ror-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Internet ID</th>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Bill Month-Year</th>
+              <th>Total Amount</th>
+              <th>Collected Amount</th>
+              <th>Collection Date</th>
+              <th>Collected By</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of filteredUsers; let i = index">
+              <td class="ror-row-num">{{ i + 1 }}</td>
+              <td class="ror-mono">{{ user.internet_id || '-' }}</td>
+              <td>{{ user.user_name || '-' }}</td>
+              <td>{{ user.address || '-' }}</td>
+              <td>
+                <ng-container *ngFor="let b of user.bills">
+                  <div>{{ b.month | titlecase }}-{{ b.year }}</div>
+                </ng-container>
+              </td>
+              <td>
+                <ng-container *ngFor="let b of user.bills">
+                  <div><span class="ror-amount-badge">Rs. {{ b.amount }}</span></div>
+                </ng-container>
+              </td>
+              <td>
+                <ng-container *ngFor="let b of user.bills">
+                  <div>{{ b.collected_amount ? 'Rs. ' + b.collected_amount : '-' }}</div>
+                </ng-container>
+              </td>
+              <td>
+                <ng-container *ngFor="let b of user.bills">
+                  <div>{{ b.collected_date ? (b.collected_date.toDate() | date:'dd-MM-yyyy') : '-' }}</div>
+                </ng-container>
+              </td>
+              <td>
+                <ng-container *ngFor="let b of user.bills">
+                  <div>{{ b.collected_by || '-' }}</div>
+                </ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

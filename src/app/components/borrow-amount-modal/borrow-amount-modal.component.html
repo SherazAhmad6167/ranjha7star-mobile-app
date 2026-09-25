@@ -1,0 +1,107 @@
+<div class="bm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="bm-header">
+    <div class="bm-header-left">
+      <div class="bm-header-icon"><i class="ri-exchange-dollar-line"></i></div>
+      <div>
+        <h4 class="bm-title">{{ editMode ? 'Update' : 'Add' }} Borrow</h4>
+        <p class="bm-subtitle">{{ editMode ? 'Edit borrow details below' : 'Fill in the borrow details below' }}</p>
+      </div>
+    </div>
+    <button type="button" class="bm-close-btn" aria-label="Close" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div *ngIf="isLoading" class="bm-loading">
+    <div class="spinner-border" style="color:#ca8a04" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="bm-body">
+    <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+
+      <!-- ══ Section 1 — Borrow Details ══ -->
+      <div class="bm-section">
+        <div class="bm-section-head">
+          <div class="bm-section-icon si-indigo"><i class="ri-hand-coin-line"></i></div>
+          <span class="bm-section-title">Borrow Details</span>
+        </div>
+        <div class="bm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="bm-label">Borrow Date <span class="req">*</span></label>
+              <input type="date" class="bm-input"
+                [class.bm-invalid]="expenseForm.get('borrow_date')?.invalid && expenseForm.get('borrow_date')?.touched"
+                formControlName="borrow_date">
+              <span class="bm-err" *ngIf="expenseForm.get('borrow_date')?.hasError('required') && expenseForm.get('borrow_date')?.touched">Date is required</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="bm-label">Name <span class="req">*</span></label>
+              <input type="text" class="bm-input"
+                [class.bm-invalid]="expenseForm.get('name')?.invalid && expenseForm.get('name')?.touched"
+                formControlName="name" placeholder="Borrower name">
+              <span class="bm-err" *ngIf="expenseForm.get('name')?.hasError('required') && expenseForm.get('name')?.touched">Name is required</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="bm-label">Area</label>
+              <input type="text" class="bm-input" formControlName="area" placeholder="Area / location">
+            </div>
+
+            <div class="col-md-4">
+              <label class="bm-label">Borrow Amount</label>
+              <div class="bm-prefix-wrap">
+                <span class="bm-prefix">Rs</span>
+                <input type="number" class="bm-input bm-prefixed" formControlName="amount" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="bm-label">Received Amount</label>
+              <div class="bm-prefix-wrap">
+                <span class="bm-prefix">Rs</span>
+                <input type="number" class="bm-input bm-prefixed" formControlName="recieved_amount" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="bm-label">Promise Date</label>
+              <input type="date" class="bm-input" formControlName="promise_date">
+            </div>
+
+            <div class="col-md-4">
+              <label class="bm-label">Witness</label>
+              <input type="text" class="bm-input" formControlName="witness" placeholder="Witness name">
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Footer ── -->
+      <div class="bm-footer">
+        <button type="button" class="bm-btn bm-btn-cancel" (click)="activeModal.close()">
+          <i class="ri-close-line me-1"></i> Cancel
+        </button>
+        <button type="submit" class="bm-btn bm-btn-save" [disabled]="isLoading || isSaving">
+          <ng-container *ngIf="!isSaving">
+            <i class="ri-save-line me-1"></i>
+            {{ editMode ? 'Update Borrow' : 'Save Borrow' }}
+          </ng-container>
+          <ng-container *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            {{ editMode ? 'Updating...' : 'Saving...' }}
+          </ng-container>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

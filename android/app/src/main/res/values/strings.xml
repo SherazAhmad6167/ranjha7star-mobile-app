@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ranjha7star</string>
+    <string name="title_activity_main">Ranjha7star</string>
+    <string name="package_name">com.ranjha.internet</string>
+    <string name="custom_url_scheme">com.ranjha.internet</string>
+</resources>

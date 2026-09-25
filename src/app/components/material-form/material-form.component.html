@@ -1,0 +1,194 @@
+<div class="mfm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="mfm-header">
+    <div class="mfm-header-left">
+      <div class="mfm-header-icon"><i class="ri-tools-line"></i></div>
+      <div>
+        <h4 class="mfm-title">{{ editMode ? 'Update' : 'Add' }} Material Details</h4>
+        <p class="mfm-subtitle">{{ editMode ? 'Edit material issue details below' : 'Fill in the material issue details below' }}</p>
+      </div>
+    </div>
+    <button class="mfm-close-btn" type="button" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading overlay ── -->
+  <div *ngIf="isLoading" class="mfm-loading">
+    <div class="spinner-border" style="color:#ea580c" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="mfm-body">
+
+      <!-- Section 1: Employee Details -->
+      <div class="mfm-section">
+        <div class="mfm-section-head">
+          <div class="mfm-section-icon si-orange"><i class="ri-user-2-line"></i></div>
+          <span class="mfm-section-title">Employee Details</span>
+        </div>
+        <div class="mfm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-4 col-12">
+              <label class="mfm-label">Issue No. <span class="req">*</span></label>
+              <input type="text" class="mfm-input"
+                [class.mfm-invalid]="userForm.get('issue_no')?.invalid && userForm.get('issue_no')?.touched"
+                formControlName="issue_no" placeholder="Enter Issue No.">
+              <span class="mfm-err"
+                *ngIf="userForm.get('issue_no')?.hasError('required') && userForm.get('issue_no')?.touched">
+                Issue No. is required
+              </span>
+            </div>
+
+            <div class="col-md-4 col-12">
+              <label class="mfm-label">Date <span class="req">*</span></label>
+              <input type="date" class="mfm-input"
+                [class.mfm-invalid]="userForm.get('date')?.invalid && userForm.get('date')?.touched"
+                formControlName="date">
+              <span class="mfm-err"
+                *ngIf="userForm.get('date')?.hasError('required') && userForm.get('date')?.touched">
+                Date is required
+              </span>
+            </div>
+
+            <div class="col-md-4 col-12">
+              <label class="mfm-label">Employee Name <span class="req">*</span></label>
+              <select class="mfm-input"
+                [class.mfm-invalid]="userForm.get('name')?.invalid && userForm.get('name')?.touched"
+                formControlName="name">
+                <option value="">-- Select Employee --</option>
+                <option *ngFor="let op of internetOperators" [value]="op.operator_name">
+                  {{ op.operator_name }}
+                </option>
+              </select>
+              <span class="mfm-err"
+                *ngIf="userForm.get('name')?.hasError('required') && userForm.get('name')?.touched">
+                Name is required
+              </span>
+            </div>
+
+            <div class="col-md-4 col-12">
+              <label class="mfm-label">Mobile No <span class="req">*</span></label>
+              <input type="text" class="mfm-input"
+                [class.mfm-invalid]="userForm.get('phone')?.invalid && userForm.get('phone')?.touched"
+                formControlName="phone" placeholder="Auto-filled on selection" readonly>
+              <span class="mfm-err"
+                *ngIf="userForm.get('phone')?.hasError('required') && userForm.get('phone')?.touched">
+                Mobile No is required
+              </span>
+            </div>
+
+            <div class="col-md-8 col-12">
+              <label class="mfm-label">Purpose <span class="req">*</span></label>
+              <input type="text" class="mfm-input"
+                [class.mfm-invalid]="userForm.get('purpose')?.invalid && userForm.get('purpose')?.touched"
+                formControlName="purpose" placeholder="Enter Purpose">
+              <span class="mfm-err"
+                *ngIf="userForm.get('purpose')?.hasError('required') && userForm.get('purpose')?.touched">
+                Purpose is required
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Material Issue Details -->
+      <div class="mfm-section">
+        <div class="mfm-section-head">
+          <div class="mfm-section-icon si-amber"><i class="ri-tools-line"></i></div>
+          <span class="mfm-section-title">Material Issue Details</span>
+        </div>
+        <div class="mfm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-6 col-12">
+              <div class="mfm-table-wrap">
+                <table class="mfm-table">
+                  <thead>
+                    <tr>
+                      <th class="td-sr">SR.</th>
+                      <th class="td-item">Item Name</th>
+                      <th class="td-qty">Quantity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="td-sr">1</td><td class="td-item">Modem</td><td><input type="text" class="form-control" formControlName="modem"></td></tr>
+                    <tr><td class="td-sr">2</td><td class="td-item">Pectail</td><td><input type="text" class="form-control" formControlName="pigtail"></td></tr>
+                    <tr><td class="td-sr">3</td><td class="td-item">Choti Dabi</td><td><input type="text" class="form-control" formControlName="choti_dabi"></td></tr>
+                    <tr><td class="td-sr">4</td><td class="td-item">Bari Dabi</td><td><input type="text" class="form-control" formControlName="bari_dabi"></td></tr>
+                    <tr><td class="td-sr">5</td><td class="td-item">Swab</td><td><input type="text" class="form-control" formControlName="swab"></td></tr>
+                    <tr><td class="td-sr">6</td><td class="td-item">Splitter</td><td><input type="text" class="form-control" formControlName="splitter"></td></tr>
+                    <tr><td class="td-sr">7</td><td class="td-item">Meter Bag</td><td><input type="text" class="form-control" formControlName="meter_bag"></td></tr>
+                    <tr><td class="td-sr">8</td><td class="td-item">Cable Tie</td><td><input type="text" class="form-control" formControlName="cable_tie"></td></tr>
+                    <tr><td class="td-sr">9</td><td class="td-item">Fiber Cable</td><td><input type="text" class="form-control" formControlName="fiber_cable"></td></tr>
+                    <tr><td class="td-sr">10</td><td class="td-item">Sleeve</td><td><input type="text" class="form-control" formControlName="sleeve"></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-12">
+              <div class="mfm-table-wrap">
+                <table class="mfm-table">
+                  <thead>
+                    <tr>
+                      <th class="td-sr">SR.</th>
+                      <th class="td-item">Item Name</th>
+                      <th class="td-qty">Quantity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="td-sr">11</td><td class="td-item">Cutter</td><td><input type="text" class="form-control" formControlName="cutter"></td></tr>
+                    <tr><td class="td-sr">12</td><td class="td-item">Paper Cutter</td><td><input type="text" class="form-control" formControlName="paper_cutter"></td></tr>
+                    <tr><td class="td-sr">13</td><td class="td-item">Plass</td><td><input type="text" class="form-control" formControlName="plass"></td></tr>
+                    <tr><td class="td-sr">14</td><td class="td-item">Passive Node</td><td><input type="text" class="form-control" formControlName="passive_node"></td></tr>
+                    <tr><td class="td-sr">15</td><td class="td-item">Cable Node</td><td><input type="text" class="form-control" formControlName="cable_node"></td></tr>
+                    <tr><td class="td-sr">16</td><td class="td-item">Adaptor</td><td><input type="text" class="form-control" formControlName="adaptor"></td></tr>
+                    <tr><td class="td-sr">17</td><td class="td-item">Nito Tape</td><td><input type="text" class="form-control" formControlName="nito"></td></tr>
+                    <tr><td class="td-sr">18</td><td class="td-item">Osaka Tape</td><td><input type="text" class="form-control" formControlName="osaka"></td></tr>
+                    <tr><td class="td-sr">19</td><td class="td-item">Packing Tape</td><td><input type="text" class="form-control" formControlName="packingTape"></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="mfm-label">Remarks</label>
+              <textarea class="mfm-input mfm-textarea"
+                [class.mfm-invalid]="userForm.get('remarks')?.invalid && userForm.get('remarks')?.touched"
+                formControlName="remarks" rows="3" placeholder="Enter Remarks"></textarea>
+              <span class="mfm-err"
+                *ngIf="userForm.get('remarks')?.hasError('required') && userForm.get('remarks')?.touched">
+                Remarks required
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="mfm-footer">
+      <button type="button" class="mfm-btn mfm-btn-cancel" (click)="activeModal.close()">
+        Cancel
+      </button>
+      <button type="submit" class="mfm-btn mfm-btn-save" [disabled]="isLoading || isSaving">
+        <span *ngIf="!isSaving">
+          <i class="ri-save-line me-1"></i>{{ editMode ? 'Update' : 'Save' }}
+        </span>
+        <span *ngIf="isSaving" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          {{ editMode ? 'Updating...' : 'Saving...' }}
+        </span>
+      </button>
+    </div>
+  </form>
+
+</div>

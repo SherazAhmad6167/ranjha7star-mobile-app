@@ -1,0 +1,146 @@
+<div class="container-fluid pk-wrapper">
+
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="lo-box">
+      <div class="spinner-border pk-spinner" role="status"></div>
+      <span class="lo-text">Loading...</span>
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="pk-page-header mb-4">
+    <div class="pk-header-left">
+      <div class="pk-header-icon"><i class="ri-price-tag-3-line"></i></div>
+      <div>
+        <h1 class="pk-title">Package Details</h1>
+        <p class="pk-sub">Manage internet packages, pricing and providers</p>
+      </div>
+    </div>
+    <div class="pk-header-right">
+      <span class="pk-stat-pill">
+        <i class="ri-price-tag-3-line"></i>
+        <strong>{{ filteredUsers.length }}</strong> Packages
+      </span>
+      <button class="btn-pk-add" (click)="openUserModal()">
+        <i class="ri-add-line"></i> Add Package
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Main Card ── -->
+  <div class="pk-card">
+
+    <!-- Filter Bar -->
+    <div class="pk-filter-bar">
+      <div class="pk-search-group">
+        <label class="pk-filter-label"><i class="ri-search-2-line"></i> Search</label>
+        <div class="pk-search-wrap">
+          <i class="ri-search-line pk-search-icon"></i>
+          <input type="text" class="pk-search-input" placeholder="Search packages..."
+            [(ngModel)]="searchTerm" (input)="onSearch()">
+        </div>
+      </div>
+      <div class="pk-entries-group">
+        <label class="pk-filter-label"><i class="ri-list-settings-line"></i> Entries</label>
+        <select class="pk-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option [value]="10">10</option>
+          <option [value]="30">30</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="pk-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Package Name</th>
+            <th>Company</th>
+            <th>Sales Price</th>
+            <th>Purchase Price</th>
+            <th>Type</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of pagedUsers; let i = index">
+            <td class="pk-row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td>
+              <div class="pk-name-cell">
+                <div class="pk-avatar"><i class="ri-price-tag-3-line"></i></div>
+                <span class="pk-name">{{ user.package_name | titlecase }}</span>
+              </div>
+            </td>
+            <td><span class="pk-company-tag">{{ user.company_name | uppercase }}</span></td>
+            <td><span class="pk-price-badge sales">Rs. {{ user.sales_price }}</span></td>
+            <td><span class="pk-price-badge purchase">Rs. {{ user.purchase_price }}</span></td>
+            <td>
+              <span class="pk-type-badge"
+                [ngClass]="{ 'internet': user.package_type?.toLowerCase() === 'internet', 'cable': user.package_type?.toLowerCase() === 'cable' }">
+                {{ user.package_type | titlecase }}
+              </span>
+            </td>
+            <td>
+              <div class="pk-actions">
+                <button class="pk-action-btn edit-btn" title="Edit" (click)="editUser(user)">
+                  <i class="ri-pencil-line"></i>
+                </button>
+                <button class="pk-action-btn del-btn" title="Delete" (click)="openDeleteModal(user.id, deleteModal)">
+                  <i class="ri-delete-bin-7-line"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="pagedUsers.length === 0">
+            <td colspan="7" class="pk-empty">
+              <i class="ri-price-tag-3-line"></i>
+              <div class="pk-empty-title">No packages found</div>
+              <div class="pk-empty-sub">Add your first package to get started</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Delete Modal -->
+    <ng-template #deleteModal let-modal>
+      <div class="gdm-wrap">
+        <button class="gdm-close" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">
+          <i class="ri-close-line"></i>
+        </button>
+        <div class="gdm-icon"><i class="ri-delete-bin-6-line"></i></div>
+        <h5 class="gdm-title">Delete Package?</h5>
+        <p class="gdm-text">This action cannot be undone.</p>
+        <div class="gdm-actions">
+          <button class="gdm-btn gdm-cancel" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">Cancel</button>
+          <button class="gdm-btn gdm-confirm" type="button" (click)="confirmDelete(modal)" [disabled]="isDeleting">
+            <span *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</span>
+            <span *ngIf="isDeleting" class="d-flex align-items-center gap-2">
+              <span class="spinner-border spinner-border-sm" role="status"></span> Deleting...
+            </span>
+          </button>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Footer -->
+    <div class="pk-table-footer">
+      <div class="pk-footer-info">Showing <strong>{{ pagedUsers.length }}</strong> of <strong>{{ filteredUsers.length }}</strong> records</div>
+      <ul class="pagination mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="prevPage()">Previous</button>
+        </li>
+        <li class="page-item" *ngFor="let page of visiblePages" [class.active]="currentPage === page">
+          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()">Next</button>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,96 @@
+<div class="stm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="stm-header">
+    <div class="stm-header-left">
+      <div class="stm-header-icon"><i class="ri-archive-line"></i></div>
+      <div>
+        <h4 class="stm-title">{{ editMode ? 'Update' : 'Add' }} Stock</h4>
+        <p class="stm-subtitle">{{ editMode ? 'Edit stock details below' : 'Fill in the stock details below' }}</p>
+      </div>
+    </div>
+    <button class="stm-close-btn" type="button" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading overlay ── -->
+  <div *ngIf="isLoading" class="stm-loading">
+    <div class="spinner-border" style="color:#0d9488" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+    <div class="stm-body">
+
+      <!-- Section: Stock Information -->
+      <div class="stm-section">
+        <div class="stm-section-head">
+          <div class="stm-section-icon si-teal"><i class="ri-archive-line"></i></div>
+          <span class="stm-section-title">Stock Information</span>
+        </div>
+        <div class="stm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-6 col-12">
+              <label class="stm-label">Date <span class="req">*</span></label>
+              <input type="date" class="stm-input"
+                [class.stm-invalid]="expenseForm.get('date')?.invalid && expenseForm.get('date')?.touched"
+                formControlName="date">
+              <span class="stm-err"
+                *ngIf="expenseForm.get('date')?.hasError('required') && expenseForm.get('date')?.touched">
+                Date is required
+              </span>
+            </div>
+
+            <div class="col-md-6 col-12">
+              <label class="stm-label">Stock Name <span class="req">*</span></label>
+              <input type="text" class="stm-input"
+                [class.stm-invalid]="expenseForm.get('name')?.invalid && expenseForm.get('name')?.touched"
+                formControlName="name" placeholder="Enter Stock Name">
+              <span class="stm-err"
+                *ngIf="expenseForm.get('name')?.hasError('required') && expenseForm.get('name')?.touched">
+                Stock Name is required
+              </span>
+            </div>
+
+            <div class="col-md-6 col-12">
+              <label class="stm-label">Total Quantity <span class="req">*</span></label>
+              <input type="number" class="stm-input" min="1"
+                [class.stm-invalid]="expenseForm.get('quantity')?.invalid && expenseForm.get('quantity')?.touched"
+                formControlName="quantity" placeholder="0">
+              <span class="stm-err"
+                *ngIf="expenseForm.get('quantity')?.hasError('required') && expenseForm.get('quantity')?.touched">
+                Total Quantity is required
+              </span>
+              <span class="stm-err"
+                *ngIf="expenseForm.get('quantity')?.hasError('min') && expenseForm.get('quantity')?.touched">
+                Quantity must be at least 1
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="stm-footer">
+      <button type="button" class="stm-btn stm-btn-cancel" (click)="activeModal.close()">
+        Cancel
+      </button>
+      <button type="submit" class="stm-btn stm-btn-save" [disabled]="isLoading || isSaving">
+        <span *ngIf="!isSaving">
+          <i class="ri-save-line me-1"></i>{{ editMode ? 'Update' : 'Save' }}
+        </span>
+        <span *ngIf="isSaving" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          {{ editMode ? 'Updating...' : 'Saving...' }}
+        </span>
+      </button>
+    </div>
+  </form>
+
+</div>

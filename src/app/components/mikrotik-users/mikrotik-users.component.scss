@@ -1,0 +1,75 @@
+.stat-card {
+  border-radius: 12px;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bg-primary-soft {
+  background-color: rgba(var(--bs-primary-rgb), 0.12);
+}
+
+.bg-success-soft {
+  background-color: rgba(var(--bs-success-rgb), 0.12);
+}
+
+.bg-danger-soft {
+  background-color: rgba(var(--bs-danger-rgb), 0.12);
+}
+
+.input-group .form-control:focus {
+  box-shadow: none;
+  border-color: #dee2e6;
+}
+
+.input-group .input-group-text {
+  border-color: #dee2e6;
+}
+
+.input-group .form-control:focus ~ .input-group-text,
+.input-group:focus-within .input-group-text {
+  border-color: #86b7fe;
+}
+
+.input-group:focus-within .input-group-text,
+.input-group:focus-within .form-control {
+  border-color: #86b7fe;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+.table th {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6c757d;
+}
+
+.badge.bg-info-subtle {
+  background-color: #cff4fc !important;
+}
+
+.badge.bg-secondary-subtle {
+  background-color: #e2e3e5 !important;
+}

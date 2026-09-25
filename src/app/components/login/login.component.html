@@ -1,0 +1,108 @@
+<div class="lg">
+  <span class="lg-aurora lg-aurora--1" aria-hidden="true"></span>
+  <span class="lg-aurora lg-aurora--2" aria-hidden="true"></span>
+  <span class="lg-dots" aria-hidden="true"></span>
+
+  <div class="lg-screen">
+
+    <!-- ══ Brand ══ -->
+    <section class="lg-hero">
+      <div class="lg-logo">
+        <span class="lg-wave lg-wave--1" aria-hidden="true"></span>
+        <span class="lg-wave lg-wave--2" aria-hidden="true"></span>
+        <img src="assets/ranjha-logo3.jpeg" alt="Ranjha7star" />
+      </div>
+
+      <h1 class="lg-name">Ranjha<span>7star</span></h1>
+      <p class="lg-tagline">ISP field workspace</p>
+
+      <div class="lg-chips" aria-hidden="true">
+        <span><i class="ri-wallet-3-line"></i> Collections</span>
+        <span><i class="ri-router-line"></i> Connections</span>
+        <span><i class="ri-hand-coin-line"></i> Recovery</span>
+      </div>
+    </section>
+
+    <!-- ══ Sign in ══ -->
+    <section class="lg-sheet">
+      <header class="lg-head">
+        <span class="lg-kicker"><i class="ri-shield-keyhole-line"></i> Staff sign in</span>
+        <h2>Welcome back</h2>
+        <p>Sign in with the username and password from your admin.</p>
+      </header>
+
+      <form class="lg-form" (ngSubmit)="login()">
+        <div class="lg-field">
+          <label class="lg-label" for="login-username">Username</label>
+          <div class="mk-input-wrap">
+            <i class="ri-user-3-line" aria-hidden="true"></i>
+            <input
+              id="login-username"
+              class="mk-input"
+              type="text"
+              name="username"
+              [(ngModel)]="username"
+              (ngModelChange)="errorMessage = ''"
+              placeholder="Enter your username"
+              autocomplete="username"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="next"
+              required />
+          </div>
+        </div>
+
+        <div class="lg-field">
+          <label class="lg-label" for="login-password">Password</label>
+          <div class="mk-input-wrap">
+            <i class="ri-lock-2-line" aria-hidden="true"></i>
+            <input
+              id="login-password"
+              class="mk-input lg-input-pass"
+              [type]="showPassword ? 'text' : 'password'"
+              name="password"
+              [(ngModel)]="password"
+              (ngModelChange)="errorMessage = ''"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="go"
+              required />
+            <button
+              type="button"
+              class="mk-tap lg-eye"
+              (click)="togglePassword()"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+              [attr.aria-pressed]="showPassword">
+              <i [class]="showPassword ? 'ri-eye-off-line' : 'ri-eye-line'"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="lg-error" *ngIf="errorMessage" role="alert">
+          <i class="ri-error-warning-fill" aria-hidden="true"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <button type="submit" class="mk-tap mk-btn mk-btn--primary mk-btn--block lg-submit" [disabled]="loading">
+          <ng-container *ngIf="!loading">
+            Sign in <i class="ri-arrow-right-line"></i>
+          </ng-container>
+          <ng-container *ngIf="loading">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Signing in…
+          </ng-container>
+        </button>
+      </form>
+
+      <footer class="lg-foot">
+        <span><i class="ri-lock-line" aria-hidden="true"></i> Secure staff access</span>
+        <small>Powered by Ranjha7star Cable Network</small>
+      </footer>
+    </section>
+
+  </div>
+</div>

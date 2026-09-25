@@ -1,0 +1,250 @@
+<div class="container-fluid cd-wrapper">
+
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="lo-box">
+      <div class="spinner-border" style="color:#d97706" role="status"></div>
+      <span class="lo-text">Loading complaints...</span>
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="cd-page-header mb-4">
+    <div class="cd-header-left">
+      <div class="cd-header-icon"><i class="ri-alarm-warning-line"></i></div>
+      <div>
+        <h1 class="cd-title">Complaints</h1>
+        <p class="cd-sub">Track and resolve customer complaints</p>
+      </div>
+    </div>
+    <div class="cd-header-right">
+      <span class="cd-stat-pill">
+        <i class="ri-file-list-3-line"></i> <strong>{{ filteredUsers.length }}</strong> Total
+      </span>
+      <button class="btn-cd-add" (click)="openComplainModal()">
+        <i class="ri-add-line"></i> Add Complaint
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Main Card ── -->
+  <div class="cd-card">
+
+    <!-- Filter Bar -->
+    <div class="cd-filter-bar">
+      <div class="cd-filter-group">
+        <label class="cd-filter-label"><i class="ri-map-pin-line"></i> Area</label>
+        <app-search-select
+          [(ngModel)]="sublocality"
+          (selectionChange)="onFilterChange()"
+          [options]="internetAreas"
+          valueKey="sublocality"
+          displayKey="sublocality"
+          placeholder="All Areas"
+          emptyLabel="All Areas"
+          [allowEmpty]="true">
+        </app-search-select>
+      </div>
+      <div class="cd-filter-group cd-search-group">
+        <label class="cd-filter-label"><i class="ri-search-line"></i> Search</label>
+        <div class="cd-search-wrap">
+          <i class="ri-search-line cd-search-icon"></i>
+          <input type="text" class="cd-search-input" placeholder="Name, ID, area..."
+            [(ngModel)]="searchTerm" (input)="onFilterChange()" />
+        </div>
+      </div>
+      <div class="cd-filter-group cd-entries-group">
+        <label class="cd-filter-label"><i class="ri-list-ordered"></i> Entries</label>
+        <select class="cd-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option [value]="10">10</option>
+          <option [value]="30">30</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="cd-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>User</th>
+            <th>Area</th>
+            <th>Package</th>
+            <th>Phone</th>
+            <th>Operator</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!pagedUsers.length">
+            <td colspan="9" class="cd-empty">
+              <i class="ri-inbox-2-line"></i>
+              <div class="cd-empty-title">No complaints found</div>
+              <div class="cd-empty-sub">Try adjusting your filters</div>
+            </td>
+          </tr>
+          <tr *ngFor="let user of pagedUsers; let i = index">
+            <td class="cd-row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td><span class="cd-date">{{ user.complain_date | date:'dd MMM yy' }}</span></td>
+            <td>
+              <div class="cd-user-cell">
+                <div class="cd-avatar">{{ user.user_name?.charAt(0)?.toUpperCase() }}</div>
+                <div>
+                  <div class="cd-user-name">{{ user.user_name }}</div>
+                  <div class="cd-user-id">{{ user.internet_id }}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="cd-area-tag">{{ user.sublocality || '-' }}</span></td>
+            <td><span class="cd-pkg">{{ user.package_name || '-' }}</span></td>
+            <td><span class="cd-phone">{{ user.phone_number || '-' }}</span></td>
+            <td>
+              <div class="cd-operator-name">{{ user.operator_name || '-' }}</div>
+              <div class="cd-operator-phone" *ngIf="user.operator_phone_number">{{ user.operator_phone_number }}</div>
+            </td>
+            <td>
+              <span class="cd-status-badge resolved" *ngIf="user.status === 'close'">Resolved</span>
+              <span class="cd-status-badge pending" *ngIf="user.status !== 'close'">Pending</span>
+            </td>
+            <td>
+              <div class="cd-actions">
+                <button class="cd-action-btn edit-btn" (click)="editUser(user)" title="Edit">
+                  <i class="ri-pencil-line"></i>
+                </button>
+                <button class="cd-action-btn msg-btn" (click)="openMsgModal(user, msgModal)" title="Send Message">
+                  <i class="ri-send-plane-line"></i>
+                </button>
+                <button class="cd-action-btn del-btn" (click)="openDeleteModal(user.id, deleteModal)" title="Delete">
+                  <i class="ri-delete-bin-7-line"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="cd-table-footer">
+      <div class="cd-footer-info">
+        Showing <strong>{{ pagedUsers.length }}</strong> of <strong>{{ filteredUsers.length }}</strong> entries
+      </div>
+      <ul class="pagination mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="prevPage()"><i class="ri-arrow-left-s-line"></i></button>
+        </li>
+        <li class="page-item" *ngFor="let page of visiblePages" [class.active]="currentPage === page">
+          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()"><i class="ri-arrow-right-s-line"></i></button>
+        </li>
+      </ul>
+    </div>
+
+  </div><!-- /cd-card -->
+
+</div>
+
+
+<!-- ── Message Modal ── -->
+<ng-template #msgModal let-modal>
+  <div class="msg-modal-wrap">
+    <!-- Header -->
+    <div class="msg-modal-header">
+      <div class="msg-modal-title-row">
+        <div class="msg-modal-icon"><i class="ri-send-plane-line"></i></div>
+        <div>
+          <div class="msg-modal-title">Send Message</div>
+          <div class="msg-modal-sub">{{ selectedMsgUser?.user_name }}</div>
+        </div>
+      </div>
+      <button class="msg-modal-close" (click)="modal.dismiss()"><i class="ri-close-line"></i></button>
+    </div>
+
+    <!-- Status pill -->
+    <div class="msg-status-row">
+      <span class="cd-status-badge" [class.resolved]="selectedMsgUser?.status === 'close'" [class.pending]="selectedMsgUser?.status !== 'close'">
+        <i class="ri-checkbox-circle-line" *ngIf="selectedMsgUser?.status === 'close'"></i>
+        <i class="ri-time-line" *ngIf="selectedMsgUser?.status !== 'close'"></i>
+        {{ selectedMsgUser?.status === 'close' ? 'Resolved' : 'Pending' }}
+      </span>
+      <span class="msg-status-hint">{{ selectedMsgUser?.status === 'close' ? 'Resolve SMS available' : 'Operator SMS available' }}</span>
+    </div>
+
+    <!-- Cards -->
+    <div class="msg-cards">
+
+      <!-- WhatsApp -->
+      <button class="msg-card wa" (click)="sendWhatsapp(selectedMsgUser); modal.dismiss()"
+        [disabled]="selectedMsgUser?.status === 'close'">
+        <div class="msg-card-icon"><i class="ri-whatsapp-line"></i></div>
+        <div class="msg-card-body">
+          <div class="msg-card-title">WhatsApp</div>
+          <div class="msg-card-desc">Send complaint acknowledgment to customer via WhatsApp</div>
+        </div>
+        <i class="ri-arrow-right-s-line msg-card-arrow"></i>
+      </button>
+
+      <!-- Operator SMS -->
+      <button class="msg-card sms" (click)="sendSms(selectedMsgUser); modal.dismiss()"
+        [disabled]="selectedMsgUser?.status === 'close'">
+        <div class="msg-card-icon"><i class="ri-message-2-line"></i></div>
+        <div class="msg-card-body">
+          <div class="msg-card-title">Operator SMS</div>
+          <div class="msg-card-desc">Send complaint SMS to operator · {{ selectedMsgUser?.operator_phone_number }}</div>
+        </div>
+        <i class="ri-arrow-right-s-line msg-card-arrow"></i>
+      </button>
+
+      <!-- Resolve WhatsApp -->
+      <button class="msg-card resolve-wa" (click)="sendResolveWhatsapp(selectedMsgUser); modal.dismiss()"
+        [disabled]="selectedMsgUser?.status !== 'close'">
+        <div class="msg-card-icon"><i class="ri-whatsapp-line"></i></div>
+        <div class="msg-card-body">
+          <div class="msg-card-title">Resolve WhatsApp</div>
+          <div class="msg-card-desc">Send resolution message to customer via WhatsApp · {{ selectedMsgUser?.phone_number }}</div>
+        </div>
+        <i class="ri-arrow-right-s-line msg-card-arrow"></i>
+      </button>
+
+      <!-- Resolve SMS -->
+      <button class="msg-card resolve" (click)="resolveComplain(selectedMsgUser); modal.dismiss()"
+        [disabled]="selectedMsgUser?.status !== 'close'">
+        <div class="msg-card-icon"><i class="ri-message-2-line"></i></div>
+        <div class="msg-card-body">
+          <div class="msg-card-title">Resolve SMS</div>
+          <div class="msg-card-desc">Send resolution notification to customer · {{ selectedMsgUser?.phone_number }}</div>
+        </div>
+        <i class="ri-arrow-right-s-line msg-card-arrow"></i>
+      </button>
+
+    </div>
+  </div>
+</ng-template>
+
+<!-- ── Delete Modal ── -->
+<ng-template #deleteModal let-modal>
+  <div class="gdm-wrap">
+    <button class="gdm-close" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="gdm-icon"><i class="ri-delete-bin-6-line"></i></div>
+    <h5 class="gdm-title">Delete Complaint?</h5>
+    <p class="gdm-text">This action cannot be undone.</p>
+    <div class="gdm-actions">
+      <button class="gdm-btn gdm-cancel" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">Cancel</button>
+      <button class="gdm-btn gdm-confirm" type="button" (click)="confirmDelete(modal)" [disabled]="isDeleting">
+        <span *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</span>
+        <span *ngIf="isDeleting" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span> Deleting...
+        </span>
+      </button>
+    </div>
+  </div>
+</ng-template>

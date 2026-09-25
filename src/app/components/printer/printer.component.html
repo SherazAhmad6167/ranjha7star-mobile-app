@@ -1,0 +1,208 @@
+<div class="pr">
+
+  <!-- ══ Status ══ -->
+  <section class="pr-hero" [class.is-on]="isConnected" [class.is-busy]="isBusy">
+    <span class="pr-hero-glow" aria-hidden="true"></span>
+
+    <div class="pr-hero-main">
+      <div class="pr-hero-art" aria-hidden="true">
+        <span class="pr-wave pr-wave--1" *ngIf="isConnected"></span>
+        <span class="pr-wave pr-wave--2" *ngIf="isConnected"></span>
+        <span class="pr-hero-icon"><i class="ri-printer-fill"></i></span>
+        <span class="pr-hero-badge">
+          <ion-spinner *ngIf="isBusy" name="crescent"></ion-spinner>
+          <i *ngIf="!isBusy" [class]="isConnected ? 'ri-bluetooth-connect-line' : 'ri-bluetooth-line'"></i>
+        </span>
+      </div>
+
+      <div class="pr-hero-copy">
+        <span class="pr-hero-kicker">
+          <i class="ri-bluetooth-fill"></i>
+          {{ status === 'connecting' ? 'Connecting…' : status === 'printing' ? 'Printing…' : isConnected ? 'Connected' : 'Not connected' }}
+        </span>
+        <strong class="pr-hero-title">{{ savedDevice?.name || 'No printer yet' }}</strong>
+        <span class="pr-hero-sub" *ngIf="savedDevice">{{ savedDevice.address }} · 58 mm</span>
+        <span class="pr-hero-sub" *ngIf="!savedDevice">Scan and connect your thermal printer</span>
+      </div>
+    </div>
+
+    <div class="pr-hero-actions" *ngIf="savedDevice">
+      <ng-container *ngIf="isConnected">
+        <button class="mk-tap pr-hero-btn pr-hero-btn--primary" type="button" (click)="testPrint()" [disabled]="isBusy">
+          <i class="ri-printer-line"></i> Test print
+        </button>
+        <button class="mk-tap pr-hero-btn" type="button" (click)="disconnect()" [disabled]="isBusy">
+          <i class="ri-link-unlink"></i> Disconnect
+        </button>
+      </ng-container>
+      <ng-container *ngIf="!isConnected">
+        <button class="mk-tap pr-hero-btn pr-hero-btn--primary" type="button" (click)="reconnect()"
+          [disabled]="isBusy || isScanning || !printer.isSupported">
+          <i class="ri-refresh-line"></i> Reconnect
+        </button>
+        <button class="mk-tap pr-hero-btn" type="button" (click)="forget()" [disabled]="isBusy">
+          <i class="ri-delete-bin-6-line"></i> Forget
+        </button>
+      </ng-container>
+    </div>
+  </section>
+
+  <!-- ══ Browser (no Bluetooth) ══ -->
+  <div class="pr-note" *ngIf="ready && !printer.isAndroid">
+    <span class="pr-note-icon"><i class="ri-smartphone-line"></i></span>
+    <div>
+      <strong>Open this in the Android app</strong>
+      <p>Bluetooth thermal printers can only be reached from the installed app on your phone.</p>
+    </div>
+  </div>
+
+  <!-- ══ Printers ══ -->
+  <div class="pr-card" *ngIf="!ready || printer.isAndroid">
+    <div class="pr-section-title">
+      <span class="pr-dot blue"><i class="ri-bluetooth-line"></i></span>
+      Printers
+    </div>
+
+    <!-- Scan -->
+    <button class="mk-tap pr-scan ion-activatable" type="button" (click)="scan()"
+      [class.is-scanning]="isScanning" [disabled]="!ready || !printer.isSupported || isBusy">
+      <span class="pr-radar" aria-hidden="true">
+        <span class="pr-radar-ring pr-radar-ring--1"></span>
+        <span class="pr-radar-ring pr-radar-ring--2"></span>
+        <i class="ri-radar-line"></i>
+      </span>
+      <span class="pr-scan-copy">
+        <strong>{{ isScanning ? 'Searching nearby…' : hasScanned ? 'Scan again' : 'Scan for printers' }}</strong>
+        <small>{{ isScanning ? 'Keep the printer on and close to the phone' : 'Finds Bluetooth printers around you' }}</small>
+      </span>
+      <ion-spinner *ngIf="isScanning" name="crescent"></ion-spinner>
+      <i *ngIf="!isScanning" class="ri-arrow-right-s-line pr-scan-go"></i>
+      <ion-ripple-effect></ion-ripple-effect>
+    </button>
+
+    <!-- Pairing a new printer -->
+    <div class="pr-inline pr-inline--info" *ngIf="pairingHint">
+      <i class="ri-key-2-line"></i>
+      <span>Connecting… if Android asks to pair, enter PIN <b>0000</b> or <b>1234</b>.</span>
+    </div>
+
+    <!-- Error -->
+    <div class="pr-inline pr-inline--error" *ngIf="error">
+      <i class="ri-error-warning-line"></i>
+      <span>{{ error }}</span>
+    </div>
+
+    <!-- Loading paired -->
+    <div class="pr-list" *ngIf="!ready || (isLoadingPaired && !paired.length)">
+      <div class="pr-device pr-device--skel" *ngFor="let row of skeletonRows">
+        <ion-skeleton-text class="pr-skel-icon" [animated]="true"></ion-skeleton-text>
+        <div class="pr-skel-lines">
+          <ion-skeleton-text [animated]="true" style="width: 55%; height: 12px"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" style="width: 38%; height: 10px"></ion-skeleton-text>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nearby (new) -->
+    <ng-container *ngIf="nearby.length || isScanning">
+      <div class="pr-group">
+        <span>Nearby</span>
+        <small *ngIf="nearby.length">{{ nearby.length }} found</small>
+      </div>
+
+      <div class="pr-list">
+        <ng-container *ngTemplateOutlet="deviceList; context: { $implicit: nearby }"></ng-container>
+
+        <div class="pr-device pr-device--skel" *ngIf="isScanning && !nearby.length">
+          <ion-skeleton-text class="pr-skel-icon" [animated]="true"></ion-skeleton-text>
+          <div class="pr-skel-lines">
+            <ion-skeleton-text [animated]="true" style="width: 50%; height: 12px"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 34%; height: 10px"></ion-skeleton-text>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Nothing new found -->
+    <div class="pr-empty" *ngIf="hasScanned && !isScanning && !nearby.length && !error">
+      <span class="pr-empty-art"><i class="ri-search-eye-line"></i></span>
+      <strong>No new printers found</strong>
+      <p>
+        Turn the printer on, keep it close and scan again.
+        <ng-container *ngIf="needsLocationHint">Location must be switched on to scan.</ng-container>
+      </p>
+    </div>
+
+    <!-- Paired -->
+    <ng-container *ngIf="paired.length">
+      <div class="pr-group">
+        <span>Paired with this phone</span>
+        <small>{{ paired.length }}</small>
+      </div>
+      <div class="pr-list">
+        <ng-container *ngTemplateOutlet="deviceList; context: { $implicit: paired }"></ng-container>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ══ How to connect ══ -->
+  <div class="pr-card">
+    <div class="pr-section-title">
+      <span class="pr-dot amber"><i class="ri-lightbulb-flash-line"></i></span>
+      How to connect
+    </div>
+
+    <ol class="pr-steps">
+      <li>
+        <span class="pr-step-num">1</span>
+        <div><strong>Turn the printer on</strong><span>Load 58 mm paper and keep it close to the phone.</span></div>
+      </li>
+      <li>
+        <span class="pr-step-num">2</span>
+        <div><strong>Scan and tap Connect</strong><span>A Media Link G3 usually shows as "BlueTooth Printer", "MTP-II" or "G3".</span></div>
+      </li>
+      <li>
+        <span class="pr-step-num">3</span>
+        <div><strong>Enter the PIN if asked</strong><span>Android may ask to pair: the PIN is usually 0000 or 1234.</span></div>
+      </li>
+      <li>
+        <span class="pr-step-num">4</span>
+        <div><strong>Test print</strong><span>The app remembers the printer for every receipt.</span></div>
+      </li>
+    </ol>
+
+    <button class="mk-tap pr-link" type="button" (click)="openSettings()" *ngIf="printer.isSupported">
+      Printer not showing up? Open Bluetooth settings
+    </button>
+  </div>
+</div>
+
+
+<!-- One device row, shared by the nearby and paired lists -->
+<ng-template #deviceList let-devices>
+  <div class="pr-device" *ngFor="let device of devices; trackBy: trackByAddress" [class.is-current]="isCurrent(device)">
+    <span class="pr-device-icon" [class.is-printer]="printer.looksLikePrinter(device)">
+      <i [class]="printer.looksLikePrinter(device) ? 'ri-printer-line' : 'ri-bluetooth-line'"></i>
+    </span>
+
+    <div class="pr-device-copy">
+      <strong>{{ device.name }}</strong>
+      <span>
+        {{ device.address }}
+        <em *ngIf="printer.looksLikePrinter(device)">Printer</em>
+        <em class="is-new" *ngIf="!device.paired">New</em>
+      </span>
+    </div>
+
+    <span class="pr-device-state" *ngIf="isCurrent(device)">
+      <i class="ri-check-line"></i> Connected
+    </span>
+
+    <button *ngIf="!isCurrent(device)" class="mk-tap pr-connect ion-activatable" type="button"
+      (click)="connect(device)" [disabled]="isBusy || isScanning">
+      <ion-spinner *ngIf="pendingAddress === device.address" name="crescent"></ion-spinner>
+      <span *ngIf="pendingAddress !== device.address">Connect</span>
+      <ion-ripple-effect></ion-ripple-effect>
+    </button>
+  </div>
+</ng-template>

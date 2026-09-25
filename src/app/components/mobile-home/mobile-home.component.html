@@ -1,0 +1,64 @@
+<div class="home-content">
+  <section class="home-hero">
+    <span class="hero-aurora au-1" aria-hidden="true"></span>
+    <span class="hero-aurora au-2" aria-hidden="true"></span>
+    <span class="hero-dots" aria-hidden="true"></span>
+
+    <div class="hero-top">
+      <span class="hero-kicker"><i class="ri-flashlight-fill"></i><span>{{ greeting }}</span></span>
+      <span class="hero-date"><i class="ri-calendar-2-line"></i> {{ today | date: 'EEE, d MMM' }}</span>
+    </div>
+
+    <div class="hero-main">
+      <div class="hero-copy">
+        <h1>Mobile <span>Workspace</span></h1>
+        <p>Fast access to field work, collections, and customer service.</p>
+      </div>
+
+      <div class="hero-badge" aria-hidden="true">
+        <span class="wave w1"></span>
+        <span class="wave w2"></span>
+        <span class="wave w3"></span>
+        <span class="badge-core"><i class="ri-router-fill"></i></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title">
+    <div class="section-copy">
+      <span class="section-heading">Quick Actions</span>
+      <small>Everything you need in the field</small>
+    </div>
+    <span class="section-count"><i class="ri-apps-2-fill"></i> {{ cards.length }} tools</span>
+  </div>
+
+  <div class="home-grid">
+    <ion-card
+      *ngFor="let card of cards; let i = index"
+      class="home-card"
+      [ngClass]="'tone-' + card.tone"
+      [class.home-card--wide]="card.wide"
+      [style.--i]="i"
+      [routerLink]="card.path"
+      [button]="true"
+    >
+      <ion-card-content>
+        <span class="card-glow" aria-hidden="true"></span>
+        <span class="card-watermark" aria-hidden="true"><i [class]="card.icon"></i></span>
+
+        <div class="card-top">
+          <div class="card-art">
+            <i [class]="card.icon"></i>
+          </div>
+          <span class="open-dot"><i class="ri-arrow-right-up-line"></i></span>
+        </div>
+
+        <div class="card-copy">
+          <span class="card-eyebrow">{{ card.eyebrow }}</span>
+          <h2>{{ card.title }}</h2>
+          <p>{{ card.subtitle }}</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>

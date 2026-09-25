@@ -1,0 +1,219 @@
+/* ═══════════════════════════════════════
+   SETTINGS PAGE
+   ═══════════════════════════════════════ */
+
+.st-wrapper {
+  padding-top: 16px;
+  padding-bottom: 40px;
+}
+
+/* ── Page Header ── */
+.st-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.st-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.st-header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #475569, #334155);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.st-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.st-sub {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.st-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
+
+  strong { font-weight: 700; }
+  i { font-size: 15px; }
+}
+
+/* ── Grid ── */
+.st-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* ── Card ── */
+.st-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.11);
+  }
+}
+
+/* ── Card Header ── */
+.st-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fafbfc;
+}
+
+.st-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+
+  &.icon-welcome          { background: #f0fdf4; color: #16a34a; }
+  &.icon-complaint        { background: #fffbeb; color: #b45309; }
+  &.icon-paymentReminder  { background: #eff6ff; color: #2563eb; }
+  &.icon-paymentReceived  { background: #f0fdf4; color: #15803d; }
+  &.icon-overdue          { background: #fef2f2; color: #dc2626; }
+  &.icon-maintenance      { background: #f5f3ff; color: #7c3aed; }
+  &.icon-upgrade          { background: #eef2ff; color: #4338ca; }
+  &.icon-restoration      { background: #ecfdf5; color: #059669; }
+  &.icon-recoveryReceived { background: #f5f3ff; color: #6d28d9; }
+}
+
+.st-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.st-card-sub {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+/* ── Card Body ── */
+.st-card-body {
+  padding: 16px 20px 8px;
+  flex: 1;
+}
+
+.st-textarea {
+  width: 100%;
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: 8px;
+  border: 1px solid #dde2e8;
+  padding: 10px 12px;
+  resize: vertical;
+  color: #334155;
+  background: #fff;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus {
+    border-color: #475569;
+    box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+    outline: none;
+  }
+
+  &::placeholder { color: #cbd5e1; }
+}
+
+.st-char-count {
+  font-size: 11.5px;
+  color: #94a3b8;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* ── Card Footer ── */
+.st-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px 16px;
+}
+
+.st-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  i { font-size: 14px; }
+
+  &.save-btn {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: #fff;
+    &:hover { box-shadow: 0 3px 10px rgba(5, 150, 105, 0.35); transform: translateY(-1px); }
+  }
+
+  &.reset-btn {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    &:hover { background: #e2e8f0; color: #334155; }
+  }
+
+  &.delete-btn {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    margin-left: auto;
+    &:hover { background: #dc2626; color: #fff; }
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 991px) {
+  .st-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 767px) {
+  .st-wrapper { padding-top: 24px; padding-bottom: 24px; }
+}

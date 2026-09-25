@@ -1,0 +1,76 @@
+<div class="opm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="opm-header">
+    <div class="opm-header-left">
+      <div class="opm-header-icon"><i class="ri-headphone-line"></i></div>
+      <div>
+        <h4 class="opm-title">{{ editMode ? 'Update' : 'Add' }} Operator</h4>
+        <p class="opm-subtitle">{{ editMode ? 'Edit operator details below' : 'Fill in the operator details below' }}</p>
+      </div>
+    </div>
+    <button class="opm-close-btn" type="button" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading overlay ── -->
+  <div *ngIf="isLoading" class="opm-loading">
+    <div class="spinner-border" style="color:#b45309" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="opm-body">
+
+      <!-- Section: Operator Details -->
+      <div class="opm-section">
+        <div class="opm-section-head">
+          <div class="opm-section-icon si-amber"><i class="ri-headphone-line"></i></div>
+          <span class="opm-section-title">Operator Details</span>
+        </div>
+        <div class="opm-section-body">
+          <div class="row g-3">
+
+            <div class="col-12">
+              <label class="opm-label">Operator Name <span class="req">*</span></label>
+              <input type="text" class="opm-input"
+                [class.opm-invalid]="userForm.get('operator_name')?.invalid && userForm.get('operator_name')?.touched"
+                formControlName="operator_name" placeholder="Enter Operator Name">
+              <span class="opm-err"
+                *ngIf="userForm.get('operator_name')?.hasError('required') && userForm.get('operator_name')?.touched">
+                Operator Name is required
+              </span>
+            </div>
+
+            <div class="col-12">
+              <label class="opm-label">Phone Number</label>
+              <input type="text" class="opm-input"
+                formControlName="operator_phone" placeholder="03XX-XXXXXXX">
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="opm-footer">
+      <button type="button" class="opm-btn opm-btn-cancel" (click)="activeModal.close()">
+        Cancel
+      </button>
+      <button type="submit" class="opm-btn opm-btn-save" [disabled]="isLoading || isSaving">
+        <span *ngIf="!isSaving">
+          <i class="ri-save-line me-1"></i>{{ editMode ? 'Update' : 'Save' }}
+        </span>
+        <span *ngIf="isSaving" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          {{ editMode ? 'Updating...' : 'Saving...' }}
+        </span>
+      </button>
+    </div>
+  </form>
+
+</div>

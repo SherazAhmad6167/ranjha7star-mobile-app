@@ -1,0 +1,294 @@
+<div class="container-fluid md-wrapper">
+
+  <!-- Loading overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="lo-box">
+      <img src="assets/loader-africa.svg" alt="Loading..." class="custom-loader" />
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="md-page-header mb-4">
+    <div class="md-header-left">
+      <div class="md-header-icon"><i class="ri-tools-line"></i></div>
+      <div>
+        <h1 class="md-title">Material Details</h1>
+        <p class="md-sub">Track material issue forms and equipment records</p>
+      </div>
+    </div>
+    <div class="md-header-right">
+      <span class="md-stat-pill">
+        <i class="ri-file-list-3-line"></i>
+        <strong>{{ filteredUsers.length }}</strong> Records
+      </span>
+      <button class="btn-md-add" (click)="openUserModal()">
+        <i class="ri-add-line"></i> Add Material
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Main Card ── -->
+  <div class="md-card">
+
+    <!-- Filter Bar -->
+    <div class="md-filter-bar">
+      <div class="md-search-group">
+        <label class="md-filter-label"><i class="ri-search-2-line"></i> Search</label>
+        <div class="md-search-wrap">
+          <i class="ri-search-line md-search-icon"></i>
+          <input type="text" class="md-search-input" placeholder="Search by name or phone..."
+            [(ngModel)]="searchTerm" (input)="onSearch()">
+        </div>
+      </div>
+      <div class="md-entries-group">
+        <label class="md-filter-label"><i class="ri-list-settings-line"></i> Entries</label>
+        <select class="md-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option [value]="10">10</option>
+          <option [value]="30">30</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="md-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Issue No</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Purpose</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of pagedUsers; let i = index">
+            <td class="md-row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td class="md-date">{{ user.date | date: 'dd-MM-yyyy' }}</td>
+            <td><span class="md-issue-badge">{{ user.issue_no }}</span></td>
+            <td>
+              <div class="md-user-cell">
+                <div class="md-avatar">{{ (user.name | titlecase)?.charAt(0) }}</div>
+                <span class="md-user-name">{{ user.name | titlecase }}</span>
+              </div>
+            </td>
+            <td class="md-phone">{{ user.phone }}</td>
+            <td class="md-purpose">{{ user.purpose }}</td>
+            <td>
+              <div class="md-actions">
+                <button class="md-action-btn edit-btn" title="Edit" (click)="editUser(user)">
+                  <i class="ri-pencil-line"></i>
+                </button>
+                <button class="md-action-btn pdf-btn" title="View PDF" (click)="openPdfModal(user)">
+                  <i class="ri-file-pdf-line"></i>
+                </button>
+                <button class="md-action-btn del-btn" title="Delete" (click)="openDeleteModal(user.id, deleteModal)">
+                  <i class="ri-delete-bin-7-line"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="pagedUsers.length === 0">
+            <td colspan="7" class="md-empty">
+              <i class="ri-inbox-line"></i>
+              <div class="md-empty-title">No records found</div>
+              <div class="md-empty-sub">Try adjusting your search or add a new material</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Delete Modal -->
+    <ng-template #deleteModal let-modal>
+      <div class="gdm-wrap">
+        <button class="gdm-close" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">
+          <i class="ri-close-line"></i>
+        </button>
+        <div class="gdm-icon"><i class="ri-delete-bin-6-line"></i></div>
+        <h5 class="gdm-title">Delete Material Record?</h5>
+        <p class="gdm-text">This action cannot be undone.</p>
+        <div class="gdm-actions">
+          <button class="gdm-btn gdm-cancel" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">Cancel</button>
+          <button class="gdm-btn gdm-confirm" type="button" (click)="confirmDelete(modal)" [disabled]="isDeleting">
+            <span *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</span>
+            <span *ngIf="isDeleting" class="d-flex align-items-center gap-2">
+              <span class="spinner-border spinner-border-sm" role="status"></span> Deleting...
+            </span>
+          </button>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Footer / Pagination -->
+    <div class="md-table-footer">
+      <div class="md-footer-info">
+        Showing <strong>{{ pagedUsers.length }}</strong> of <strong>{{ filteredUsers.length }}</strong> records
+      </div>
+      <ul class="pagination mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="prevPage()">Previous</button>
+        </li>
+        <li class="page-item" *ngFor="let page of visiblePages" [class.active]="currentPage === page">
+          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()">Next</button>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ── PDF Modal (unchanged) ── -->
+<div class="modal fade show d-block" *ngIf="showPdfModal">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+
+            <div class="container my-4 position-relative">
+
+                <div *ngIf="isLoadingModal" class="loading-overlay">
+                    <img src="assets/loader-africa.svg" alt="Loading..." class="custom-loader" />
+                </div>
+
+                <div #pdfContent class="card shadow border-primary">
+                    <div class="watermark">
+                        <img src="assets/ranjha-logo3.jpeg" alt="watermark">
+                    </div>
+
+                    <!-- HEADER -->
+                    <div class="card-body border-bottom">
+                        <div class="row align-items-center">
+
+                            <div class="col-md-6">
+                                <img src="assets/ranjha-logo3.jpeg" alt="logo" width="80" height="80" />
+                                <h3 class="text-primary fw-bold mb-0">Ranjha 7 Star</h3>
+                                <small>Cable TV & Internet</small><br />
+                                <small>Powered by Nasstec Airnet</small><br />
+                                <small>& ZONG 5G</small>
+                            </div>
+
+                            <div class="col-md-6 text-end">
+                                <h5 class="fw-bold text-primary">RANJHA 7 STAR INTERNET</h5>
+                                <div class="fw-bold">0307-6801030</div>
+                                <div class="fw-bold">0307-6801094</div>
+                                <div class="fw-bold">0300-8800263</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="mt-2 px-3">
+                        <div><strong>Head Office:</strong> Bhagowal Kalan</div>
+                        <div><strong>Sub Office:</strong> Tanda, Near Noble Mobile</div>
+                    </div>
+
+                    <!-- TITLE -->
+                    <div class="bg-primary text-white text-center py-2 fw-bold">
+                        MATERIAL ISSUE FORM
+                    </div>
+
+                    <!-- TOP INFO -->
+                    <div class="card-body">
+                        <div class=" justify-content-between mb-3">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div><strong>Issue No:</strong> {{ selectedUser?.issue_no }}</div>
+                                <div><strong>Date:</strong> {{ selectedUser?.date | date:'dd/MM/yyyy' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="border p-3 mb-3 rounded">
+                                    <h6 class="bg-primary text-white p-2 rounded">1. Employee Information</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label">Name</label>
+                                            <input class="form-control" [value]="selectedUser?.name">
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label">Phone</label>
+                                            <input class="form-control" [value]="selectedUser?.phone">
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <label class="form-label">Purpose</label>
+                                            <input class="form-control" [value]="selectedUser?.purpose">
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <label class="form-label">Remarks</label>
+                                            <input class="form-control" [value]="selectedUser?.remarks">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border p-3 mb-3 rounded">
+                            <h6 class="bg-primary text-white p-2 rounded">2. Material Issue Details</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center align-middle">
+                                    <thead class="table-primary">
+                                        <tr class="fw-bold">
+                                            <th class="fw-bold">SR</th>
+                                            <th class="fw-bold">Item Name</th>
+                                            <th class="fw-bold">Quantity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of getFilteredItems(); let i = index">
+                                            <td class="fw-bold">{{ i + 1 }}</td>
+                                            <td class="fw-bold">{{ item.label }}</td>
+                                            <td class="fw-bold">{{ selectedUser[item.key] }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4 text-center fw-bold align-items-center">
+                            <div class="col-md-4 offset-md-8 d-flex flex-column align-items-center">
+                                <img src="assets/signature.jpeg" alt="Authorized Signature" width="100" height="70" class="mb-2" />
+                                <div class="border-top pt-2 w-75">Authorized Signature</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer flex justify-content-between border-0 px-5 pb-4 pt-2">
+                    <button class="btn btn-outline-secondary btn-sm rounded-3 px-4" (click)="closePdfModal()">
+                        Close
+                    </button>
+                    <button class="btn btn-primary btn-sm rounded-3 px-4" (click)="downloadPDF()">
+                        <svg class="me-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Download PDF
+                    </button>
+                    <button class="btn btn-warning btn-sm rounded-3 px-4 ms-2" (click)="downloadImage()">
+                        <svg class="me-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Download Image
+                    </button>
+                    <button class="btn btn-success btn-sm rounded-3 px-4 ms-2" (click)="sendPdfToWhatsApp()">
+                        <i class="ri-whatsapp-line"></i>
+                        WhatsApp
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

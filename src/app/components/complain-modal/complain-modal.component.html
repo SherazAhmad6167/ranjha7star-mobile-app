@@ -1,0 +1,206 @@
+<div class="cm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="cm-header">
+    <div class="cm-header-left">
+      <div class="cm-header-icon">
+        <i class="ri-alarm-warning-line"></i>
+      </div>
+      <div>
+        <h4 class="cm-title">{{ editMode ? 'Update' : 'Add' }} Complaint</h4>
+        <p class="cm-subtitle">{{ editMode ? 'Edit the complaint details below' : 'Fill in the complaint details below' }}</p>
+      </div>
+    </div>
+    <button type="button" class="cm-close-btn" aria-label="Close" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div *ngIf="isLoading" class="cm-loading">
+    <div class="spinner-border text-primary" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="cm-body">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
+      <!-- ══ Section 1 — Customer Information ══ -->
+      <div class="cm-section">
+        <div class="cm-section-head">
+          <div class="cm-section-icon si-blue"><i class="ri-user-3-line"></i></div>
+          <span class="cm-section-title">Customer Information</span>
+        </div>
+        <div class="cm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="cm-label">Complaint Date <span class="req">*</span></label>
+              <input type="date" class="cm-input"
+                [class.cm-invalid]="userForm.get('complain_date')?.invalid && userForm.get('complain_date')?.touched"
+                formControlName="complain_date">
+              <span class="cm-err" *ngIf="userForm.get('complain_date')?.hasError('required') && userForm.get('complain_date')?.touched">
+                Date is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="cm-label">Customer Name <span class="req">*</span></label>
+              <input type="text" class="cm-input"
+                [class.cm-invalid]="userForm.get('user_name')?.invalid && userForm.get('user_name')?.touched"
+                formControlName="user_name" placeholder="Full name">
+              <span class="cm-err" *ngIf="userForm.get('user_name')?.hasError('required') && userForm.get('user_name')?.touched">
+                Name is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="cm-label">Internet ID <span class="req">*</span></label>
+              <input type="text" class="cm-input"
+                [class.cm-invalid]="userForm.get('internet_id')?.invalid && userForm.get('internet_id')?.touched"
+                formControlName="internet_id" placeholder="e.g. 0042">
+              <span class="cm-err" *ngIf="userForm.get('internet_id')?.hasError('required') && userForm.get('internet_id')?.touched">
+                Internet ID is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="cm-label">Area <span class="req">*</span></label>
+              <app-search-select
+                formControlName="sublocality"
+                [options]="internetAreas"
+                valueKey="sublocality"
+                displayKey="sublocality"
+                placeholder="Select area"
+                [allowEmpty]="false"
+                [isInvalid]="!!(userForm.get('sublocality')?.invalid && userForm.get('sublocality')?.touched)">
+              </app-search-select>
+              <span class="cm-err" *ngIf="userForm.get('sublocality')?.hasError('required') && userForm.get('sublocality')?.touched">
+                Area is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="cm-label">Package <span class="req">*</span></label>
+              <input type="text" class="cm-input"
+                [class.cm-invalid]="userForm.get('package_name')?.invalid && userForm.get('package_name')?.touched"
+                formControlName="package_name" placeholder="Package name">
+              <span class="cm-err" *ngIf="userForm.get('package_name')?.hasError('required') && userForm.get('package_name')?.touched">
+                Package is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="cm-label">Phone Number <span class="req">*</span></label>
+              <input type="text" class="cm-input"
+                [class.cm-invalid]="userForm.get('phone_number')?.invalid && userForm.get('phone_number')?.touched"
+                formControlName="phone_number" placeholder="03XX-XXXXXXX">
+              <span class="cm-err" *ngIf="userForm.get('phone_number')?.hasError('required') && userForm.get('phone_number')?.touched">
+                Phone number is required
+              </span>
+            </div>
+
+            <div class="col-md-8">
+              <label class="cm-label">Address <span class="req">*</span></label>
+              <input type="text" class="cm-input"
+                [class.cm-invalid]="userForm.get('address')?.invalid && userForm.get('address')?.touched"
+                formControlName="address" placeholder="Street, area, city">
+              <span class="cm-err" *ngIf="userForm.get('address')?.hasError('required') && userForm.get('address')?.touched">
+                Address is required
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Section 2 — Complaint Details ══ -->
+      <div class="cm-section">
+        <div class="cm-section-head">
+          <div class="cm-section-icon si-red"><i class="ri-error-warning-line"></i></div>
+          <span class="cm-section-title">Complaint Details</span>
+        </div>
+        <div class="cm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="cm-label">Status <span class="req">*</span></label>
+              <select class="cm-input cm-select"
+                [class.cm-invalid]="userForm.get('status')?.invalid && userForm.get('status')?.touched"
+                formControlName="status">
+                <option value="" disabled>Select status</option>
+                <option value="pending">Pending</option>
+                <option value="close">Resolved</option>
+              </select>
+              <span class="cm-err" *ngIf="userForm.get('status')?.hasError('required') && userForm.get('status')?.touched">
+                Status is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="cm-label">Close Date</label>
+              <input type="date" class="cm-input" formControlName="complain_close_date">
+            </div>
+
+            <div class="col-md-4">
+              <label class="cm-label">Operator Name <span class="req">*</span></label>
+              <select class="cm-input cm-select"
+                [class.cm-invalid]="userForm.get('operator_name')?.invalid && userForm.get('operator_name')?.touched"
+                formControlName="operator_name">
+                <option value="" disabled>Select operator</option>
+                <option *ngFor="let op of internetOperators" [value]="op.operator_name">
+                  {{ op.operator_name | titlecase }}
+                </option>
+              </select>
+              <span class="cm-err" *ngIf="userForm.get('operator_name')?.hasError('required') && userForm.get('operator_name')?.touched">
+                Operator is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="cm-label">Operator Phone <span class="req">*</span></label>
+              <input type="text" class="cm-input"
+                [class.cm-invalid]="userForm.get('operator_phone_number')?.invalid && userForm.get('operator_phone_number')?.touched"
+                formControlName="operator_phone_number" placeholder="03XX-XXXXXXX">
+              <span class="cm-err" *ngIf="userForm.get('operator_phone_number')?.hasError('required') && userForm.get('operator_phone_number')?.touched">
+                Operator phone is required
+              </span>
+            </div>
+
+            <div class="col-12">
+              <label class="cm-label">Complaint Description <span class="req">*</span></label>
+              <textarea class="cm-input cm-textarea"
+                [class.cm-invalid]="userForm.get('complain')?.invalid && userForm.get('complain')?.touched"
+                formControlName="complain" rows="4"
+                placeholder="Describe the complaint in detail..."></textarea>
+              <span class="cm-err" *ngIf="userForm.get('complain')?.hasError('required') && userForm.get('complain')?.touched">
+                Complaint description is required
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Footer ── -->
+      <div class="cm-footer">
+        <button type="button" class="cm-btn cm-btn-cancel" (click)="activeModal.close()">
+          <i class="ri-close-line me-1"></i> Cancel
+        </button>
+        <button type="submit" class="cm-btn cm-btn-save" [disabled]="isLoading || isSaving">
+          <ng-container *ngIf="!isSaving">
+            <i class="ri-save-line me-1"></i>
+            {{ editMode ? 'Update Complaint' : 'Save Complaint' }}
+          </ng-container>
+          <ng-container *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            {{ editMode ? 'Updating...' : 'Saving...' }}
+          </ng-container>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

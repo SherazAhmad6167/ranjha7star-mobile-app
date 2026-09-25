@@ -1,0 +1,91 @@
+/* ══ SAM — Sub Area Modal (fuchsia — matches sub-area-details page) ══ */
+:host ::ng-deep .modal-content { border-radius: 16px !important; overflow: hidden !important; padding: 0 !important; }
+
+.sam-wrapper { display: flex; flex-direction: column; background: #fff; position: relative; }
+
+.sam-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #a21caf 0%, #86198f 100%);
+  color: #fff; flex-shrink: 0;
+}
+.sam-header-left { display: flex; align-items: center; gap: 14px; }
+.sam-header-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.sam-title { font-size: 17px; font-weight: 700; margin: 0; line-height: 1.2; }
+.sam-subtitle { font-size: 12px; opacity: 0.8; margin: 0; margin-top: 2px; }
+.sam-close-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(255,255,255,0.18); border: none; color: #fff;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s; flex-shrink: 0;
+  &:hover { background: rgba(255,255,255,0.32); }
+}
+
+.sam-loading {
+  position: absolute; inset: 0; background: rgba(255,255,255,0.82); z-index: 20;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; font-size: 13px; color: #64748b; font-weight: 500;
+}
+
+.sam-body { padding: 20px; background: #f4f6fb; overflow-y: auto; max-height: calc(90vh - 90px); }
+
+.sam-section {
+  background: #fff; border-radius: 12px; margin-bottom: 14px;
+  border: 1px solid #f1f5f9; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  &:last-child { margin-bottom: 0; }
+}
+.sam-section-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+}
+.sam-section-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+  &.si-fuchsia { background: #fdf4ff; color: #a21caf; }
+}
+.sam-section-title { font-size: 13px; font-weight: 700; color: #334155; }
+.sam-section-body { padding: 18px 18px 20px; }
+.sam-section .row { margin-left: 0; margin-right: 0; }
+
+.sam-label {
+  display: block; font-size: 11px; font-weight: 700; color: #475569;
+  text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px;
+  .req { color: #ef4444; }
+}
+.sam-input {
+  width: 100%; padding: 9px 12px; font-size: 13px;
+  border: 1.5px solid #e2e8f0; border-radius: 8px;
+  background: #fff; color: #1e293b;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none; appearance: none; margin-bottom: 0;
+  &:focus { border-color: #a21caf; box-shadow: 0 0 0 3px rgba(162,28,175,0.12); }
+  &.sam-invalid { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+}
+.sam-err { display: block; font-size: 11px; color: #ef4444; font-weight: 500; margin-top: 3px; }
+
+.sam-footer {
+  display: flex; justify-content: flex-end; align-items: center;
+  gap: 10px; padding: 14px 20px; background: #fff; border-top: 1px solid #f1f5f9;
+}
+.sam-btn {
+  padding: 9px 20px; border-radius: 9px; font-size: 13px; font-weight: 600;
+  border: none; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.15s;
+  &.sam-btn-cancel {
+    background: #f1f5f9; color: #475569; border: 1.5px solid #e2e8f0;
+    &:hover { background: #e2e8f0; color: #1e293b; }
+  }
+  &.sam-btn-save {
+    background: linear-gradient(135deg, #a21caf, #86198f); color: #fff;
+    min-width: 130px; justify-content: center;
+    &:hover:not(:disabled) { box-shadow: 0 4px 14px rgba(162,28,175,0.36); transform: translateY(-1px); }
+    &:disabled { opacity: 0.65; cursor: not-allowed; }
+  }
+}
+@media (max-width: 576px) { .sam-body { padding: 14px; } .sam-header { padding: 16px; } .sam-section-body { padding: 14px; } }

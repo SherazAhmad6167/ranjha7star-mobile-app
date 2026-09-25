@@ -1,0 +1,77 @@
+<div class="ss-wrapper" [class.ss-open]="isOpen" [class.ss-disabled]="disabled">
+
+  <!-- Trigger -->
+  <button
+    type="button"
+    class="ss-trigger"
+    [class.ss-invalid]="isInvalid"
+    (click)="toggle()"
+    [attr.aria-expanded]="isOpen"
+  >
+    <span class="ss-value" [class.ss-placeholder]="!displayValue">
+      {{ displayValue || placeholder }}
+    </span>
+    <span class="ss-chevron">
+      <i class="ri-arrow-down-s-line"></i>
+    </span>
+  </button>
+
+  <!-- Dropdown panel – uses fixed positioning to escape overflow:hidden containers -->
+  <div class="ss-panel" *ngIf="isOpen" role="listbox" [ngStyle]="panelStyle">
+
+    <!-- Search row -->
+    <div class="ss-search-row">
+      <i class="ri-search-line ss-search-icon"></i>
+      <input
+        #searchInput
+        class="ss-search-input"
+        type="text"
+        [(ngModel)]="searchText"
+        placeholder="Search…"
+        autocomplete="off"
+        aria-label="Search options"
+      />
+      <button *ngIf="searchText" class="ss-clear-search" type="button" (click)="searchText = ''">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+
+    <!-- Options list -->
+    <div class="ss-list">
+
+      <!-- Empty / All option -->
+      <div
+        class="ss-option ss-option-all"
+        *ngIf="allowEmpty"
+        (click)="select(null)"
+        [class.ss-active]="selectedValue === emptyValue"
+        role="option"
+      >
+        <span class="ss-opt-icon"><i class="ri-list-check"></i></span>
+        <span>{{ emptyLabel }}</span>
+        <i class="ri-check-line ss-check" *ngIf="selectedValue === emptyValue"></i>
+      </div>
+
+      <!-- Filtered options -->
+      <div
+        class="ss-option"
+        *ngFor="let opt of filteredOptions"
+        (click)="select(opt)"
+        [class.ss-active]="isSelected(opt)"
+        role="option"
+        [attr.aria-selected]="isSelected(opt)"
+      >
+        <span class="ss-opt-dot" [class.ss-opt-dot-active]="isSelected(opt)"></span>
+        <span class="ss-opt-label">{{ getDisplay(opt) }}</span>
+        <i class="ri-check-line ss-check" *ngIf="isSelected(opt)"></i>
+      </div>
+
+      <!-- No results -->
+      <div class="ss-no-results" *ngIf="filteredOptions.length === 0">
+        <i class="ri-search-eye-line"></i>
+        <span>No match for "<strong>{{ searchText }}</strong>"</span>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,188 @@
+<div class="container-fluid bd-wrapper">
+
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="lo-box">
+      <div class="spinner-border bd-spinner" role="status"></div>
+      <span class="lo-text">Loading borrow records...</span>
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="bd-page-header mb-4">
+    <div class="bd-header-left">
+      <div class="bd-header-icon"><i class="ri-hand-coin-line"></i></div>
+      <div>
+        <h1 class="bd-title">Borrow Details</h1>
+        <p class="bd-sub">Manage borrow records and repayment tracking</p>
+      </div>
+    </div>
+    <div class="bd-header-right">
+      <span class="bd-stat-pill">
+        <i class="ri-hand-coin-line"></i>
+        <strong>{{ filteredUsers.length }}</strong> Records
+      </span>
+      <button class="btn-bd-add" (click)="openExpenseModal()">
+        <i class="ri-add-line"></i> Add Borrow
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Main Card ── -->
+  <div class="bd-card mb-4">
+
+    <!-- Filter Bar -->
+    <div class="bd-filter-bar">
+      <div class="bd-search-group">
+        <label class="bd-filter-label"><i class="ri-search-2-line"></i> Search</label>
+        <div class="bd-search-wrap">
+          <i class="ri-search-line bd-search-icon"></i>
+          <input type="text" class="bd-search-input" placeholder="Search records..."
+            [(ngModel)]="searchTerm" (input)="onFilterChange()">
+        </div>
+      </div>
+      <div class="bd-entries-group">
+        <label class="bd-filter-label"><i class="ri-list-settings-line"></i> Per Page</label>
+        <select class="bd-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option [value]="10">10</option>
+          <option [value]="30">30</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="bd-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Borrow Date</th>
+            <th>Name</th>
+            <th>Amount</th>
+            <th>Area</th>
+            <th>Promise Date</th>
+            <th>Received Amount</th>
+            <th>Witness</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of pagedUsers; let i = index">
+            <td class="bd-row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td>{{ user.borrow_date | date: 'dd-MM-yyyy' }}</td>
+            <td>{{ user.name }}</td>
+            <td><span class="bd-badge amber">{{ user.amount }}</span></td>
+            <td>{{ user.area }}</td>
+            <td>{{ user.promise_date | date: 'dd-MM-yyyy' }}</td>
+            <td><span class="bd-badge green">{{ user.recieved_amount || '-' }}</span></td>
+            <td>{{ user.witness || '-' }}</td>
+            <td>
+              <div class="bd-actions">
+                <button class="bd-action-btn edit-btn" title="Edit" (click)="editUser(user)">
+                  <i class="ri-pencil-line"></i>
+                </button>
+                <button class="bd-action-btn del-btn" title="Delete" (click)="openDeleteModal(user.id, deleteModal)">
+                  <i class="ri-delete-bin-7-line"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="pagedUsers.length === 0">
+            <td colspan="9" class="bd-empty">
+              <i class="ri-hand-coin-line"></i>
+              <div class="bd-empty-title">No borrow records found</div>
+              <div class="bd-empty-sub">Add your first borrow record to get started</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Delete Modal -->
+    <ng-template #deleteModal let-modal>
+      <div class="bd-dm-wrap">
+        <button class="bd-dm-close" (click)="modal.dismiss()" [disabled]="isDeleting">
+          <i class="ri-close-line"></i>
+        </button>
+        <div class="bd-dm-icon-wrap">
+          <div class="bd-dm-icon-ring"></div>
+          <div class="bd-dm-icon"><i class="ri-delete-bin-6-line"></i></div>
+        </div>
+        <h4 class="bd-dm-title">Delete Record?</h4>
+        <p class="bd-dm-msg">This action <strong>cannot be undone</strong>. The borrow record will be permanently removed.</p>
+        <div class="bd-dm-actions">
+          <button class="bd-dm-btn cancel" (click)="modal.dismiss()" [disabled]="isDeleting">
+            <i class="ri-arrow-left-line"></i> Cancel
+          </button>
+          <button class="bd-dm-btn confirm" (click)="confirmDelete(modal)" [disabled]="isDeleting">
+            <span *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</span>
+            <span *ngIf="isDeleting">
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span> Deleting...
+            </span>
+          </button>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Table Footer -->
+    <div class="bd-table-footer">
+      <div class="bd-footer-info">
+        Showing <strong>{{ pagedUsers.length }}</strong> of <strong>{{ filteredUsers.length }}</strong> entries
+      </div>
+      <ul class="pagination mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="prevPage()">Previous</button>
+        </li>
+        <li class="page-item" *ngFor="let page of visiblePages" [class.active]="currentPage === page">
+          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()">Next</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Summary Section ── -->
+  <div class="bd-summary-section">
+    <div class="bd-summary-header mb-3">
+      <div class="bd-summary-icon"><i class="ri-pie-chart-2-line"></i></div>
+      <h2 class="bd-summary-title">Date Range Summary</h2>
+    </div>
+    <div class="bd-date-row mb-3">
+      <div class="bd-date-group">
+        <label class="bd-filter-label"><i class="ri-calendar-event-line"></i> From Date</label>
+        <input type="date" class="bd-date-input" [(ngModel)]="fromDate" (change)="filterByDateRange()">
+      </div>
+      <div class="bd-date-group">
+        <label class="bd-filter-label"><i class="ri-calendar-check-line"></i> To Date</label>
+        <input type="date" class="bd-date-input" [(ngModel)]="toDate" (change)="filterByDateRange()">
+      </div>
+    </div>
+    <div class="bd-stat-row">
+      <div class="bd-stat-card">
+        <div class="bd-stat-icon amber-bg"><i class="ri-hand-coin-line"></i></div>
+        <div class="bd-stat-body">
+          <div class="bd-stat-label">Total Amount</div>
+          <div class="bd-stat-value">{{ totalAmount }}</div>
+        </div>
+      </div>
+      <div class="bd-stat-card">
+        <div class="bd-stat-icon green-bg"><i class="ri-wallet-3-line"></i></div>
+        <div class="bd-stat-body">
+          <div class="bd-stat-label">Total Received</div>
+          <div class="bd-stat-value">Rs. {{ totalRecieved }}</div>
+        </div>
+      </div>
+      <div class="bd-stat-card">
+        <div class="bd-stat-icon red-bg"><i class="ri-error-warning-line"></i></div>
+        <div class="bd-stat-body">
+          <div class="bd-stat-label">Total Remaining</div>
+          <div class="bd-stat-value">Rs. {{ totalRemaining }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

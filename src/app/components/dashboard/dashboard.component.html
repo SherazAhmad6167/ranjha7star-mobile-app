@@ -1,0 +1,500 @@
+<div *ngIf="!showDashboard" class="splash-screen">
+
+    <!-- animated background blobs -->
+    <div class="splash-blob splash-blob-1"></div>
+    <div class="splash-blob splash-blob-2"></div>
+    <div class="splash-blob splash-blob-3"></div>
+
+    <div class="splash-card">
+
+        <!-- Logo -->
+        <div class="splash-logo">
+            <div class="splash-logo-ring"></div>
+            <div class="splash-logo-pulse"></div>
+            <img src="assets/ranjha-logo3.jpeg" alt="Ranjha7star" class="splash-logo-img">
+        </div>
+
+        <!-- Brand -->
+        <div class="splash-brand">
+            <p class="splash-eyebrow">Internet Management Portal</p>
+            <h1 class="splash-title">Ranjha<span>7star</span></h1>
+            <p class="splash-sub">Manage customers, billing &amp; network from one place</p>
+        </div>
+
+        <!-- Feature pills -->
+        <div class="splash-pills">
+            <div class="splash-pill">
+                <i class="fas fa-users"></i>
+                <span>Customers</span>
+            </div>
+            <div class="splash-pill">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Billing</span>
+            </div>
+            <div class="splash-pill">
+                <i class="fas fa-router"></i>
+                <span>MikroTik</span>
+            </div>
+            <div class="splash-pill">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <button class="splash-btn" (click)="goToDashboard()">
+            <i class="fas fa-th-large"></i>
+            <span>Open Dashboard</span>
+            <div class="splash-btn-icon"><i class="fas fa-chevron-right"></i></div>
+        </button>
+
+        <p class="splash-footer">Ranjha7star Cable Network &copy; 2026</p>
+
+    </div>
+</div>
+
+
+<div class="background-color">
+
+    <!-- DASHBOARD SECTION -->
+    <section *ngIf="showDashboard" id="dashboards">
+
+
+        <div class="dashboard-title-row">
+            <h3 class="dashboard-title d-flex justify-content-center align-items-center gap-2">
+                <i class="fas fa-chart-pie"></i>
+                Ranjha7star Dashboard
+            </h3>
+        </div>
+
+
+
+
+        <div class="dashboard">
+            <div class="card card-1" routerLink="/user-details">
+                <div class="icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3>Users: {{ getTotalUsers('areaUsers') }}</h3>
+                <p>Count of total users</p>
+            </div>
+
+            <div class="card card-2" routerLink="/package-details">
+                <div class="icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Packages: {{ getTotalAreas('packageUsers') }}</h3>
+                <p>All Packages we have</p>
+            </div>
+
+            <div class="card card-3" routerLink="/area-details">
+                <div class="icon">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+                <h3>Areas: {{ getTotalAreas('areaUsers') }}</h3>
+                <p>All Areas we have</p>
+            </div>
+
+            <div class="card card-8" routerLink="/bill-creator">
+                <div class="icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h3>Amount: {{ totalAmount }}</h3>
+                <p>Total Bill generated this month</p>
+            </div>
+
+            <div class="card card-4" routerLink="/recovery-details">
+                <div class="icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h3>Expenses: {{ totalExpenses }}</h3>
+                <p>Total Expenses this Month</p>
+            </div>
+
+            <!-- Recovery -->
+            <div class="card card-5" routerLink="/recovery-details">
+                <div class="icon">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <h3>Recovery: {{ totalRecovery }}</h3>
+                <p>Total Recovery this Month</p>
+            </div>
+
+            <!-- Profit -->
+            <div class="card card-6" routerLink="/recovery-details">
+                <div class="icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Profit: {{ totalProfit }}</h3>
+                <p>Total Profit this Month</p>
+            </div>
+
+            <div class="card card-7" routerLink="/new-connection">
+                <div class="icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h3>New Connections: {{ totalNewConnections }}</h3>
+                <p>New Connection added this month</p>
+            </div>
+
+
+        </div>
+
+
+
+        <div class="dashboard-buttons">
+
+            <button class="dash-btn btn-1" (click)="openUserModal()">
+                <i class="fas fa-user-circle"></i>
+                <span>User Details</span>
+            </button>
+
+            <button class="dash-btn btn-2" (click)="openNewConnectionModal()">
+                <i class="fas fa-wifi"></i>
+                <span>New Connection</span>
+            </button>
+
+            <button class="dash-btn btn-3" (click)="openExpensesModal()">
+                <i class="fas fa-wallet"></i>
+                <span>Expenses</span>
+            </button>
+
+            <button class="dash-btn btn-4" (click)="openRecoveryOfficerModal()">
+                <i class="fas fa-user-shield"></i>
+                <span>Recovery Officer</span>
+            </button>
+
+            <button class="dash-btn btn-5" (click)="openAreaDetailsModal()">
+                <i class="fas fa-map-location-dot"></i>
+                <span>Area Details</span>
+            </button>
+
+            <button class="dash-btn btn-6" (click)="openCustomerStatusModal()">
+                <i class="fas fa-user-check"></i>
+                <span>Customer Status</span>
+            </button>
+
+        </div>
+
+
+        
+        <!-- ── MikroTik Servers ─────────────────────────────────────────── -->
+        <div class="px-2 px-md-3 mb-4 mt-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="ri-router-line text-primary"></i> MikroTik Servers
+            </h5>
+            <div class="row g-3">
+                <div class="col-12 col-md-6" *ngFor="let srv of mikrotikServers">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+                        <div class="card-body p-3">
+
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="ri-router-fill fs-5 text-primary"></i>
+                                        <span class="fw-bold fs-6">{{ srv.label }}</span>
+                                    </div>
+                                    <small class="text-muted">{{ srv.ip }}</small>
+                                </div>
+                                <span *ngIf="!srv.loading && !srv.error"
+                                    class="badge bg-success-subtle text-success-emphasis rounded-pill px-3 py-2">
+                                    <i class="ri-wifi-line me-1"></i>Online
+                                </span>
+                                <span *ngIf="!srv.loading && srv.error"
+                                    class="badge bg-danger-subtle text-danger-emphasis rounded-pill px-3 py-2">
+                                    <i class="ri-wifi-off-line me-1"></i>Offline
+                                </span>
+                                <span *ngIf="srv.loading"
+                                    class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill px-3 py-2">
+                                    <span class="spinner-border spinner-border-sm me-1"></span>Loading
+                                </span>
+                            </div>
+
+                            <!-- Error -->
+                            <div *ngIf="srv.error" class="alert alert-danger py-2 small mb-0">
+                                <i class="ri-error-warning-line me-1"></i>{{ srv.error }}
+                            </div>
+
+                            <!-- Stats -->
+                            <div *ngIf="!srv.loading && !srv.error">
+                                <div class="row g-2 mb-3 text-center">
+                                    <div class="col-4">
+                                        <div class="p-2 rounded-3" style="background:rgba(var(--bs-primary-rgb),.08)">
+                                            <div class="fw-bold fs-5 text-primary">{{ srv.total }}</div>
+                                            <div class="text-muted" style="font-size:0.72rem">Total</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 rounded-3" style="background:rgba(var(--bs-success-rgb),.08)">
+                                            <div class="fw-bold fs-5 text-success">{{ srv.active }}</div>
+                                            <div class="text-muted" style="font-size:0.72rem">Active</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 rounded-3" style="background:rgba(var(--bs-danger-rgb),.08)">
+                                            <div class="fw-bold fs-5 text-danger">{{ srv.disabled }}</div>
+                                            <div class="text-muted" style="font-size:0.72rem">Disabled</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Progress bar -->
+                                <div class="mb-1 d-flex justify-content-between">
+                                    <small class="text-muted">Active rate</small>
+                                    <small class="fw-semibold text-success">{{ activePercent(srv) }}%</small>
+                                </div>
+                                <div class="progress mb-3" style="height:6px;border-radius:99px;">
+                                    <div class="progress-bar bg-success" [style.width.%]="activePercent(srv)"
+                                        style="border-radius:99px;"></div>
+                                </div>
+
+                                <!-- Manage button -->
+                                <a routerLink="/mikrotik-users" class="btn btn-sm btn-outline-primary w-100">
+                                    <i class="ri-settings-4-line me-1"></i>Manage Users
+                                </a>
+                            </div>
+
+                            <!-- Skeleton while loading -->
+                            <div *ngIf="srv.loading" class="placeholder-glow">
+                                <div class="row g-2 mb-3">
+                                    <div class="col-4"><span class="placeholder col-12 rounded-3"
+                                            style="height:52px;"></span></div>
+                                    <div class="col-4"><span class="placeholder col-12 rounded-3"
+                                            style="height:52px;"></span></div>
+                                    <div class="col-4"><span class="placeholder col-12 rounded-3"
+                                            style="height:52px;"></span></div>
+                                </div>
+                                <span class="placeholder col-12 rounded" style="height:6px;"></span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ── /MikroTik Servers ────────────────────────────────────────── -->
+
+        <app-zal-dashboard-card></app-zal-dashboard-card>
+
+        <!-- <div class="dashboard-buttons">
+
+        <button class="dash-btn" (click)="openUserModal()">
+            <i class="fas fa-user-circle"></i>
+            <span>User Details</span>
+        </button>
+
+        <button class="dash-btn" (click)="openNewConnectionModal()">
+            <i class="fas fa-network-wired"></i>
+            <span>New Connection</span>
+        </button>
+
+        <button class="dash-btn" (click)="openExpensesModal()">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Expenses</span>
+        </button>
+
+        <button class="dash-btn" (click)="openRecoveryOfficerModal()">
+            <i class="fas fa-user-shield"></i>
+            <span>Recovery Officer</span>
+        </button>
+
+        <button class="dash-btn" (click)="openAreaDetailsModal()">
+            <i class="fas fa-map-marked-alt"></i>
+            <span>Area Details</span>
+        </button>
+
+        <button class="dash-btn" (click)="openCustomerStatusModal()">
+            <i class="fas fa-user-check"></i>
+            <span>Customer Status</span>
+        </button>
+
+    </div> -->
+
+
+
+
+        <!-- ── Analytics & Reports ──────────────────────────────────────── -->
+        <div class="analytics-section px-2 px-md-3 pb-4 mt-2">
+
+            <!-- Section heading -->
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="section-accent-bar"></div>
+                <h5 class="fw-bold mb-0 text-dark">Analytics &amp; Reports</h5>
+            </div>
+
+            <!-- Row 1: Area + Package side by side -->
+            <div class="row g-3 mb-3">
+
+                <!-- Area Details -->
+                <div class="col-12 col-xl-6">
+                    <div class="analytic-card">
+                        <div class="analytic-header" style="background: linear-gradient(135deg,#667eea,#764ba2);">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="analytic-header-icon"><i class="fas fa-map-marked-alt"></i></div>
+                                <div>
+                                    <div class="fw-bold text-white">Area Details</div>
+                                    <div class="text-white-50 small">Users distributed by area</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap justify-content-end">
+                                <span class="analytic-badge"><i class="fas fa-map-pin me-1"></i>{{ getTotalAreas('areaUsers') }} Areas</span>
+                                <span class="analytic-badge analytic-badge-success"><i class="fas fa-users me-1"></i>{{ getTotalUsers('areaUsers') }} Users</span>
+                            </div>
+                        </div>
+                        <div class="analytic-body">
+                            <div *ngIf="charts['areaUsers']">
+                                <apx-chart
+                                    [series]="charts['areaUsers'].chartOptions.series"
+                                    [chart]="charts['areaUsers'].chartOptions.chart"
+                                    [plotOptions]="charts['areaUsers'].chartOptions.plotOptions"
+                                    [xaxis]="charts['areaUsers'].chartOptions.xaxis"
+                                    [dataLabels]="charts['areaUsers'].chartOptions.dataLabels"
+                                    [title]="charts['areaUsers'].chartOptions.title">
+                                </apx-chart>
+                                <div class="analytic-pagination">
+                                    <button class="pg-btn" (click)="prevPage('areaUsers','Users by Area')"
+                                        [disabled]="charts['areaUsers'].currentPage === 0">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div class="pg-info">
+                                        <span class="pg-info-label">Page {{ charts['areaUsers'].currentPage + 1 }}</span>
+                                    </div>
+                                    <button class="pg-btn pg-btn-next" (click)="nextPage('areaUsers','Users by Area')"
+                                        [disabled]="(charts['areaUsers'].currentPage + 1) * charts['areaUsers'].pageSize >= charts['areaUsers'].categories.length">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div *ngIf="!charts['areaUsers']" class="analytic-skeleton">
+                                <div class="skeleton-bar" *ngFor="let b of [1,2,3,4,5]" [style.height.px]="b*20+30"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Package Details -->
+                <div class="col-12 col-xl-6">
+                    <div class="analytic-card">
+                        <div class="analytic-header" style="background: linear-gradient(135deg,#f7971e,#ffd200);">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="analytic-header-icon"><i class="fas fa-box-open"></i></div>
+                                <div>
+                                    <div class="fw-bold text-dark">Package Details</div>
+                                    <div class="text-black-50 small">Users distributed by package</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap justify-content-end">
+                                <span class="analytic-badge analytic-badge-dark"><i class="fas fa-cubes me-1"></i>{{ getTotalAreas('packageUsers') }} Pkgs</span>
+                                <span class="analytic-badge analytic-badge-dark"><i class="fas fa-users me-1"></i>{{ getTotalUsers('packageUsers') }} Users</span>
+                            </div>
+                        </div>
+                        <div class="analytic-body">
+                            <div *ngIf="charts['packageUsers']">
+                                <apx-chart
+                                    [series]="charts['packageUsers'].chartOptions.series"
+                                    [chart]="charts['packageUsers'].chartOptions.chart"
+                                    [plotOptions]="charts['packageUsers'].chartOptions.plotOptions"
+                                    [xaxis]="charts['packageUsers'].chartOptions.xaxis"
+                                    [dataLabels]="charts['packageUsers'].chartOptions.dataLabels"
+                                    [title]="charts['packageUsers'].chartOptions.title">
+                                </apx-chart>
+                                <div class="analytic-pagination">
+                                    <button class="pg-btn" (click)="prevPage('packageUsers','Users by Package')"
+                                        [disabled]="charts['packageUsers'].currentPage === 0">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div class="pg-info">
+                                        <span class="pg-info-label">Page {{ charts['packageUsers'].currentPage + 1 }}</span>
+                                    </div>
+                                    <button class="pg-btn pg-btn-next" (click)="nextPage('packageUsers','Users by Package')"
+                                        [disabled]="(charts['packageUsers'].currentPage + 1) * charts['packageUsers'].pageSize >= charts['packageUsers'].categories.length">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div *ngIf="!charts['packageUsers']" class="analytic-skeleton">
+                                <div class="skeleton-bar" *ngFor="let b of [1,2,3,4,5]" [style.height.px]="b*20+30"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Bill Collection (full width) -->
+            <div class="row g-3 mb-3">
+                <div class="col-12">
+                    <div class="analytic-card">
+                        <div class="analytic-header" style="background: linear-gradient(135deg,#11998e,#38ef7d);">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="analytic-header-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                                <div>
+                                    <div class="fw-bold text-white">Bill Collection</div>
+                                    <div class="text-white-50 small">Monthly payment collection trend</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="analytic-body">
+                            <apx-chart *ngIf="charts['billCollection']"
+                                [series]="charts['billCollection'].chartOptions.series"
+                                [chart]="charts['billCollection'].chartOptions.chart"
+                                [xaxis]="charts['billCollection'].chartOptions.xaxis"
+                                [dataLabels]="charts['billCollection'].chartOptions.dataLabels"
+                                [title]="charts['billCollection'].chartOptions.title"
+                                [stroke]="charts['billCollection'].chartOptions.stroke"
+                                [tooltip]="charts['billCollection'].chartOptions.tooltip">
+                            </apx-chart>
+                            <div *ngIf="!charts['billCollection']" class="analytic-skeleton d-flex gap-2 align-items-end" style="height:200px;">
+                                <div class="skeleton-bar" *ngFor="let b of [1,2,3,4,5,6,7,8]" [style.height.%]="b*10+20" style="flex:1"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Bill Generation vs Collection (full width) -->
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="analytic-card">
+                        <div class="analytic-header" style="background: linear-gradient(135deg,#fc5c7d,#6a82fb);">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="analytic-header-icon"><i class="fas fa-receipt"></i></div>
+                                <div>
+                                    <div class="fw-bold text-white">Bill Generation vs Collection</div>
+                                    <div class="text-white-50 small">Monthly billed amount (bars) vs collected amount (line)</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap justify-content-end">
+                                <span class="analytic-badge"><i class="fas fa-chart-bar me-1"></i>Generated</span>
+                                <span class="analytic-badge analytic-badge-success"><i class="fas fa-check-circle me-1"></i>Collected</span>
+                            </div>
+                        </div>
+                        <div class="analytic-body">
+                            <apx-chart *ngIf="charts['billCreatorPie']"
+                                [series]="charts['billCreatorPie'].chartOptions.series"
+                                [chart]="charts['billCreatorPie'].chartOptions.chart"
+                                [stroke]="charts['billCreatorPie'].chartOptions.stroke"
+                                [plotOptions]="charts['billCreatorPie'].chartOptions.plotOptions"
+                                [fill]="charts['billCreatorPie'].chartOptions.fill"
+                                [colors]="charts['billCreatorPie'].chartOptions.colors"
+                                [xaxis]="charts['billCreatorPie'].chartOptions.xaxis"
+                                [yaxis]="charts['billCreatorPie'].chartOptions.yaxis"
+                                [dataLabels]="charts['billCreatorPie'].chartOptions.dataLabels"
+                                [legend]="charts['billCreatorPie'].chartOptions.legend"
+                                [tooltip]="charts['billCreatorPie'].chartOptions.tooltip"
+                                [title]="charts['billCreatorPie'].chartOptions.title">
+                            </apx-chart>
+                            <div *ngIf="!charts['billCreatorPie']" class="text-center py-5">
+                                <div class="spinner-border text-primary"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- ── /Analytics & Reports ──────────────────────────────────────── -->
+
+    </section>
+
+</div>

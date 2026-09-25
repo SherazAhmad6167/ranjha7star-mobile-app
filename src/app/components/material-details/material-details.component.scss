@@ -1,0 +1,172 @@
+/* ═══════════════════════════════════════
+   MATERIAL DETAILS PAGE
+   ═══════════════════════════════════════ */
+
+$accent: #ea580c;
+$accent-dark: #c2410c;
+$accent-light: #fff7ed;
+$accent-border: #fed7aa;
+
+.md-wrapper { padding-top: 16px; padding-bottom: 40px; }
+
+/* ── Loading ── */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 1050;
+}
+.lo-box {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 28px 40px; background: #fff; border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid $accent-light;
+}
+.custom-loader { width: 60px; height: 60px; object-fit: contain; }
+
+/* ── Page Header ── */
+.md-page-header {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.md-header-left { display: flex; align-items: center; gap: 14px; }
+.md-header-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: linear-gradient(135deg, $accent, $accent-dark);
+  display: flex; align-items: center; justify-content: center; font-size: 22px; color: #fff; flex-shrink: 0;
+}
+.md-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 0; }
+.md-sub   { font-size: 13px; color: #64748b; margin: 0; }
+.md-header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.md-stat-pill {
+  display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px;
+  background: $accent-light; color: $accent-dark; font-size: 12.5px; font-weight: 500; border: 1px solid $accent-border;
+  strong { font-weight: 700; } i { font-size: 14px; }
+}
+.btn-md-add {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  background: linear-gradient(135deg, $accent, $accent-dark); color: #fff; border: none; cursor: pointer; transition: all 0.2s;
+  i { font-size: 16px; }
+  &:hover { box-shadow: 0 4px 14px rgba(234,88,12,0.4); transform: translateY(-1px); }
+}
+
+/* ── Card ── */
+.md-card {
+  background: #fff; border-radius: 16px; overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07); border: 1px solid #f1f5f9;
+}
+
+/* ── Filter Bar ── */
+.md-filter-bar {
+  display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+  padding: 14px 20px; border-bottom: 1px solid #f1f5f9; background: #fafbfc;
+}
+.md-filter-label {
+  font-size: 11.5px; font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 4px; margin-bottom: 4px;
+  i { font-size: 12px; color: $accent; }
+}
+.md-search-group { flex: 1 1 220px; display: flex; flex-direction: column; }
+.md-search-wrap  { position: relative; }
+.md-search-icon  { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; pointer-events: none; }
+.md-search-input {
+  width: 100%; padding: 8px 12px 8px 32px; font-size: 13px; border-radius: 8px; border: 1px solid #dde2e8;
+  &:focus { border-color: $accent; box-shadow: 0 0 0 3px rgba(234,88,12,0.1); outline: none; }
+}
+.md-select {
+  font-size: 13px; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid #dde2e8; background: #fff; color: #334155; min-width: 80px;
+  &:focus { border-color: $accent; box-shadow: 0 0 0 3px rgba(234,88,12,0.1); outline: none; }
+}
+.md-entries-group { display: flex; flex-direction: column; }
+
+/* ── Table ── */
+.md-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  thead th {
+    background: #f8fafc; font-size: 11px; font-weight: 700; color: #475569;
+    white-space: nowrap; padding: 11px 14px; border-bottom: 1px solid #e2e8f0;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  tbody td { padding: 10px 14px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; color: #334155; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fffbf5; }
+}
+.md-row-num  { color: #94a3b8; font-weight: 600; font-size: 12px; }
+.md-date     { font-size: 12px; color: #64748b; white-space: nowrap; }
+.md-phone    { font-size: 12.5px; color: #475569; }
+.md-purpose  { font-size: 12.5px; color: #475569; }
+
+.md-issue-badge {
+  display: inline-flex; padding: 3px 9px; border-radius: 6px;
+  background: $accent-light; color: $accent-dark; border: 1px solid $accent-border;
+  font-size: 11.5px; font-weight: 700; font-family: monospace;
+}
+.md-user-cell { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.md-avatar {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  background: linear-gradient(135deg, $accent, $accent-dark);
+  color: #fff; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.md-user-name { font-size: 13px; font-weight: 600; color: #1e293b; }
+
+.md-empty {
+  text-align: center; padding: 56px 20px !important; color: #94a3b8;
+  > i { font-size: 44px; opacity: 0.28; display: block; margin-bottom: 10px; }
+}
+.md-empty-title { font-size: 14px; font-weight: 700; color: #64748b; }
+.md-empty-sub   { font-size: 12.5px; color: #94a3b8; margin-top: 3px; }
+
+/* ── Actions ── */
+.md-actions { display: flex; gap: 4px; align-items: center; }
+.md-action-btn {
+  width: 30px; height: 30px; padding: 0; border-radius: 7px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 14px; border: 1px solid transparent; cursor: pointer; background: transparent; transition: all 0.15s;
+  &:hover { transform: translateY(-1px); }
+  &.edit-btn { background: $accent-light; color: $accent-dark; border-color: $accent-border;
+               &:hover { background: $accent-dark; color: #fff; } }
+  &.pdf-btn  { background: #fef2f2; color: #dc2626; border-color: #fecaca;
+               &:hover { background: #dc2626; color: #fff; } }
+  &.del-btn  { background: #fef2f2; color: #dc2626; border-color: #fecaca;
+               &:hover { background: #dc2626; color: #fff; } }
+}
+
+/* ── Footer / Pagination ── */
+.md-table-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; padding: 14px 20px;
+  border-top: 1px solid #f1f5f9; background: #fcfdfe;
+}
+.md-footer-info { color: #64748b; font-size: 12.5px; strong { color: #334155; } }
+
+.page-link {
+  cursor: pointer; border-radius: 7px !important; margin: 0 2px;
+  border-color: #e2e8f0; color: #475569; font-size: 13px;
+  &:hover { background: $accent-light; color: $accent-dark; }
+}
+.page-item.active .page-link   { background: $accent; border-color: $accent; color: #fff; }
+.page-item.disabled .page-link { color: #cbd5e1; background: #f8fafc; }
+
+/* ── PDF Modal (preserved) ── */
+#pdfContent { position: relative; }
+
+.watermark {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  opacity: 0.08; z-index: 0; pointer-events: none;
+  img { width: 300px; height: auto; }
+}
+#pdfContent > *:not(.watermark) { position: relative; z-index: 1; }
+
+@media print {
+  .container { max-width: 100%; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+  .md-wrapper { padding-top: 24px; padding-bottom: 24px; }
+  .md-filter-bar { flex-direction: column; align-items: stretch; }
+}
+
+/* Stacked filter bar: `flex-basis` follows the main axis, so the search
+   group's basis became a HEIGHT once the bar turned into a column. */
+@media (max-width: 767px) {
+  .md-search-group { flex: 0 0 auto; }
+}

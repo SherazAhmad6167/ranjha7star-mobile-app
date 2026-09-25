@@ -1,0 +1,5 @@
+.vercel
+# Never ship secrets in the deployment bundle. Vercel reads THIS file when
+# deploying from backend/, not the repo-root .gitignore.
+.env
+.env.local

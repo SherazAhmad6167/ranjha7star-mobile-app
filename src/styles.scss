@@ -1,0 +1,1229 @@
+ /* --- Styles from v12 (Unchanged) --- */
+
+// Shared mobile building blocks (sheets, buttons, chips, pager, ...).
+@use 'styles/mobile-kit';
+@use 'styles/mobile-patterns';
+
+/* Height of the fixed app top bar - the layout and the dashboard splash
+   both offset themselves by it. */
+:root {
+  /* Safe-area insets, SafeAreaView style. Capacitor 8 (SystemBars, insetsHandling
+     "css") injects --safe-area-inset-* on Android - it reports 0 when the WebView is
+     already padded natively, so it wins over env(). env() covers iOS and browsers. */
+  --safe-area-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --safe-area-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  --safe-area-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-area-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --ion-safe-area-top: var(--safe-area-top);
+  --ion-safe-area-right: var(--safe-area-right);
+  --ion-safe-area-bottom: var(--safe-area-bottom);
+  --ion-safe-area-left: var(--safe-area-left);
+  --topbar-h: 58px;
+  --footer-h: 64px;
+  --app-header-h: calc(var(--topbar-h) + var(--safe-area-top));
+  color-scheme: light;
+}
+@media (max-width: 576px) { :root { --topbar-h: 60px; } }
+
+        /* Basic Reset & Smooth Scroll */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-family: sans-serif; }
+        body { color: #333; line-height: 1.6; background-color: #f8f9fa; }
+
+        .content-body { display: flex; }
+        /* Navigation */
+        nav {  background-color: #e9ecef; padding: 20px; border-right: 1px solid #dee2e6; overflow-y: auto; z-index: 1000; }
+        nav h2 { margin-bottom: 20px; font-size: 1.2em; color: #495057; }
+        nav ul { list-style: none; padding-left: 1rem; }
+        nav ul li a { display: block; padding: 10px 0; text-decoration: none; color: white; transition: background-color 0.2s, color 0.2s; border-radius: 4px; padding-left: 10px; margin-bottom: 2px; }
+        nav ul li a:hover { background-color: #ced4da; color: #212529; }
+        nav ul li a.active { background-color: #007bff; color: white; font-weight: bold; }
+
+        /* Main Content Area */
+        main { width: 100%; }
+
+        /* Section Styling */
+        section { padding-top: 60px; }
+        section:last-child { border-bottom: none; margin-bottom: 0; }
+        section h1.section-title { margin-bottom: 30px; color: #0056b3; text-align: center; font-size: 1.8em; } /* Added class */
+
+        /* Firebase Status Bar */
+        #firebase-status { padding: 10px 20px; margin: 15px; border: 1px solid #ccc; background-color: #f0f0f0; text-align: center; font-weight: bold; border-radius: 4px; position: sticky; top: 10px; z-index: 999; margin-left: 210px; transition: background-color 0.5s, border-color 0.5s, color 0.5s; }
+
+        /* Common Elements */
+        button, .button-link { display: inline-block; padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s, color 0.3s, opacity 0.3s; font-size: 0.9em; text-align: center; vertical-align: middle; margin: 2px; }
+        button:hover, .button-link:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; opacity: 0.7; cursor: not-allowed; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="time"], input[type="search"], select, textarea { padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 1em; width: 100%; margin-bottom: 10px; background-color: #fff; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
+        .search-bar { text-align: center; margin-bottom: 30px; }
+        .search-bar input[type="text"], .search-bar input[type="search"] { margin-left: 10px; padding: 8px; width: 250px; border: 1px solid #ced4da; border-radius: 4px; vertical-align: middle; display: inline-block; width: auto; }
+        .search-bar button { vertical-align: middle; }
+
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); background-color: #fff; }
+        th, td { border: 1px solid #dee2e6; padding: 12px 15px; text-align: left; vertical-align: middle; }
+        th { background-color: #f8f9fa; font-weight: 600; font-size: 0.9em; text-transform: uppercase; color: #495057; }
+        tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        tbody tr:hover { background-color: #e9ecef; }
+        td .button-link, td button { font-size: 0.8em; padding: 4px 8px; margin-right: 5px; }
+        td[data-label="Status"] { font-weight: bold; }
+        td[data-label="Status"][style*="color: red;"] { color: #dc3545 !important; }
+        td[data-label="Status"][style*="color: orange;"] { color: #fd7e14 !important; }
+        td.status-message { text-align: center !important; font-style: italic; color: #6c757d; padding: 20px; }
+
+        /* List Item Styles (Kept for KB) */
+        .list-item { border: 1px solid #dee2e6; padding: 15px 20px; margin-bottom: 10px; border-radius: 4px; background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .list-item h4 { margin-bottom: 5px; font-size: 1.1em; color: #0056b3; }
+        .list-item p { font-size: 0.9em; color: #6c757d; margin-bottom: 10px; }
+        .list-item a { color: #007bff; text-decoration: none; margin-right: 10px; font-size: 0.9em; }
+        .list-item a:hover { text-decoration: underline; }
+        .list-item .actions { margin-top: 10px; }
+        .list-item .actions button { padding: 5px 10px; font-size: 0.8em; margin-left: 5px; background-color: #6c757d; }
+        .list-item .actions button:hover { background-color: #5a6268; }
+
+        /* Settings Styles */
+        .settings-group { max-width: 700px; margin: 0 auto 30px auto; border: 1px solid #dee2e6; padding: 25px; border-radius: 5px; background-color: #fff; }
+        .settings-group h3 { margin-bottom: 15px; border-bottom: 1px solid #dee2e6; padding-bottom: 10px; font-size: 1.2em; color: #343a40; }
+        .form-field-custom label { display: block; margin-bottom: 8px; width: auto; margin-right: 15px; font-size: 0.9em; cursor: pointer; color: #495057; }
+        .form-field-custom input[type="checkbox"] { width: auto; margin-right: 8px; vertical-align: middle; transform: scale(1.1); accent-color: #007bff; }
+        .form-field-custom input[disabled] + label, .form-field-custom input[disabled] { cursor: not-allowed; opacity: 0.7; }
+        .theme-toggle label { display: inline-block; width: auto; margin-right: 10px; font-weight: bold; vertical-align: middle; }
+        .theme-toggle button { margin-right: 5px; vertical-align: middle; }
+        .settings-group code { background-color: #e9ecef; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #333; }
+        .settings-group pre { margin-top: 10px; background: #f8f9fa; padding: 15px; border-radius: 4px; font-size: 0.8em; max-height: 200px; overflow-y: auto; color: #333; border: 1px solid #dee2e6; }
+
+        /* Dashboard Styles */
+        .dashboard-section-header { text-align: center; margin-bottom: 20px; color: #495057; }
+        .oee-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 40px; max-width: 1000px; margin-left: auto; margin-right: auto; }
+        .oee-card { border: 1px solid #dee2e6; padding: 15px; border-radius: 5px; background-color: #fff; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .oee-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .oee-card h3 { margin-bottom: 8px; font-size: 1em; color: #495057; }
+        .oee-value { font-size: 2em; font-weight: bold; display: block; margin-bottom: 5px; }
+        .status-good .oee-value { color: #198754; } .status-ok .oee-value { color: #ffc107; } .status-bad .oee-value { color: #dc3545; }
+        .oee-card .status-label { font-size: 0.8em; text-transform: uppercase; font-weight: bold; }
+        .status-good .status-label { color: #198754; } .status-ok .status-label { color: #b88b00; } .status-bad .status-label { color: #dc3545; }
+        .historical-data { margin-top: 40px; padding-top: 30px; border-top: 1px solid #dee2e6; max-width: 1200px; margin-left: auto; margin-right: auto; }
+        .historical-data h2 { text-align: center; margin-bottom: 15px; color: #495057; }
+        .timeframe-selector { margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .timeframe-selector label { font-weight: bold; width: auto; margin-bottom: 0; }
+        .timeframe-selector select { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; width: auto; min-width: 250px; margin-bottom: 0; background-color: white; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-top: 20px; }
+        .chart-container { border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; background: #fff; min-height: 350px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.07); }
+        .chart-container h3 { margin-bottom: 20px; text-align: center; font-size: 1.1em; color: #495057; width: 100%; }
+        .chart-container canvas { max-width: 100%; max-height: 280px; width: 100% !important; height: auto !important; }
+        .apq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; width: 100%; }
+        .apq-item { text-align: center; } .apq-item h4 { font-size: 0.9em; margin-bottom: 5px; color: #6c757d; }
+        .apq-item img { width: 100px; height: 100px; border: 1px dashed #ced4da; border-radius: 50%; margin: 0 auto; display: block; }
+        .chart-container.apq-charts { min-height: fit-content; }
+
+        /* Production Form & Log Styles */
+        .production-form-container, .production-log-container { max-width: 1100px; margin: 20px auto; padding: 35px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #dee2e6; }
+        .production-form-container h2, .production-log-container h2 { text-align: center; margin-bottom: 30px; color: #343a40; position: relative; font-size: 1.5em; }
+        .toggle-view-btn { position: absolute; top: -10px; right: 0; padding: 8px 12px; font-size: 0.9em; background-color: #6c757d; }
+        .toggle-view-btn:hover { background-color: #5a6268; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px 30px; margin-bottom: 30px; }
+        .form-field { display: flex; flex-direction: column; }
+        .form-field label { margin-bottom: 8px; font-weight: 600; font-size: 0.9em; color: #495057; }
+        .form-field input:read-only { background-color: #e9ecef; cursor: not-allowed; border-color: #ced4da; }
+        .form-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 30px; padding-top: 25px; border-top: 1px solid #dee2e6; }
+        .form-buttons button { padding: 12px 20px; font-size: 1em; }
+        .save-btn { background-color: #0d6efd; } .save-btn:hover { background-color: #0b5ed7; }
+        .toggle-label-btn { background-color: #6f42c1; } .toggle-label-btn:hover { background-color: #5a32a3; }
+        .print-btn { background-color: #198754; } .print-btn:hover { background-color: #157347; }
+        .label-preview-container { margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; display: block; }
+        .label-preview-container.hidden { display: none; }
+        .label-preview-container h3 { text-align: center; margin-bottom: 15px; color: #495057; }
+        .label-preview { max-width: 320px; min-height: 180px; margin: 0 auto; padding: 20px; border: 1px dashed #adb5bd; background-color: #f8f9fa; font-family: 'Courier New', Courier, monospace; font-size: 0.95em; line-height: 1.5; text-align: left; white-space: pre-wrap; overflow-wrap: break-word; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); color: #212529; }
+        .label-preview strong { display: inline-block; min-width: 80px; font-weight: bold; }
+        .production-log-container table { margin-top: 10px; }
+        .production-log-container.hidden, .production-form-container.hidden { display: none; }
+
+        /* Labeling System Styles */
+        /* #labeling .label-toolbar { padding: 15px; margin-bottom: 30px; background-color: #e9ecef; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; }
+        #labeling .label-toolbar label { font-weight: bold; margin-right: 5px; }
+        #labeling .label-toolbar select { padding: 8px 12px; width: auto; min-width: 150px; margin-right: 15px; }
+        #labeling .label-toolbar button { background-color: #6c757d; }
+        #labeling .label-toolbar button:hover { background-color: #5a6268; }
+        #labeling #currently-selected-component { font-style: italic; color: #0056b3; font-weight: bold; margin-left: 15px; }
+        .component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; max-width: 1000px; margin: 30px auto; }
+        .component-button { background-color: #28a745; color: white; padding: 20px; border: none; border-radius: 8px; font-size: 1.1em; text-align: center; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s; }
+        .component-button:hover { transform: translateY(-3px); box-shadow: 0 6px 10px rgba(0,0,0,0.15); }
+        .component-button span { display: block; font-size: 0.9em; margin-top: 8px; opacity: 0.9; }
+        .component-button.selected { background-color: #218838; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); transform: scale(0.98); } */
+
+        /* Modal Styles — legacy v12 overlay pattern.
+           Scoped under .modal-overlay: these class names collide with Bootstrap's
+           modal classes, which every ng-bootstrap modal in the app relies on. */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1050; justify-content: center; align-items: center; }
+        .modal-overlay.visible { display: flex; }
+        .modal-overlay .modal-content { background-color: #fff; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; display: flex; flex-direction: column; width: 90%;  max-height: 90vh; overflow: auto; }
+        .modal-overlay .modal-header { padding: 15px 20px; border-bottom: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center; }
+        .modal-overlay .modal-header h3 { margin: 0; font-size: 1.3em; color: #495057; }
+        .modal-overlay .modal-close-btn { border: none; background: none; font-size: 1.8em; font-weight: bold; color: #6c757d; cursor: pointer; padding: 0 5px; line-height: 1; opacity: 0.7; }
+        .modal-overlay .modal-close-btn:hover { opacity: 1; color: #343a40; }
+        .modal-overlay .modal-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .modal-overlay .modal-footer { padding: 15px 20px; border-top: 1px solid #dee2e6; display: flex; justify-content: flex-end; gap: 10px; }
+        .modal-overlay .modal-footer button { padding: 8px 15px; }
+        #label-preview-modal .modal-body { display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+        .label-settings-col h4, .label-info-col h4 { margin-bottom: 15px; font-size: 1.1em; color: #343a40; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .label-settings-col .form-field label { margin-bottom: 5px; font-size: 0.9em; }
+        .label-settings-col .form-field { margin-bottom: 15px; }
+        .label-settings-col input[type="number"], .label-settings-col select { width: auto; min-width: 100px; display: inline-block; margin-right: 10px; }
+        .label-info-col p { margin-bottom: 8px; font-size: 0.95em; }
+        .label-info-col strong { display: inline-block; min-width: 90px; font-weight: 600; color: #495057; }
+        .label-actual-preview { border: 2px dashed #adb5bd; padding: 10px; margin-top: 15px; min-height: 300px; position: relative; overflow: hidden; background-color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .label-actual-preview img.qr-code { max-width: 120px; height: auto; margin: 10px 0; }
+        .label-actual-preview .label-text { font-family: 'Arial Narrow', Arial, sans-serif; font-weight: bold; text-align: center; }
+        .label-actual-preview .label-text.vertical { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); font-size: 2.2em; letter-spacing: -2px; margin: 0 10px; white-space: nowrap; }
+        .label-actual-preview .label-details { text-align: center; font-size: 0.85em; line-height: 1.4; }
+        .label-actual-preview .label-details strong { font-weight: normal; }
+        .scan-settings { margin-bottom: 20px; }
+        .scan-settings label { margin-right: 15px; }
+        .scan-results-area { min-height: 150px; border: 1px solid #ced4da; background-color: #f8f9fa; padding: 10px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap; overflow-y: auto; }
+        #simulated-scan-button { background-color: #ffc107; color: #333; margin-top: 10px; }
+        .history-filters { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; padding: 15px; background-color: #f8f9fa; border-radius: 4px; margin-bottom: 20px; }
+        .history-filters label { margin-bottom: 0; width: auto; }
+        .history-filters select, .history-filters input[type="date"] { width: auto; min-width: 150px; margin-bottom: 0; }
+        .history-table-container { max-height: 50vh; overflow-y: auto; }
+        #label-history-table th, #label-history-table td { font-size: 0.85em; padding: 8px 10px; }
+
+        /* Troubleshooting Guide Styles */
+        #troubleshooting .troubleshooting-container { max-width: 800px; margin: 20px auto; padding: 30px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6; }
+        #troubleshooting .back-link { display: inline-block; margin-bottom: 25px; color: #007bff; text-decoration: none; font-weight: 500; }
+        #troubleshooting .back-link:hover { text-decoration: underline; }
+        #troubleshooting h2 { font-size: 1.6em; margin-bottom: 20px; color: #343a40; }
+        #troubleshooting h3 { font-size: 1.2em; margin-top: 25px; margin-bottom: 10px; color: #495057; }
+        #troubleshooting select { margin-bottom: 20px; background-color: #fff; }
+        #troubleshooting .troubleshooting-steps { border: 1px solid #ced4da; background-color: #fff; padding: 20px; border-radius: 5px; margin-top: 10px; max-height: 300px; overflow-y: auto; }
+        #troubleshooting .troubleshooting-steps label { display: block; margin-bottom: 10px; cursor: pointer; }
+        #troubleshooting .troubleshooting-steps input[type="checkbox"] { margin-right: 10px; transform: scale(1.1); accent-color: #007bff; vertical-align: middle;}
+        #troubleshooting .troubleshooting-actions { margin-top: 25px; display: flex; justify-content: space-between; gap: 15px; }
+        #troubleshooting .troubleshooting-actions button { flex-grow: 1; padding: 12px 20px; font-size: 1em; }
+        #troubleshooting .resolve-btn { background-color: #28a745; }
+        #troubleshooting .resolve-btn:hover { background-color: #218838; }
+        #troubleshooting .escalate-btn { background-color: #dc3545; }
+        #troubleshooting .escalate-btn:hover { background-color: #c82333; }
+        #ts-fault-selector-group, #ts-steps-group { display: none; }
+
+        /* SOP Manager Styles */
+        #sop { padding: 0; }
+        .sop-manager-layout { display: flex; height: calc(100vh - 60px); }
+        .sop-sidebar { width: 280px; border-right: 1px solid #dee2e6; background-color: #f8f9fa; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        .sop-sidebar h3 { font-size: 1.3em; margin-bottom: 15px; color: #343a40; }
+        .sop-sidebar .filter-group { margin-bottom: 15px; }
+        .sop-sidebar .filter-group label { display: block; margin-bottom: 5px; font-size: 0.9em; font-weight: 500; }
+        .sop-sidebar .filter-group input, .sop-sidebar .filter-group select { margin-bottom: 0; }
+        .sop-list { list-style: none; margin: 15px 0; padding: 0; flex-grow: 1; overflow-y: auto; border: 1px solid #dee2e6; background-color: #fff; border-radius: 4px; }
+        .sop-list li { padding: 10px 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.2s; font-size: 0.95em; }
+        .sop-list li:last-child { border-bottom: none; }
+        .sop-list li:hover { background-color: #e9ecef; }
+        .sop-list li.active { background-color: #007bff; color: white; font-weight: bold; }
+        .sop-sidebar-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .sop-sidebar-actions button { flex-grow: 1; }
+        .sop-viewer { flex-grow: 1; padding: 30px; overflow-y: auto; position: relative; background-color: #fff; }
+        .sop-viewer-welcome { text-align: center; margin-top: 10vh; color: #6c757d; }
+        .sop-viewer-content { /* Hidden until SOP selected */ }
+        .sop-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .sop-header-title h2 { margin: 0 0 5px 0; font-size: 1.8em; color: #0056b3; }
+        .sop-header-title p { margin: 0; font-size: 1em; color: #6c757d; }
+        .sop-header-actions button { font-size: 0.85em; padding: 6px 12px; }
+        .sop-step-navigation { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 25px; }
+        .sop-step-navigation button { background-color: #6c757d; }
+        .sop-step-navigation button:hover { background-color: #5a6268; }
+        .sop-step-navigation span { font-weight: bold; font-size: 1.1em; }
+        .sop-step-content { border: 1px solid #dee2e6; border-radius: 5px; padding: 25px; background-color: #f8f9fa; min-height: 300px; margin-bottom: 25px; }
+        .sop-step-content h4 { margin: 0 0 10px 0; font-size: 1.4em; }
+        .sop-step-content p { margin-bottom: 15px; line-height: 1.7; }
+        .sop-step-content .critical-step { color: #dc3545; font-weight: bold; margin-bottom: 10px; font-size: 1.1em; }
+        .sop-step-media { text-align: center; margin-top: 20px; }
+        .sop-step-media img, .sop-step-media .pdf-placeholder { max-width: 100%; height: auto; max-height: 400px; border: 1px solid #ccc; padding: 5px; background-color: #fff; }
+        .pdf-placeholder { display: block; height: 400px; background-color: #e9ecef; color: #6c757d; display: flex; align-items: center; justify-content: center; font-style: italic; }
+        .sop-feedback { text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        .sop-feedback button { background-color: #e9ecef; color: #333; margin: 0 5px; }
+        .sop-feedback button:hover { background-color: #ced4da; }
+
+        /* SOP Editor Modal Styles */
+        #sop-editor-modal .modal-content { max-width: 1200px; }
+        #sop-editor-modal .modal-body { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .sop-editor-form h4, .sop-editor-preview h4 { margin-bottom: 15px; font-size: 1.1em; color: #343a40; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .sop-editor-form .form-field label { margin-bottom: 5px; font-weight: 500; }
+        .sop-editor-form textarea { min-height: 80px; }
+        .sop-editor-steps-list { border: 1px solid #ced4da; min-height: 150px; max-height: 250px; overflow-y: auto; margin-bottom: 15px; border-radius: 4px; }
+        .sop-editor-steps-list .step-item { padding: 8px 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .sop-editor-steps-list .step-item:last-child { border-bottom: none; }
+        .sop-editor-steps-list .step-item:hover { background-color: #f0f0f0; }
+        .sop-editor-steps-list .step-item.selected { background-color: #cfe2ff; }
+        .sop-editor-step-editor { border: 1px solid #ccc; padding: 15px; margin-top: 10px; border-radius: 4px; background-color: #f8f9fa; }
+        .sop-editor-step-actions button { font-size: 0.85em; padding: 4px 8px; margin-right: 5px; }
+        .sop-editor-preview { border: 1px solid #ccc; padding: 20px; background-color: #f8f9fa; border-radius: 5px; }
+        .sop-editor-preview .preview-step { border: 1px dashed #aaa; padding: 10px; margin-bottom: 10px; background-color: #fff; }
+        .sop-editor-preview .preview-step h5 { font-size: 1em; margin-bottom: 5px; }
+        .sop-editor-preview .critical-step { color: #dc3545; font-weight: bold; }
+
+        /* --- Dark Mode Styles --- */
+        /* ... All dark mode styles from v12 ... */
+        body.dark-mode { background-color: #212529; color: #dee2e6; }
+        body.dark-mode nav { background-color: #343a40; border-right-color: #495057; }
+        body.dark-mode nav ul li a { color: #dee2e6; }
+        body.dark-mode nav ul li a:hover { background-color: #495057; color: #fff; }
+        body.dark-mode nav ul li a.active { background-color: #0d6efd; color: white; }
+        body.dark-mode section { background-color: #2b3035; border-bottom-color: #495057; box-shadow: none; }
+        body.dark-mode section h1.section-title { color: #6cb2eb; } /* Target specific class */
+        body.dark-mode #firebase-status { background-color: #495057; border-color: #6c757d; color: #dee2e6; }
+        body.dark-mode table { box-shadow: none; background-color: #2b3035; }
+        body.dark-mode th, body.dark-mode td { border-color: #4a5056; }
+        body.dark-mode th { background-color: #495057; color: #e9ecef; }
+        body.dark-mode tbody tr:nth-child(even) { background-color: #343a40; }
+        body.dark-mode tbody tr:hover { background-color: #495057; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background-color: #495057; border-color: #6c757d; color: #dee2e6; }
+        body.dark-mode input::placeholder, body.dark-mode textarea::placeholder { color: #adb5bd; }
+        body.dark-mode input:focus, body.dark-mode select:focus, body.dark-mode textarea:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25); }
+        body.dark-mode .search-bar input[type="text"], body.dark-mode .search-bar input[type="search"] { background-color: #495057; }
+        body.dark-mode .list-item { background-color: #343a40; border-color: #495057; box-shadow: none; }
+        body.dark-mode .list-item h4 { color: #6cb2eb; } body.dark-mode .list-item p { color: #adb5bd; } body.dark-mode .list-item a { color: #80bdff; }
+        body.dark-mode .list-item .actions button { background-color: #5a6268; } body.dark-mode .list-item .actions button:hover { background-color: #6c757d; }
+        body.dark-mode .settings-group { background-color: #343a40; border-color: #495057; }
+        body.dark-mode .settings-group h3 { color: #e9ecef; border-bottom-color: #495057; }
+        body.dark-mode .form-field-custom label { color: #adb5bd; }
+        body.dark-mode .settings-group code { background-color: #495057; color: #dee2e6; }
+        body.dark-mode .settings-group pre { background: #212529; color: #dee2e6; border-color: #495057; }
+        body.dark-mode .oee-card { background-color: #343a40; border-color: #495057; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        body.dark-mode .oee-card h3 { color: #e9ecef; }
+        body.dark-mode .historical-data { border-top-color: #495057; } body.dark-mode .historical-data h2 { color: #adb5bd; }
+        body.dark-mode .timeframe-selector select { background-color: #495057; border-color: #6c757d; color: #dee2e6; }
+        body.dark-mode .chart-container { background-color: #343a40; border-color: #495057; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        body.dark-mode .chart-container h3 { color: #adb5bd; } body.dark-mode .apq-item h4 { color: #adb5bd; }
+        body.dark-mode .apq-item img { border-color: #6c757d; opacity: 0.8; } body.dark-mode .chart-container { color: #dee2e6; }
+        body.dark-mode .production-form-container, body.dark-mode .production-log-container { background-color: #343a40; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border-color: #495057; }
+        body.dark-mode .production-form-container h2, body.dark-mode .production-log-container h2 { color: #e9ecef; }
+        body.dark-mode .toggle-view-btn { background-color: #5a6268; } body.dark-mode .toggle-view-btn:hover { background-color: #6c757d; }
+        body.dark-mode .form-field label { color: #adb5bd; } body.dark-mode .form-field input:read-only { background-color: #495057; border-color: #6c757d; }
+        body.dark-mode .form-buttons { border-top-color: #495057; } body.dark-mode .label-preview-container { border-top-color: #495057; }
+        body.dark-mode .label-preview-container h3 { color: #adb5bd; } body.dark-mode .label-preview { background-color: #495057; border-color: #6c757d; color: #dee2e6; box-shadow: inset 0 0 5px rgba(0,0,0,0.2); }
+        body.dark-mode td.status-message { color: #adb5bd; }
+        body.dark-mode #labeling .label-toolbar { background-color: #343a40; border: 1px solid #495057; }
+        body.dark-mode .component-button { background-color: #1e7e34; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        body.dark-mode .component-button.selected { background-color: #155724; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        body.dark-mode .modal-overlay { background-color: rgba(0, 0, 0, 0.75); }
+        body.dark-mode .modal-overlay .modal-content { background-color: #2b3035; color: #dee2e6; }
+        body.dark-mode .modal-overlay .modal-header { border-bottom-color: #495057; }
+        body.dark-mode .modal-overlay .modal-header h3 { color: #e9ecef; }
+        body.dark-mode .modal-overlay .modal-close-btn { color: #adb5bd; } body.dark-mode .modal-overlay .modal-close-btn:hover { color: #f8f9fa; }
+        body.dark-mode .modal-overlay .modal-footer { border-top-color: #495057; background-color: #343a40; }
+        body.dark-mode .label-settings-col h4, body.dark-mode .label-info-col h4 { color: #e9ecef; border-bottom-color: #495057; }
+        body.dark-mode .label-info-col strong { color: #adb5bd; }
+        body.dark-mode .label-actual-preview { border-color: #6c757d; background-color: #fff; color: #000; /* Keep label preview light */ }
+        body.dark-mode .label-actual-preview img.qr-code { filter: none; /* Don't invert QR */ }
+        body.dark-mode .scan-results-area { background-color: #343a40; border-color: #6c757d; }
+        body.dark-mode .history-filters { background-color: #343a40; }
+        body.dark-mode #label-history-table th { background-color: #495057; }
+        body.dark-mode #troubleshooting .troubleshooting-container { background-color: #343a40; border-color: #495057; }
+        body.dark-mode #troubleshooting .back-link { color: #80bdff; }
+        body.dark-mode #troubleshooting h2 { color: #e9ecef; }
+        body.dark-mode #troubleshooting h3 { color: #adb5bd; }
+        body.dark-mode #troubleshooting select { background-color: #495057; border-color: #6c757d; color: #dee2e6; }
+        body.dark-mode #troubleshooting .troubleshooting-steps { border-color: #495057; background-color: #2b3035; }
+        body.dark-mode #troubleshooting .troubleshooting-steps label { color: #dee2e6; }
+        body.dark-mode .sop-manager-layout { background-color: #2b3035; }
+        body.dark-mode .sop-sidebar { background-color: #343a40; border-right-color: #495057; }
+        body.dark-mode .sop-sidebar h3 { color: #e9ecef; }
+        body.dark-mode .sop-list { border-color: #495057; background-color: #2b3035; }
+        body.dark-mode .sop-list li { border-bottom-color: #495057; color: #dee2e6; }
+        body.dark-mode .sop-list li:hover { background-color: #495057; }
+        body.dark-mode .sop-list li.active { background-color: #0d6efd; color: white; }
+        body.dark-mode .sop-viewer { background-color: #2b3035; color: #dee2e6; }
+        body.dark-mode .sop-viewer-welcome { color: #adb5bd; }
+        body.dark-mode .sop-header { border-bottom-color: #495057; }
+        body.dark-mode .sop-header-title h2 { color: #80bdff; }
+        body.dark-mode .sop-header-title p { color: #adb5bd; }
+        body.dark-mode .sop-step-content { border-color: #495057; background-color: #343a40; }
+        body.dark-mode .sop-step-media img, body.dark-mode .pdf-placeholder { border-color: #6c757d; background-color: #495057; }
+        body.dark-mode .pdf-placeholder { color: #adb5bd; }
+        body.dark-mode .sop-feedback { border-top-color: #495057; }
+        body.dark-mode .sop-feedback button { background-color: #495057; color: #dee2e6; }
+        body.dark-mode .sop-feedback button:hover { background-color: #5a6268; }
+        body.dark-mode #sop-editor-modal .modal-content { background-color: #2b3035; }
+        body.dark-mode .sop-editor-form h4, body.dark-mode .sop-editor-preview h4 { color: #e9ecef; border-bottom-color: #495057; }
+        body.dark-mode .sop-editor-steps-list { border-color: #495057; }
+        body.dark-mode .sop-editor-steps-list .step-item { border-bottom-color: #495057; }
+        body.dark-mode .sop-editor-steps-list .step-item:hover { background-color: #3a4045; }
+        body.dark-mode .sop-editor-steps-list .step-item.selected { background-color: #0b5ed7; color:white; }
+        body.dark-mode .sop-editor-step-editor { border-color: #495057; background-color: #343a40; }
+        body.dark-mode .sop-editor-preview { border-color: #495057; background-color: #343a40; }
+        body.dark-mode .sop-editor-preview .preview-step { border-color: #6c757d; background-color: #2b3035; }
+
+
+        /* --- Responsive Styles --- */
+        /* ... All responsive styles from v12 ... */
+        @media (max-width: 768px) {
+            nav { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid #dee2e6; }
+            main { margin-left: 0; }
+            #firebase-status { margin-left: 15px; position: relative; top: 0; }
+            section { padding: 20px; padding-top: 30px; }
+            section h1.section-title { font-size: 1.5em; margin-bottom: 20px; }
+            .oee-status-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .chart-container { min-height: 300px; } .chart-container canvas { max-height: 250px; }
+            .form-grid { grid-template-columns: 1fr; gap: 15px 0; }
+            .production-form-container, .production-log-container { padding: 20px; }
+            .toggle-view-btn { position: relative; margin-bottom: 15px; display: block; width: 100%; top: 0; right: 0; }
+            .production-form-container h2, .production-log-container h2 { margin-bottom: 10px; font-size: 1.3em; }
+            .label-preview { max-width: 90%; }
+            /* table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid #dee2e6; margin-bottom: 10px; background-color: #fff; }
+            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50% !important; text-align: right !important; min-height: 40px; display: block; }
+            td:before { position: absolute; top: 12px; left: 15px; width: 45%; padding-right: 10px; white-space: nowrap; content: attr(data-label); font-weight: bold; text-align: left; color: #495057; font-size: 0.9em; }
+            td.status-message { padding-left: 15px !important; text-align: center !important; }
+            td.status-message:before { display: none; }
+            body.dark-mode tr { border-color: #495057; background-color: #2b3035; }
+            body.dark-mode td { border-bottom-color: #495057; }
+            body.dark-mode td:before { color: #adb5bd; } */
+            /* .component-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+            .component-button { font-size: 1em; padding: 15px; }
+            #labeling .label-toolbar { flex-direction: column; align-items: stretch; }
+            #labeling .label-toolbar select, #labeling .label-toolbar button { width: 100%; margin: 5px 0; }
+            #currently-selected-component { text-align: center; margin-top: 10px; } */
+            .modal-overlay .modal-content { width: 95%; max-height: 95vh; }
+            #label-preview-modal .modal-body { grid-template-columns: 1fr; gap: 20px; }
+            .label-actual-preview { min-height: 250px; }
+            .label-actual-preview .label-text.vertical { font-size: 1.8em; }
+            .history-filters { flex-direction: column; align-items: stretch; }
+            .history-filters select, .history-filters input[type="date"], .history-filters button { width: 100%; }
+            #troubleshooting .troubleshooting-container { padding: 20px; }
+            #troubleshooting h2 { font-size: 1.4em; }
+            #troubleshooting .troubleshooting-actions { flex-direction: column; }
+            .sop-manager-layout { flex-direction: column; height: auto; }
+            .sop-sidebar { width: 100%; height: auto; max-height: 40vh; border-right: none; border-bottom: 1px solid #dee2e6; }
+            body.dark-mode .sop-sidebar { border-bottom-color: #495057; }
+            .sop-viewer { padding: 20px; height: auto; }
+            .sop-header { flex-direction: column; align-items: stretch; }
+            .sop-header-actions { margin-top: 10px; }
+            .sop-step-content { padding: 15px; }
+            .sop-step-media img, .sop-step-media .pdf-placeholder { max-height: 300px; }
+            #sop-editor-modal .modal-body { grid-template-columns: 1fr; }
+            .sop-editor-preview { margin-top: 20px; }
+        }
+
+/* Importing Bootstrap SCSS file. */
+
+/* ── Modal layout (ng-bootstrap + hand-rolled Bootstrap modals) ──
+   Vertically centers every modal without breaking Bootstrap's horizontal
+   layout. The previous rule set `margin: 0`, which stripped the auto side
+   margins that centre the dialog, and left .modal-content free to overflow
+   past the viewport — so on mobile every modal sat pinned to the left with
+   its right edge cut off. Mirrors Bootstrap's own .modal-dialog-centered. */
+.modal-dialog {
+  display: flex;
+  align-items: center;
+  /* Subtract the dialog's margin twice (top + bottom), matching Bootstrap's
+     own .modal-dialog-centered. 100vh — or subtracting it once — makes the
+     dialog taller than .modal, so .modal (overflow-y:auto) grows a scrollbar
+     that eats 15px of its content box and shifts the dialog left of centre.
+     The var tracks the breakpoint: 0.5rem on mobile, 1.75rem from sm up. */
+  min-height: calc(100% - var(--bs-modal-margin, 0.5rem) * 2);
+  /* Bootstrap's margins stay: 0.5rem on mobile, 1.75rem auto from sm up */
+}
+
+.modal-dialog > .modal-content {
+  width: 100%;
+  /* Flex items default to min-width:auto and refuse to shrink below their
+     content width. Without this a wide form overflows right, pinning left. */
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* A modal taller than the viewport scrolls, and that scrollbar takes its
+   width from one side only — re-offsetting the dialog. Reserving the gutter
+   on both edges keeps tall forms centred too. Ignored where unsupported,
+   which just falls back to the stock Bootstrap behaviour. */
+.modal {
+  scrollbar-gutter: stable both-edges;
+}
+
+/* =====================================================
+   RANJHA7STAR — DARK MODE
+   Applied via body.dark-mode (ThemeService)
+   ===================================================== */
+
+body.dark-mode {
+  background-color: #0f0f1a !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Page background ── */
+body.dark-mode .background-color {
+  background: linear-gradient(120deg, #0f0f1a 0%, #1a1a2e 100%) !important;
+}
+
+/* ── Sidebar ── */
+body.dark-mode .sidebar {
+  background: #131320 !important;
+  border-right: 1px solid #2a2a40 !important;
+}
+body.dark-mode .sidebar-brand {
+  border-bottom-color: #2a2a40 !important;
+}
+body.dark-mode .brand-text,
+body.dark-mode .brand-highlight {
+  color: #e2e8f0 !important;
+}
+body.dark-mode .nav-link-item {
+  color: #94a3b8 !important;
+}
+body.dark-mode .nav-link-item:hover {
+  background: rgba(108, 99, 255, 0.12) !important;
+  color: #c4b5fd !important;
+}
+body.dark-mode .nav-link-item.active {
+  background: rgba(108, 99, 255, 0.2) !important;
+  color: #a78bfa !important;
+}
+body.dark-mode .section-header {
+  color: #64748b !important;
+}
+body.dark-mode .section-header:hover {
+  background: rgba(255,255,255,0.04) !important;
+  color: #94a3b8 !important;
+}
+body.dark-mode .sidebar-footer {
+  border-top-color: #2a2a40 !important;
+}
+body.dark-mode .logout-btn {
+  background: rgba(239,68,68,0.1) !important;
+  color: #f87171 !important;
+  border-color: rgba(239,68,68,0.2) !important;
+  &:hover { background: rgba(239,68,68,0.2) !important; }
+}
+
+/* ── Main content ── */
+body.dark-mode main {
+  background: #0f0f1a !important;
+}
+
+/* ── Bootstrap cards ── */
+body.dark-mode .card {
+  background-color: #1a1a2e !important;
+  border-color: #2a2a40 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .card-header {
+  background-color: #1e1e32 !important;
+  border-bottom-color: #2a2a40 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .card-footer {
+  background-color: #1e1e32 !important;
+  border-top-color: #2a2a40 !important;
+}
+
+/* ── Tables ── */
+body.dark-mode .table {
+  --bs-table-bg: #1a1a2e;
+  --bs-table-striped-bg: #1e1e32;
+  --bs-table-hover-bg: #252540;
+  --bs-table-border-color: #2a2a40;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .table-light,
+body.dark-mode thead.table-light {
+  --bs-table-bg: #1e1e32 !important;
+  color: #cbd5e1 !important;
+  border-color: #2a2a40 !important;
+}
+body.dark-mode th { color: #94a3b8 !important; }
+
+/* ── Forms ── */
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+  background-color: #1e1e32 !important;
+  border-color: #3a3a55 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .form-control::placeholder { color: #475569 !important; }
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+  background-color: #252540 !important;
+  border-color: #6c63ff !important;
+  box-shadow: 0 0 0 0.2rem rgba(108,99,255,0.2) !important;
+}
+body.dark-mode .input-group-text {
+  background-color: #1e1e32 !important;
+  border-color: #3a3a55 !important;
+  color: #94a3b8 !important;
+}
+body.dark-mode .form-check-input {
+  background-color: #1e1e32 !important;
+  border-color: #3a3a55 !important;
+}
+
+/* ── Text utilities ── */
+body.dark-mode .text-muted   { color: #64748b !important; }
+body.dark-mode .text-dark    { color: #e2e8f0 !important; }
+body.dark-mode .text-black-50 { color: rgba(203,213,225,0.5) !important; }
+body.dark-mode .fw-bold      { color: inherit; }
+
+/* ── Bootstrap badge subtle variants ── */
+body.dark-mode .bg-success-subtle  { background: rgba(16,185,129,0.15) !important; }
+body.dark-mode .text-success-emphasis { color: #34d399 !important; }
+body.dark-mode .bg-danger-subtle   { background: rgba(239,68,68,0.15) !important; }
+body.dark-mode .text-danger-emphasis  { color: #f87171 !important; }
+body.dark-mode .bg-info-subtle     { background: rgba(14,165,233,0.15) !important; }
+body.dark-mode .text-info-emphasis    { color: #38bdf8 !important; }
+body.dark-mode .bg-secondary-subtle   { background: rgba(148,163,184,0.12) !important; }
+body.dark-mode .text-secondary-emphasis { color: #94a3b8 !important; }
+
+/* ── Soft icon backgrounds (MikroTik stat cards) ── */
+body.dark-mode .bg-primary-soft { background: rgba(108,99,255,0.15) !important; }
+body.dark-mode .bg-success-soft { background: rgba(16,185,129,0.15) !important; }
+body.dark-mode .bg-danger-soft  { background: rgba(239,68,68,0.15) !important; }
+
+/* ── Progress bar ── */
+body.dark-mode .progress {
+  background-color: #2a2a40 !important;
+}
+
+/* ── Alert ── */
+body.dark-mode .alert-warning {
+  background: rgba(217,119,6,0.12) !important;
+  border-color: rgba(217,119,6,0.25) !important;
+  color: #fcd34d !important;
+}
+
+/* ── Nav tabs ── */
+body.dark-mode .nav-tabs {
+  border-bottom-color: #2a2a40 !important;
+}
+body.dark-mode .nav-tabs .nav-link {
+  color: #64748b !important;
+}
+body.dark-mode .nav-tabs .nav-link:hover {
+  border-color: #2a2a40 !important;
+  color: #94a3b8 !important;
+}
+body.dark-mode .nav-tabs .nav-link.active {
+  background-color: #1a1a2e !important;
+  border-color: #2a2a40 #2a2a40 #1a1a2e !important;
+  color: #a78bfa !important;
+}
+
+/* ── Bootstrap modals (ng-bootstrap renders in body) ── */
+body.dark-mode .modal-content {
+  background-color: #1a1a2e !important;
+  border-color: #2a2a40 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .modal-header {
+  background-color: #1e1e32 !important;
+  border-bottom-color: #2a2a40 !important;
+}
+body.dark-mode .modal-footer {
+  background-color: #1e1e32 !important;
+  border-top-color: #2a2a40 !important;
+}
+body.dark-mode .modal-title { color: #e2e8f0 !important; }
+body.dark-mode .btn-close { filter: invert(1) grayscale(1); }
+
+/* ── Dashboard stat cards (gradient cards keep their look, tweak text) ── */
+body.dark-mode .dashboard-title {
+  background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* ── Analytic cards ── */
+body.dark-mode .analytic-card {
+  background: #1a1a2e !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.35) !important;
+}
+body.dark-mode .analytic-pagination {
+  border-top-color: #2a2a40 !important;
+}
+body.dark-mode .pg-btn {
+  background: #1e1e32 !important;
+  border-color: #3a3a55 !important;
+  color: #94a3b8 !important;
+}
+body.dark-mode .pg-btn:hover:not(:disabled) {
+  background: #6c63ff !important;
+  color: #fff !important;
+  border-color: #6c63ff !important;
+}
+body.dark-mode .pg-info-label {
+  background: #1e1e32 !important;
+  color: #64748b !important;
+}
+
+/* ── Chart wrapper ── */
+body.dark-mode .chart-wrapper {
+  background: #1a1a2e !important;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.25) !important;
+}
+
+/* ── Section accent bar ── */
+body.dark-mode .section-accent-bar {
+  background: linear-gradient(180deg, #a78bfa, #60a5fa) !important;
+}
+
+/* ── Skeleton shimmer in dark ── */
+body.dark-mode .skeleton-bar {
+  background: linear-gradient(90deg, #1e1e32 25%, #2a2a40 50%, #1e1e32 75%) !important;
+  background-size: 200% 100% !important;
+}
+
+/* ── Pagination (Bootstrap) ── */
+body.dark-mode .page-link {
+  background-color: #1e1e32 !important;
+  border-color: #2a2a40 !important;
+  color: #94a3b8 !important;
+}
+body.dark-mode .page-item.active .page-link {
+  background-color: #6c63ff !important;
+  border-color: #6c63ff !important;
+  color: #fff !important;
+}
+body.dark-mode .page-item.disabled .page-link { opacity: 0.4; }
+
+/* ── Outline buttons in dark ── */
+body.dark-mode .btn-outline-primary {
+  color: #a78bfa !important;
+  border-color: #a78bfa !important;
+}
+body.dark-mode .btn-outline-primary:hover {
+  background: #a78bfa !important;
+  color: #fff !important;
+}
+body.dark-mode .btn-outline-secondary {
+  color: #94a3b8 !important;
+  border-color: #3a3a55 !important;
+}
+body.dark-mode .btn-outline-secondary:hover {
+  background: #3a3a55 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .btn-light {
+  background: #1e1e32 !important;
+  border-color: #2a2a40 !important;
+  color: #94a3b8 !important;
+}
+
+/* ── Container-fluid padding areas ── */
+body.dark-mode .container-fluid { color: #e2e8f0; }
+
+/* ── Logout modal component ── */
+body.dark-mode .logout-modal {
+  background: #1a1a2e !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Global Delete Modal (gdm) ─────────────────────────────────────────── */
+.modal-content:has(.gdm-wrap) {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+.gdm-wrap {
+  position: relative;
+  padding: 32px 28px 28px;
+  text-align: center;
+  background: #fff;
+}
+
+.gdm-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: none;
+  color: #64748b;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s;
+}
+.gdm-close:hover { background: #e2e8f0; color: #1e293b; }
+.gdm-close:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.gdm-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fef2f2;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #ef4444;
+}
+
+.gdm-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px;
+}
+
+.gdm-text {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.gdm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.gdm-btn {
+  padding: 9px 24px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.gdm-btn.gdm-cancel {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+}
+.gdm-btn.gdm-cancel:hover { background: #e2e8f0; color: #1e293b; }
+.gdm-btn.gdm-cancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.gdm-btn.gdm-confirm {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  min-width: 110px;
+  justify-content: center;
+}
+.gdm-btn.gdm-confirm:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgba(239,68,68,0.35);
+  transform: translateY(-1px);
+}
+.gdm-btn.gdm-confirm:disabled { opacity: 0.65; cursor: not-allowed; }
+
+/* Amber variant, for decisions that are reversible rather than destructive */
+.gdm-wrap.warn .gdm-icon { background: #fffbeb; color: #d97706; }
+.gdm-wrap.warn .gdm-btn.gdm-confirm { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.gdm-wrap.warn .gdm-btn.gdm-confirm:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+
+body.dark-mode .gdm-wrap.warn .gdm-icon { background: #3b2f1e; color: #fbbf24; }
+
+body.dark-mode .modal-content:has(.gdm-wrap) {
+  background: #1a1a2e !important;
+  border-color: #2a2a40 !important;
+}
+body.dark-mode .gdm-wrap { background: #1a1a2e; }
+body.dark-mode .gdm-close { background: #2a2a40; color: #94a3b8; }
+body.dark-mode .gdm-close:hover { background: #3a3a55; color: #e2e8f0; }
+body.dark-mode .gdm-icon { background: #3b1e2e; color: #f87171; }
+body.dark-mode .gdm-title { color: #e2e8f0; }
+body.dark-mode .gdm-text { color: #94a3b8; }
+body.dark-mode .gdm-btn.gdm-cancel { background: #2a2a40; color: #94a3b8; border-color: #3a3a55; }
+body.dark-mode .gdm-btn.gdm-cancel:hover { background: #3a3a55; color: #e2e8f0; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DARK MODE — custom component classes
+   ─────────────────────────────────────────────────────────────────────────
+   Every list/table page follows a `{prefix}-{element}` convention (ud-, uc-,
+   nc-, rd-, ex-, pd-, bd-, …) with hardcoded light colours in its own SCSS.
+   Rather than repeat overrides per prefix, match on the shared element
+   suffix so any current or future component is covered automatically.
+
+   Palette (matches the Bootstrap overrides above):
+     surface #1a1a2e · raised #1e1e32 · hover #252540
+     border  #2a2a40 · border-2 #3a3a55
+     text    #e2e8f0 · muted #94a3b8 · faint #64748b
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Page headers ── */
+body.dark-mode [class*="-page-header"] [class*="-title"],
+body.dark-mode [class*="-header-left"] [class*="-title"],
+body.dark-mode [class$="-title"],
+body.dark-mode [class*="-section-title"],
+body.dark-mode [class*="-empty-title"],
+body.dark-mode [class*="-card-title"] {
+  color: #e2e8f0 !important;
+}
+body.dark-mode [class$="-sub"],
+body.dark-mode [class*="-subtitle"],
+body.dark-mode [class*="-empty-sub"],
+body.dark-mode [class*="-footer-info"],
+body.dark-mode [class*="-sum-label"],
+body.dark-mode [class*="-desc"] {
+  color: #94a3b8 !important;
+}
+
+/* ── Cards & surfaces ── */
+body.dark-mode [class$="-card"],
+body.dark-mode [class*="-summary-card"],
+body.dark-mode [class*="-sum-card"],
+body.dark-mode [class*="-section-body"],
+body.dark-mode [class*="-msg-card"] {
+  background: #1a1a2e !important;
+  border-color: #2a2a40 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode [class*="-card-header"],
+body.dark-mode [class*="-section-head"],
+body.dark-mode [class*="-table-footer"],
+body.dark-mode [class*="-filter-bar"],
+body.dark-mode [class*="-date-row"] {
+  background: #1e1e32 !important;
+  border-color: #2a2a40 !important;
+}
+
+/* ── Filter controls ── */
+body.dark-mode [class*="-filter-label"] {
+  color: #64748b !important;
+}
+body.dark-mode [class$="-select"],
+body.dark-mode [class*="-search-input"],
+body.dark-mode [class*="-date-input"],
+body.dark-mode [class$="-input"] {
+  background: #1e1e32 !important;
+  border-color: #3a3a55 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode [class$="-select"] option {
+  background: #1e1e32 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode [class*="-search-input"]::placeholder,
+body.dark-mode [class$="-input"]::placeholder {
+  color: #475569 !important;
+}
+body.dark-mode [class*="-search-icon"] {
+  color: #64748b !important;
+}
+/* Native date/time pickers render a black glyph on dark backgrounds */
+body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(0.8);
+}
+
+/* ── Tables ── */
+body.dark-mode [class$="-table"] thead th {
+  background: #1e1e32 !important;
+  color: #94a3b8 !important;
+  border-bottom-color: #2a2a40 !important;
+
+  i { color: #64748b !important; }
+}
+body.dark-mode [class$="-table"] tbody td {
+  color: #cbd5e1 !important;
+  border-bottom-color: #24243c !important;
+}
+body.dark-mode [class$="-table"] tbody tr:hover {
+  background: #252540 !important;
+}
+body.dark-mode [class*="-row-num"],
+body.dark-mode [class*="-row-index"] {
+  color: #64748b !important;
+}
+
+/* ── Cell text ── */
+body.dark-mode [class*="-user-name"],
+body.dark-mode [class$="-name"],
+body.dark-mode [class$="-amount"],
+body.dark-mode [class*="-sum-amount"],
+body.dark-mode [class$="-fee"] {
+  color: #e2e8f0 !important;
+}
+body.dark-mode [class$="-date"],
+body.dark-mode [class*="-date-cell"],
+body.dark-mode [class$="-phone"],
+body.dark-mode [class*="-user-id"],
+body.dark-mode [class*="-collected-by"],
+body.dark-mode [class$="-period"] {
+  color: #94a3b8 !important;
+}
+
+/* ── Badges & tags ── */
+body.dark-mode [class*="-id-badge"],
+body.dark-mode [class*="-area-tag"],
+body.dark-mode [class$="-pkg"],
+body.dark-mode [class$="-package"],
+body.dark-mode [class*="-stat-pill"],
+body.dark-mode [class*="-amount-badge"] {
+  background: rgba(108, 99, 255, 0.14) !important;
+  border-color: rgba(108, 99, 255, 0.3) !important;
+  color: #a5b4fc !important;
+}
+body.dark-mode [class*="-avatar"] {
+  color: #fff !important;
+}
+
+/* ── Empty states ── */
+body.dark-mode [class$="-empty"],
+body.dark-mode [class*="-empty-state"] {
+  color: #64748b !important;
+
+  i { color: #3a3a55 !important; }
+}
+
+/* ── Status tabs ── */
+body.dark-mode [class*="-status-tabs"] {
+  border-color: #2a2a40 !important;
+}
+body.dark-mode [class$="-tab"] {
+  background: #1e1e32 !important;
+  border-color: #3a3a55 !important;
+  color: #94a3b8 !important;
+}
+body.dark-mode [class$="-tab"]:hover {
+  background: #252540 !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Action buttons ── */
+body.dark-mode [class*="-action-btn"] {
+  background: #1e1e32 !important;
+  border-color: #3a3a55 !important;
+}
+body.dark-mode [class*="-action-btn"]:hover {
+  background: #252540 !important;
+}
+
+/* ── Loading overlay ── */
+body.dark-mode .loading-overlay {
+  background: rgba(10, 10, 22, 0.78) !important;
+}
+body.dark-mode .lo-box {
+  background: #1a1a2e !important;
+  border-color: #2a2a40 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+body.dark-mode .lo-text { color: #94a3b8 !important; }
+
+/* ── Shared search-select dropdown ── */
+body.dark-mode .ss-trigger {
+  background: #1e1e32 !important;
+  border-color: #3a3a55 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .ss-value { color: #e2e8f0 !important; }
+body.dark-mode .ss-chevron { color: #64748b !important; }
+body.dark-mode .ss-panel {
+  background: #1a1a2e !important;
+  border-color: #3a3a55 !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5) !important;
+}
+body.dark-mode .ss-search-row { border-bottom-color: #2a2a40 !important; }
+body.dark-mode .ss-search-input {
+  background: #1e1e32 !important;
+  border-color: #3a3a55 !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .ss-search-icon { color: #64748b !important; }
+body.dark-mode .ss-option { color: #cbd5e1 !important; }
+body.dark-mode .ss-option:hover { background: #252540 !important; }
+body.dark-mode .ss-option.ss-disabled { color: #475569 !important; }
+body.dark-mode .ss-no-results { color: #64748b !important; }
+body.dark-mode .ss-opt-label { color: inherit !important; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DARK MODE — modals
+   ─────────────────────────────────────────────────────────────────────────
+   Every modal shares one anatomy, only the prefix changes (ncm-, um-, rdm-,
+   exm-, opm-, pkm-, arm-, csm-, stm-, sam-, rom-, bm-, cim-, cm-, pm-):
+
+     {p}-body    background #f4f6fb   ← page-like backdrop
+     {p}-section / .form-section  #fff card
+     {p}-section-head / .section-head  #f8fafc strip
+     {p}-footer  #fff with #f1f5f9 top border
+
+   Matching on the suffix covers every modal at once. The unprefixed
+   `.section-*` / `.form-section` variants are listed explicitly since they
+   have no leading dash for `[class*=]` to catch.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Modal shell ── */
+body.dark-mode .modal-card,
+body.dark-mode .custom-modal,
+body.dark-mode .modal-content-wrapper {
+  background: #14142a !important;
+  border-color: #2a2a40 !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Modal body (the light-grey backdrop behind the section cards) ──
+   Bootstrap's own .card-body / .modal-body sit *inside* an already-dark
+   surface, so they stay transparent rather than painting a darker inset. */
+body.dark-mode [class$="-body"]:not(.section-body):not([class*="-section-body"]):not(.card-body):not(.modal-body):not(.content-body) {
+  background: #14142a !important;
+  color: #e2e8f0 !important;
+}
+body.dark-mode .card-body,
+body.dark-mode .modal-body {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Section cards inside modals ── */
+body.dark-mode [class$="-section"],
+body.dark-mode .form-section {
+  background: #1a1a2e !important;
+  border-color: #2a2a40 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+body.dark-mode [class*="-section-head"],
+body.dark-mode .section-head {
+  background: #1e1e32 !important;
+  border-bottom-color: #2a2a40 !important;
+}
+body.dark-mode [class*="-section-title"],
+body.dark-mode .section-title {
+  color: #e2e8f0 !important;
+}
+body.dark-mode .section-body { background: transparent !important; }
+
+/* Tinted section icons */
+body.dark-mode .section-icon,
+body.dark-mode [class*="-section-icon"] {
+  &.si-blue   { background: rgba(59, 130, 246, 0.16) !important; color: #93c5fd !important; }
+  &.si-green  { background: rgba(34, 197, 94, 0.16)  !important; color: #86efac !important; }
+  &.si-orange { background: rgba(249, 115, 22, 0.16) !important; color: #fdba74 !important; }
+  &.si-purple { background: rgba(139, 92, 246, 0.16) !important; color: #c4b5fd !important; }
+}
+
+/* ── Modal footer ── */
+body.dark-mode [class$="-footer"]:not(.card-footer) {
+  background: #1a1a2e !important;
+  border-top-color: #2a2a40 !important;
+}
+
+/* ── Form labels & helpers ── */
+body.dark-mode .form-label,
+body.dark-mode [class*="-form-label"] {
+  color: #94a3b8 !important;
+}
+body.dark-mode .pkg-divider,
+body.dark-mode [class*="-divider"] {
+  color: #64748b !important;
+  border-bottom-color: #2a2a40 !important;
+}
+body.dark-mode .invalid-feedback,
+body.dark-mode [class*="-err"] { color: #f87171 !important; }
+
+/* ── Input prefix boxes (the "Rs" chip) ── */
+body.dark-mode [class*="-prefix-wrap"],
+body.dark-mode .input-group {
+  border-color: #3a3a55 !important;
+}
+body.dark-mode [class*="-prefix"]:not([class*="-prefix-wrap"]),
+body.dark-mode .input-group-text {
+  background: #252540 !important;
+  border-right-color: #3a3a55 !important;
+  color: #94a3b8 !important;
+}
+
+/* ── Cancel / secondary modal buttons ── */
+body.dark-mode [class*="-cancel-btn"],
+body.dark-mode [class*="-btn-cancel"] {
+  background: #252540 !important;
+  border-color: #3a3a55 !important;
+  color: #cbd5e1 !important;
+}
+body.dark-mode [class*="-cancel-btn"]:hover,
+body.dark-mode [class*="-btn-cancel"]:hover {
+  background: #3a3a55 !important;
+  color: #e2e8f0 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DARK MODE — polish
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Placeholders: #475569 sat too close to the field background to read */
+body.dark-mode .form-control::placeholder,
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder,
+body.dark-mode [class$="-input"]::placeholder,
+body.dark-mode [class*="-search-input"]::placeholder {
+  color: #6b7a91 !important;
+  opacity: 1 !important;
+}
+
+/* Bare inputs that predate the component classes */
+body.dark-mode input[type="text"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="date"],
+body.dark-mode input[type="time"],
+body.dark-mode input[type="search"],
+body.dark-mode input[type="tel"],
+body.dark-mode input[type="email"],
+body.dark-mode select,
+body.dark-mode textarea {
+  background-color: #1e1e32;
+  border-color: #3a3a55;
+  color: #e2e8f0;
+}
+body.dark-mode select option { background: #1e1e32; color: #e2e8f0; }
+
+body.dark-mode hr { border-color: #2a2a40 !important; opacity: 1; }
+
+/* Scrollbars — a white track is jarring against the dark surfaces */
+body.dark-mode * {
+  scrollbar-color: #3a3a55 #14142a;
+}
+body.dark-mode ::-webkit-scrollbar { width: 10px; height: 10px; }
+body.dark-mode ::-webkit-scrollbar-track { background: #14142a; }
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: #3a3a55;
+  border-radius: 6px;
+  border: 2px solid #14142a;
+}
+body.dark-mode ::-webkit-scrollbar-thumb:hover { background: #4a4a6a; }
+
+/* Bootstrap backdrop sits too light over the dark shell */
+body.dark-mode .modal-backdrop.show { opacity: 0.7; }
+
+/* Purge progress bar track inside the global delete modal */
+body.dark-mode .gdm-progress { background: #2a2a40 !important; }
+
+/* ── Datepicker popups ──
+   Rendered on <body> (container="body") so a scrolling modal cannot clip them,
+   which also puts them behind Bootstrap's modal unless they outrank it. */
+ngb-datepicker.dropdown-menu {
+  z-index: 1060;
+}
+
+body.dark-mode ngb-datepicker {
+  background-color: #1a1a2e;
+  border-color: #2a2a40;
+  color: #e2e8f0;
+}
+body.dark-mode ngb-datepicker .ngb-dp-header,
+body.dark-mode ngb-datepicker .ngb-dp-weekdays,
+body.dark-mode ngb-datepicker .ngb-dp-month-name {
+  background-color: #1e1e32;
+  color: #e2e8f0;
+  border-color: #2a2a40;
+}
+body.dark-mode ngb-datepicker .btn-light {
+  background-color: transparent;
+  color: #e2e8f0;
+}
+body.dark-mode ngb-datepicker .btn-light:hover:not(.bg-primary) {
+  background-color: #2a2a40;
+}

@@ -1,0 +1,387 @@
+<div class="container-fluid wb-wrapper">
+
+  <!-- Loading overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="lo-box">
+      <div class="spinner-border wb-spinner" role="status"></div>
+      <span class="lo-text">Loading website content...</span>
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="wb-page-header mb-4">
+    <div class="wb-header-left">
+      <div class="wb-header-icon"><i class="ri-global-line"></i></div>
+      <div>
+        <h1 class="wb-title">Website Content</h1>
+        <p class="wb-sub">Posters and owner profile shown on the public website</p>
+      </div>
+    </div>
+
+    <div class="wb-header-right">
+      <span class="wb-saved" *ngIf="lastSaved">
+        <i class="ri-time-line"></i> Updated {{ lastSaved | date: 'dd MMM yyyy, h:mm a' }}
+      </span>
+      <button type="button" class="wb-btn-ghost" (click)="openSite()">
+        <i class="ri-external-link-line"></i> View Site
+      </button>
+    </div>
+  </div>
+
+  <!-- Live-sync notice -->
+  <div class="wb-notice mb-4">
+    <i class="ri-flashlight-line"></i>
+    <span>
+      Anything you save here appears on <strong>ranjha7star.web.app</strong> straight away —
+      visitors with the page open see it update without refreshing.
+    </span>
+  </div>
+
+  <!-- ══════════ CUSTOMER REVIEWS ══════════ -->
+  <div class="wb-section-title">
+    <i class="ri-chat-quote-line"></i> Customer Reviews
+    <span>Sent from the website &mdash; approving or declining texts the customer automatically</span>
+  </div>
+
+  <div class="wb-card mb-4">
+    <div class="wb-card-header">
+      <span>
+        <i class="ri-star-smile-line"></i> Moderation Queue
+        <span class="rv-pending-pill" *ngIf="pendingCount">{{ pendingCount }} waiting</span>
+      </span>
+      <button type="button" class="wb-add-sm" (click)="loadReviews()" [disabled]="isLoadingReviews">
+        <i class="ri-refresh-line"></i> Refresh
+      </button>
+    </div>
+
+    <div class="wb-card-body">
+
+      <!-- Status tabs -->
+      <div class="rv-tabs">
+        <button type="button" class="rv-tab" *ngFor="let f of reviewFilters"
+                [class.active]="reviewFilter === f.key"
+                (click)="reviewFilter = f.key">
+          {{ f.label }}
+          <span class="rv-tab-count">{{ countFor(f.key) }}</span>
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoadingReviews" class="rv-loading">
+        <div class="spinner-border wb-spinner-sm"></div>
+        <span>Loading reviews&hellip;</span>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!isLoadingReviews && !filteredReviews.length" class="rv-none">
+        <i class="ri-inbox-line"></i>
+        <b>Nothing here</b>
+        <span *ngIf="reviewFilter === 'pending'">No reviews are waiting for a decision.</span>
+        <span *ngIf="reviewFilter !== 'pending'">No {{ reviewFilter }} reviews yet.</span>
+      </div>
+
+      <!-- List -->
+      <div class="rv-grid" *ngIf="!isLoadingReviews && filteredReviews.length">
+        <article class="rv-item" *ngFor="let r of filteredReviews"
+                 [class.busy]="busyReview === r.id"
+                 [class.pending]="r.status === 'pending'">
+
+          <div class="rv-item-top">
+            <div class="rv-ava">{{ r.initials }}</div>
+            <div class="rv-who">
+              <b>{{ r.name }}</b>
+              <small><i class="ri-map-pin-line"></i>{{ r.area || 'Area not given' }}</small>
+            </div>
+            <span class="rv-badge" [ngClass]="r.status">{{ r.status }}</span>
+          </div>
+
+          <div class="rv-stars">
+            <i *ngFor="let on of r.starsArr" [ngClass]="on ? 'ri-star-fill on' : 'ri-star-line'"></i>
+            <span class="rv-rate">{{ r.rating }}/5</span>
+          </div>
+
+          <p class="rv-text">{{ r.text }}</p>
+
+          <div class="rv-meta">
+            <span><i class="ri-time-line"></i>{{ r.createdAt | date: 'dd MMM yyyy, h:mm a' }}</span>
+            <span *ngIf="r.phone"><i class="ri-smartphone-line"></i>{{ r.phone }}</span>
+          </div>
+
+          <div class="rv-actions">
+            <button type="button" class="rv-act approve"
+                    *ngIf="r.status !== 'approved'"
+                    [disabled]="busyReview === r.id"
+                    (click)="approveReview(r)">
+              <i class="ri-check-line"></i> Approve
+            </button>
+
+            <button type="button" class="rv-act decline"
+                    *ngIf="r.status !== 'declined'"
+                    [disabled]="busyReview === r.id"
+                    (click)="declineReview(r)">
+              <i class="ri-close-line"></i> Decline
+            </button>
+
+            <button type="button" class="rv-act notify"
+                    *ngIf="r.status !== 'pending'"
+                    [disabled]="busyReview === r.id"
+                    (click)="resendReviewSms(r)">
+              <i class="ri-message-2-line"></i> Resend SMS
+            </button>
+
+            <button type="button" class="rv-act delete"
+                    [disabled]="busyReview === r.id"
+                    (click)="deleteReview(r)">
+              <i class="ri-delete-bin-line"></i> Delete
+            </button>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+  <form [formGroup]="websiteForm" (ngSubmit)="saveWebsiteContent()">
+
+    <!-- ══════════ OWNER ══════════ -->
+    <div class="wb-section-title">
+      <i class="ri-user-star-line"></i> Owner Profile
+      <span>Shown in the "About" section of the website</span>
+    </div>
+
+    <div class="wb-layout mb-4" formGroupName="owner">
+
+      <!-- Photo -->
+      <div class="wb-sidebar">
+        <div class="wb-card">
+          <div class="wb-card-header"><i class="ri-image-line"></i> Owner Photo</div>
+          <div class="wb-photo-body">
+            <div class="wb-photo-preview">
+              <img *ngIf="ownerPhoto" [src]="ownerPhoto" class="wb-photo-img" alt="Owner">
+              <div *ngIf="!ownerPhoto && !uploading[-1]" class="wb-photo-placeholder">
+                <i class="ri-user-line"></i>
+                <span>No photo uploaded</span>
+                <small>The site shows initials instead</small>
+              </div>
+              <div *ngIf="uploading[-1]" class="wb-photo-loading">
+                <div class="spinner-border wb-spinner-sm"></div>
+                <span>Uploading…</span>
+              </div>
+            </div>
+
+            <label class="wb-upload-btn">
+              <i class="ri-upload-2-line"></i>
+              {{ ownerPhoto ? 'Change Photo' : 'Upload Photo' }}
+              <input type="file" class="wb-file-input" accept="image/*"
+                     (change)="onOwnerPhoto($event)">
+            </label>
+
+            <button *ngIf="ownerPhoto" type="button" class="wb-remove-link"
+                    (click)="clearOwnerPhoto()">
+              <i class="ri-delete-bin-line"></i> Remove photo
+            </button>
+
+            <p class="wb-hint">Portrait works best · resized to 900px before upload</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Owner text -->
+      <div class="wb-main">
+        <div class="wb-card">
+          <div class="wb-card-header"><i class="ri-file-text-line"></i> Profile Text</div>
+          <div class="wb-card-body">
+
+            <div class="wb-row">
+              <div class="wb-field">
+                <label class="wb-label">Full Name <span class="req">*</span></label>
+                <input type="text" class="wb-input" formControlName="name"
+                       placeholder="Saqib Ranjha">
+              </div>
+              <div class="wb-field">
+                <label class="wb-label">Title / Role <span class="req">*</span></label>
+                <input type="text" class="wb-input" formControlName="role"
+                       placeholder="Founder &amp; CEO">
+              </div>
+            </div>
+
+            <div class="wb-field">
+              <label class="wb-label">First Paragraph <span class="req">*</span></label>
+              <textarea class="wb-input wb-textarea" rows="4" formControlName="bio1"
+                        placeholder="How the business started..."></textarea>
+            </div>
+
+            <div class="wb-field">
+              <label class="wb-label">Second Paragraph</label>
+              <textarea class="wb-input wb-textarea" rows="4" formControlName="bio2"
+                        placeholder="Where the business is today..."></textarea>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Highlight points -->
+    <div class="wb-card mb-4">
+      <div class="wb-card-header">
+        <i class="ri-check-double-line"></i> Highlight Points
+        <button type="button" class="wb-add-sm" (click)="addPoint()">
+          <i class="ri-add-line"></i> Add
+        </button>
+      </div>
+      <div class="wb-card-body">
+        <div class="wb-point-row" *ngFor="let p of points.controls; let i = index"
+             [formGroup]="websiteForm">
+          <div formArrayName="points" class="wb-point-input">
+            <i class="ri-checkbox-circle-line wb-point-icon"></i>
+            <input type="text" class="wb-input wb-input-icon-pad" [formControlName]="i"
+                   placeholder="e.g. Local team of technicians hired from the areas we serve">
+          </div>
+          <button type="button" class="wb-icon-btn danger" (click)="removePoint(i)"
+                  title="Remove point">
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+        <p class="wb-empty" *ngIf="!points.length">No highlight points yet.</p>
+      </div>
+    </div>
+
+    <!-- ══════════ POSTERS ══════════ -->
+    <div class="wb-section-title">
+      <i class="ri-image-2-line"></i> Offer Posters
+      <span>Shown in the "Offers &amp; Notices" carousel</span>
+    </div>
+
+    <div class="wb-poster-grid" formArrayName="posters">
+      <div class="wb-card wb-poster-card" *ngFor="let p of posters.controls; let i = index"
+           [formGroupName]="i" [class.inactive]="!posterAt(i).get('active')?.value">
+
+        <div class="wb-card-header">
+          <span><i class="ri-price-tag-3-line"></i> Poster {{ i + 1 }}</span>
+          <div class="wb-poster-tools">
+            <button type="button" class="wb-icon-btn" (click)="movePoster(i, -1)"
+                    [disabled]="i === 0" title="Move left">
+              <i class="ri-arrow-left-line"></i>
+            </button>
+            <button type="button" class="wb-icon-btn" (click)="movePoster(i, 1)"
+                    [disabled]="i === posters.length - 1" title="Move right">
+              <i class="ri-arrow-right-line"></i>
+            </button>
+            <button type="button" class="wb-icon-btn danger" (click)="removePoster(i)"
+                    title="Remove poster">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="wb-card-body">
+
+          <!-- Poster image -->
+          <div class="wb-poster-preview">
+            <img *ngIf="posterAt(i).get('image')?.value && !uploading[i]"
+                 [src]="posterAt(i).get('image')?.value" class="wb-poster-img" alt="Poster">
+            <div *ngIf="!posterAt(i).get('image')?.value && !uploading[i]"
+                 class="wb-photo-placeholder">
+              <i class="ri-image-add-line"></i>
+              <span>No poster image</span>
+              <small>A designed card is shown instead</small>
+            </div>
+            <div *ngIf="uploading[i]" class="wb-photo-loading">
+              <div class="spinner-border wb-spinner-sm"></div>
+              <span>Uploading…</span>
+            </div>
+          </div>
+
+          <div class="wb-poster-actions">
+            <label class="wb-upload-btn sm">
+              <i class="ri-upload-2-line"></i>
+              {{ posterAt(i).get('image')?.value ? 'Change' : 'Upload' }}
+              <input type="file" class="wb-file-input" accept="image/*"
+                     (change)="onPosterImage($event, i)">
+            </label>
+            <button *ngIf="posterAt(i).get('image')?.value" type="button"
+                    class="wb-remove-link" (click)="clearPosterImage(i)">
+              <i class="ri-delete-bin-line"></i> Remove
+            </button>
+          </div>
+
+          <div class="wb-field">
+            <label class="wb-label">Title <span class="req">*</span></label>
+            <input type="text" class="wb-input" formControlName="title"
+                   placeholder="e.g. Free Installation">
+          </div>
+
+          <div class="wb-field">
+            <label class="wb-label">Caption</label>
+            <input type="text" class="wb-input" formControlName="caption"
+                   placeholder="e.g. On every annual internet package">
+          </div>
+
+          <div class="wb-field">
+            <label class="wb-label">Badge</label>
+            <input type="text" class="wb-input" formControlName="badge"
+                   placeholder="e.g. Limited Offer">
+          </div>
+
+          <label class="wb-switch">
+            <input type="checkbox" formControlName="active">
+            <span class="wb-switch-track"><span class="wb-switch-thumb"></span></span>
+            <span class="wb-switch-label">Show on website</span>
+          </label>
+
+        </div>
+      </div>
+
+      <!-- Add poster tile -->
+      <button type="button" class="wb-add-card" (click)="addPoster()">
+        <i class="ri-add-circle-line"></i>
+        <span>Add Poster</span>
+        <small>Upload an image or let the site design one from your text</small>
+      </button>
+    </div>
+
+    <!-- ── Save bar ── -->
+    <div class="wb-savebar">
+      <div class="wb-savebar-info">
+        <i class="ri-information-line"></i>
+        <span>{{ posters.length }} poster(s) configured</span>
+      </div>
+      <button type="submit" class="wb-btn-save" [disabled]="isSaving">
+        <span *ngIf="!isSaving"><i class="ri-save-3-line"></i> Publish to Website</span>
+        <span *ngIf="isSaving">
+          <span class="spinner-border spinner-border-sm me-2"></span> Publishing…
+        </span>
+      </button>
+    </div>
+
+  </form>
+
+  <!-- ══════════ SHARED CONFIRMATION DIALOG ══════════ -->
+  <ng-template #confirmModal let-modal>
+    <div class="gdm-wrap" *ngIf="confirmBox as box" [class.warn]="box.tone === 'warn'">
+      <button class="gdm-close" type="button" (click)="modal.dismiss()" [disabled]="confirmBusy">
+        <i class="ri-close-line"></i>
+      </button>
+
+      <div class="gdm-icon"><i [ngClass]="box.icon"></i></div>
+      <h5 class="gdm-title">{{ box.title }}</h5>
+      <p class="gdm-text">{{ box.text }}</p>
+
+      <div class="gdm-actions">
+        <button class="gdm-btn gdm-cancel" type="button"
+                (click)="modal.dismiss()" [disabled]="confirmBusy">
+          Cancel
+        </button>
+        <button class="gdm-btn gdm-confirm" type="button"
+                (click)="runConfirm(modal)" [disabled]="confirmBusy">
+          <span *ngIf="!confirmBusy"><i [ngClass]="box.icon"></i> {{ box.cta }}</span>
+          <span *ngIf="confirmBusy" class="d-flex align-items-center gap-2">
+            <span class="spinner-border spinner-border-sm" role="status"></span>
+            {{ box.busyLabel }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</div>

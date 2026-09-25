@@ -1,0 +1,1028 @@
+/* ═══════════════════════════════════════
+   ZAL ULTRA SUBSCRIBERS - mobile
+   Same layout as the Users screen; shared pieces (mk-*) live in
+   src/styles/_mobile-kit.scss and src/styles/_mobile-patterns.scss.
+   ═══════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+// Indigo accent for ZAL Ultra; also set on each ion-modal and form window,
+// whose content renders outside this host.
+.zl-theme {
+  --mk-brand: #4f46e5;
+  --mk-brand-soft: #eef2ff;
+  --mk-brand-grad: linear-gradient(135deg, #3730a3 0%, #4f46e5 50%, #06b6d4 100%);
+  --mk-brand-shadow: rgba(79, 70, 229, 0.8);
+  --tone: #64748b;
+  --tone-2: #94a3b8;
+  --tone-soft: #f1f5f9;
+}
+
+// Record tone follows the internet switch (what enable / disable toggles).
+.net-on {
+  --tone: #059669;
+  --tone-2: #10b981;
+  --tone-soft: #ecfdf5;
+}
+
+.net-off {
+  --tone: #e11d48;
+  --tone-2: #fb7185;
+  --tone-soft: #fff1f2;
+}
+
+.zl {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 10px 16px 8px;
+}
+
+// ── Hero ─────────────────────────────────────────────────────────────────
+
+.zl-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 9px 10px;
+  border-radius: 17px;
+  color: #fff;
+  background: linear-gradient(140deg, #312e81 0%, #4f46e5 52%, #06b6d4 100%);
+  box-shadow:
+    0 24px 40px -26px rgba(79, 70, 229, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1.3px);
+    background-size: 14px 14px;
+    -webkit-mask-image: linear-gradient(110deg, transparent 40%, #000);
+    mask-image: linear-gradient(110deg, transparent 40%, #000);
+  }
+}
+
+.zl-hero-glow {
+  position: absolute;
+  z-index: -1;
+  top: -100px;
+  right: -64px;
+  width: 205px;
+  height: 205px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(103, 232, 249, 0.5), transparent 65%);
+}
+
+.zl-hero-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'copy actions'
+    'stats stats';
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 6px;
+}
+
+.zl-hero-copy {
+  grid-area: copy;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.zl-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.56rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.zl-hero-count {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+
+  .num {
+    font-size: 1.22rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .unit {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.6rem;
+    font-weight: 600;
+  }
+}
+
+.zl-hero-actions {
+  grid-area: actions;
+  display: flex;
+  gap: 4px;
+}
+
+.zl-hero-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  --tap-bg: rgba(255, 255, 255, 0.16);
+  --tap-fg: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.zl-hero-add {
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 9px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  --tap-bg: #fff;
+  --tap-fg: #4338ca;
+  box-shadow: 0 12px 22px -12px rgba(15, 23, 42, 0.6);
+
+  i {
+    font-size: 0.86rem;
+  }
+}
+
+.is-spinning {
+  animation: zlSpin 0.9s linear infinite;
+}
+
+.zl-hero-stats {
+  grid-area: stats;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.zl-stat {
+  min-width: 0;
+  min-height: 27px;
+  padding: 4px 7px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.zl-stat-label {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.46rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.zl-stat-value {
+  flex-shrink: 0;
+  overflow: hidden;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zl-stat--on .zl-stat-value { color: #a7f3d0; }
+.zl-stat--off .zl-stat-value { color: #fecdd3; }
+
+// ── Error ────────────────────────────────────────────────────────────────
+
+.zl-error {
+  margin-top: 14px;
+
+  .mk-empty-art {
+    color: var(--mk-danger);
+    background: #ffe4e6;
+  }
+
+  p {
+    overflow-wrap: anywhere;
+  }
+}
+
+// ── Inline filters ───────────────────────────────────────────────────────
+
+.zl-filter-area {
+  position: relative;
+  margin: 7px 0 10px;
+}
+
+ion-searchbar.zl-searchbar {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.zl-inline-filters {
+  padding: 8px;
+  overflow: hidden;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #4338ca 0%, #6366f1 48%, #0891b2 100%);
+  box-shadow:
+    0 16px 30px -24px rgba(79, 70, 229, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.zl-filter-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+
+  i {
+    font-size: 0.78rem;
+  }
+}
+
+.zl-filter-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.66rem;
+    font-weight: 800;
+  }
+
+  small {
+    padding-left: 7px;
+    border-left: 1px solid rgba(255, 255, 255, 0.26);
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.55rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+}
+
+.zl-filter-reset {
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 7px;
+  font-size: 0.72rem;
+  --tap-bg: rgba(255, 255, 255, 0.16);
+  --tap-fg: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.zl-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 82px;
+  gap: 5px;
+}
+
+.zl-filter-field {
+  min-width: 0;
+  margin: 0;
+}
+
+.zl-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  margin: 0 1px 3px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.49rem;
+  font-weight: 800;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  i {
+    flex-shrink: 0;
+    font-size: 0.6rem;
+  }
+}
+
+.zl-select-wrap {
+  position: relative;
+  display: block;
+  min-width: 0;
+
+  select {
+    width: 100%;
+    height: 30px;
+    margin: 0;
+    padding: 0 23px 0 8px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 8px;
+    outline: none;
+    color: #0f172a;
+    font: inherit;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 30px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  > i {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    color: #64748b;
+    font-size: 0.76rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+}
+
+.zl-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 10px;
+  color: #475569;
+  font-weight: 700;
+  background: #f1f5f9;
+  box-shadow: inset 0 0 0 1px #e2e8f0;
+}
+
+// ── List ─────────────────────────────────────────────────────────────────
+
+.zl-list {
+  display: grid;
+  gap: 12px;
+  transition: opacity 0.2s ease;
+
+  // A page is loading: keep the old one visible, but not tappable.
+  &.is-stale {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+}
+
+.zl-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow:
+    0 16px 32px -26px rgba(15, 23, 42, 0.5),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+  animation: zlIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(min(var(--i, 0), 8) * 40ms);
+
+  // Internet on / off accent strip.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 18px;
+    bottom: 18px;
+    left: 0;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: linear-gradient(var(--tone), var(--tone-2));
+  }
+}
+
+.zl-card-main {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 12px 16px;
+  cursor: pointer;
+  outline: none;
+}
+
+.zl-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.zl-card-name {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.96rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zl-card-area {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: #64748b;
+  font-size: 0.74rem;
+
+  i {
+    flex-shrink: 0;
+    color: #94a3b8;
+    font-size: 0.85rem;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.zl-card-side {
+  flex-shrink: 0;
+  max-width: 36%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+}
+
+.zl-pkg {
+  max-width: 100%;
+  padding: 3px 8px;
+  overflow: hidden;
+  border-radius: 8px;
+  color: var(--mk-brand);
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--mk-brand-soft);
+}
+
+// Expiry: amber when close, rose once past.
+.zl-expiry {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  i {
+    font-size: 0.8rem;
+  }
+
+  &.is-soon { color: #b45309; }
+  &.is-expired { color: #e11d48; font-weight: 800; }
+  &.is-none { color: #94a3b8; }
+}
+
+// Account status (profile_status), separate from the internet switch.
+.zl-status {
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #475569;
+  font-size: 0.64rem;
+  font-weight: 800;
+  background: #f1f5f9;
+
+  &--active { color: #15803d; background: #dcfce7; }
+  &--pending { color: #b45309; background: #fef3c7; }
+  &--inactive { color: #be123c; background: #ffe4e6; }
+}
+
+.zl-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 42px;
+  gap: 6px;
+  margin: 0 12px;
+  padding: 10px 0 12px;
+  border-top: 1px dashed #e8edf4;
+}
+
+.zl-act {
+  height: 38px;
+  min-width: 0;
+  gap: 5px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+
+  i {
+    font-size: 1rem;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--call    { --tap-bg: #eff6ff; --tap-fg: #1d4ed8; }
+  &--renew   { --tap-bg: #eef2ff; --tap-fg: #4338ca; }
+  &--enable  { --tap-bg: #ecfdf5; --tap-fg: #047857; }
+  &--disable { --tap-bg: #fff1f2; --tap-fg: #e11d48; }
+  &--more    { --tap-bg: #f1f5f9; --tap-fg: #475569; }
+
+  &--none {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #cbd5e1;
+    background: #f8fafc;
+  }
+}
+
+// ── Detail sheet ─────────────────────────────────────────────────────────
+
+.zl-tile-copy {
+  min-width: 0;
+}
+
+.zl-tile-value.zl-tile-value {
+  overflow: hidden;
+  font-size: 1.12rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zl-tile-expiry {
+  flex-shrink: 0;
+}
+
+.zl-expiry-text {
+  &.is-soon { color: #b45309; font-weight: 700; }
+  &.is-expired { color: #e11d48; font-weight: 800; }
+}
+
+// ── Confirmation sheets ──────────────────────────────────────────────────
+
+.zl-confirm--safe .mk-confirm-art {
+  color: #16a34a;
+  background: #dcfce7;
+  box-shadow: 0 0 0 10px rgba(22, 163, 74, 0.08);
+}
+
+.zl-btn--safe {
+  --tap-bg: linear-gradient(135deg, #22c55e 0%, #059669 100%);
+  --tap-fg: #fff;
+  box-shadow: 0 14px 24px -14px rgba(5, 150, 105, 0.75);
+}
+
+.zl-code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  color: #334155;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  background: #f1f5f9;
+}
+
+.zl-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 18px 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  color: #9f1239;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  text-align: left;
+  background: #fff1f2;
+  box-shadow: inset 0 0 0 1px #fecdd3;
+
+  i {
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+}
+
+// ── Full-screen forms (add / edit, renew) ────────────────────────────────
+// Opened through NgbModal with `windowClass: 'mk-sheet-window'`; mirrors the
+// Users form (user-modal) so both panels feel the same.
+
+.zf {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  max-height: 100dvh;
+  color: #0f172a;
+  background: #f2f5fa;
+}
+
+.zf-top {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(10px + var(--safe-area-top)) calc(16px + var(--safe-area-right)) 10px calc(16px + var(--safe-area-left));
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 0 #e8edf4;
+
+  .mk-icon-btn {
+    --tap-bg: #f1f5f9;
+  }
+}
+
+.zf-top-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.zf-top-kicker {
+  color: var(--mk-brand);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.zf-top-title {
+  overflow: hidden;
+  font-size: 1.06rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zf-top-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 1.25rem;
+  background: var(--mk-brand-grad);
+  box-shadow: 0 10px 18px -10px var(--mk-brand-shadow);
+}
+
+.zf-form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.zf-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 14px calc(14px + var(--safe-area-right)) 20px calc(14px + var(--safe-area-left));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.zf-card {
+  margin-bottom: 14px;
+  padding: 16px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 16px 32px -28px rgba(15, 23, 42, 0.5), 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.zf-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.zf-dot {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+
+  &.indigo { color: #4338ca; background: #eef2ff; }
+  &.blue { color: #1d4ed8; background: #eff6ff; }
+  &.green { color: #15803d; background: #f0fdf4; }
+}
+
+.zf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 10px;
+}
+
+.zf-span {
+  grid-column: 1 / -1;
+}
+
+.zf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.zf-label {
+  margin: 0;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  .req {
+    color: #f43f5e;
+  }
+}
+
+.zf-err {
+  color: #e11d48;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.zf-hint {
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.35;
+
+  &--brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--mk-brand);
+    font-weight: 700;
+  }
+}
+
+.zf .mk-input.mk-input.is-invalid {
+  border-color: #fb7185;
+  background: #fff5f6;
+}
+
+.zf-segment {
+  --background: #eef2f7;
+
+  ion-segment-button {
+    min-height: 44px;
+    --color: #64748b;
+    --color-checked: var(--mk-brand);
+    --indicator-color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: none;
+  }
+}
+
+.zf-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+.zf-affix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.zf-prefix {
+  position: absolute;
+  left: 6px;
+  z-index: 1;
+  height: 36px;
+  min-width: 34px;
+  padding: 0 8px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: #e8edf4;
+  pointer-events: none;
+}
+
+.mk-input.zf-has-prefix {
+  padding-left: 50px;
+}
+
+// Renew: where the subscriber stands before activating.
+.zf-now {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow:
+    inset 0 3px 0 var(--tone),
+    0 16px 32px -28px rgba(15, 23, 42, 0.5);
+}
+
+.zf-now-item {
+  min-width: 0;
+
+  span {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    display: block;
+    margin-top: 3px;
+    overflow: hidden;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &.is-soon strong { color: #b45309; }
+  &.is-expired strong { color: #e11d48; }
+}
+
+.zf-preview-due {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  color: var(--mk-brand);
+  background: var(--mk-brand-soft);
+
+  span {
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  strong {
+    font-size: 1.3rem;
+    font-weight: 900;
+
+    small {
+      margin-right: 3px;
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
+  }
+}
+
+.zf-preview-raw {
+  margin-top: 10px;
+
+  summary {
+    color: #475569;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  pre {
+    max-height: 220px;
+    margin: 8px 0 0;
+    padding: 10px 12px;
+    overflow: auto;
+    border-radius: 12px;
+    color: #e2e8f0;
+    font-size: 0.7rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-all;
+    background: #0f172a;
+  }
+}
+
+.zf-foot {
+  flex-shrink: 0;
+  display: flex;
+  gap: 10px;
+  padding: 12px calc(14px + var(--safe-area-right)) calc(12px + var(--safe-area-bottom)) calc(14px + var(--safe-area-left));
+  background: #fff;
+  box-shadow: 0 -1px 0 #e8edf4, 0 -12px 24px -20px rgba(15, 23, 42, 0.35);
+
+  .mk-btn--ghost {
+    flex: 0 0 auto;
+    min-width: 96px;
+  }
+
+  .zf-save {
+    flex: 1;
+  }
+
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+    color: currentColor;
+  }
+}
+
+// ── Motion / sizes ───────────────────────────────────────────────────────
+
+@keyframes zlIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes zlSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (min-width: 700px) {
+  .zl-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mk-empty {
+    grid-column: 1 / -1;
+  }
+}
+
+// Tablet and up: the form is a centered dialog, no status-bar padding.
+@media (min-width: 768px) {
+  .zf {
+    max-height: calc(100dvh - 3.5rem);
+    border-radius: 28px;
+  }
+
+  .zf-top {
+    padding-top: 14px;
+  }
+
+  .zf-foot {
+    padding-bottom: 14px;
+  }
+}
+
+@media (max-width: 350px) {
+  .zl-inline-filters {
+    padding-inline: 8px;
+  }
+
+  .zl-filter-grid {
+    grid-template-columns: minmax(0, 1fr) 70px;
+  }
+
+  .zl-select-wrap select {
+    padding-left: 7px;
+    font-size: 0.65rem;
+  }
+
+  .zl-act span {
+    display: none;
+  }
+
+  .zf-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zl-card,
+  .is-spinning {
+    animation: none;
+  }
+}

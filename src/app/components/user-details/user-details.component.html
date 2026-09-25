@@ -1,0 +1,717 @@
+<div class="ud ud-theme">
+
+  <!-- ══ Summary ══ -->
+  <div class="ud-hero">
+    <span class="ud-hero-glow" aria-hidden="true"></span>
+
+    <div class="ud-hero-top">
+      <div class="ud-hero-copy">
+        <span class="ud-hero-kicker"><i class="ri-group-fill"></i> Subscribers</span>
+        <div class="ud-hero-count">
+          <span class="num">{{ totalUsersCount | number }}</span>
+          <span class="unit">total</span>
+        </div>
+      </div>
+
+      <div class="ud-hero-stats">
+        <div class="ud-stat">
+          <span class="ud-stat-label">Showing</span>
+          <span class="ud-stat-value">{{ filteredUsers.length | number }}</span>
+        </div>
+        <div class="ud-stat ud-stat--wide">
+          <span class="ud-stat-label">Monthly fees</span>
+          <span class="ud-stat-value"><small>Rs</small>{{ filteredMonthlyFee | number }}</span>
+        </div>
+        <div class="ud-stat">
+          <span class="ud-stat-label">Areas</span>
+          <span class="ud-stat-value">{{ areaOptions.length | number }}</span>
+        </div>
+      </div>
+
+      <div class="ud-hero-actions">
+        <button class="mk-tap ud-hero-icon ion-activatable" type="button" (click)="loadUsers()"
+          [disabled]="isLoading" aria-label="Refresh list">
+          <i class="ri-refresh-line" [class.is-spinning]="isLoading"></i>
+          <ion-ripple-effect></ion-ripple-effect>
+        </button>
+        <button class="mk-tap ud-hero-add ion-activatable" type="button" (click)="openUserModal()">
+          <i class="ri-user-add-line"></i><span>Add</span>
+          <ion-ripple-effect></ion-ripple-effect>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Search + inline filters ══ -->
+  <div class="ud-filter-area">
+    <div class="ud-inline-filters">
+      <div class="ud-filter-heading">
+        <div class="ud-filter-title">
+          <span><i class="ri-equalizer-line"></i> Filters</span>
+          <small>{{ filteredUsers.length | number }} / {{ totalUsersCount | number }}</small>
+        </div>
+        <button class="mk-tap ud-filter-reset" type="button" (click)="resetAreaFilters()"
+          [disabled]="!activeFilterCount" aria-label="Reset filters" title="Reset filters">
+          <i class="ri-refresh-line"></i>
+        </button>
+      </div>
+
+      <div class="ud-status-tabs" role="group" aria-label="Customer status">
+        <button class="mk-tap ud-status-tab" type="button" [class.is-active]="!customerStatus"
+          (click)="setCustomerStatus('')">
+          <i class="ri-group-line"></i><span>All</span>
+          <b>{{ statusCounts.all | number }}</b>
+        </button>
+        <button class="mk-tap ud-status-tab ud-status-tab--active" type="button"
+          [class.is-active]="customerStatus === 'active'" (click)="setCustomerStatus('active')">
+          <i class="ri-user-follow-line"></i><span>Active</span>
+          <b>{{ statusCounts.active | number }}</b>
+        </button>
+        <button class="mk-tap ud-status-tab ud-status-tab--inactive" type="button"
+          [class.is-active]="customerStatus === 'inactive'" (click)="setCustomerStatus('inactive')">
+          <i class="ri-forbid-2-line"></i><span>Inactive</span>
+          <b>{{ statusCounts.inactive | number }}</b>
+        </button>
+      </div>
+
+      <div class="ud-filter-grid">
+        <div class="ud-filter-field">
+          <span class="ud-filter-label"><i class="ri-map-pin-2-line"></i> Area</span>
+          <app-sheet-select
+            [(ngModel)]="sublocality"
+            (selectionChange)="onAreaChange()"
+            [options]="areaOptions"
+            valueKey="sublocality"
+            displayKey="sublocality"
+            title="Area"
+            icon="ri-map-pin-2-line"
+            emptyLabel="All areas">
+          </app-sheet-select>
+        </div>
+
+        <div class="ud-filter-field">
+          <span class="ud-filter-label"><i class="ri-map-pin-line"></i> Sub-area</span>
+          <app-sheet-select
+            [(ngModel)]="subArea"
+            (selectionChange)="onFilterChange()"
+            [options]="filteredSubAreas"
+            valueKey="sub_area"
+            displayKey="sub_area"
+            title="Sub-area"
+            icon="ri-map-pin-line"
+            emptyLabel="All sub-areas">
+          </app-sheet-select>
+        </div>
+
+        <label class="ud-filter-field ud-filter-field--page">
+          <span class="ud-filter-label"><i class="ri-list-settings-line"></i> Per page</span>
+          <span class="ud-select-wrap">
+            <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" aria-label="Users per page">
+              <option *ngFor="let size of pageSizes" [ngValue]="size">{{ size }}</option>
+            </select>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </span>
+        </label>
+      </div>
+
+    </div>
+
+    <ion-searchbar
+      class="mk-searchbar ud-searchbar"
+      placeholder="Search user..."
+      inputmode="search"
+      enterkeyhint="search"
+      [value]="searchTerm"
+      [debounce]="250"
+      (ionInput)="onSearchInput($event)">
+    </ion-searchbar>
+
+    <span class="mk-progress" *ngIf="isLoading" aria-hidden="true"></span>
+  </div>
+
+  <!-- ══ List ══ -->
+  <div class="mk-list-head" #listTop *ngIf="pagedUsers.length">
+    <span><strong>{{ pageStart | number }}–{{ pageEnd | number }}</strong> of {{ filteredUsers.length | number }}</span>
+    <span class="mk-list-page">Page {{ currentPage }} / {{ totalPages }}</span>
+  </div>
+
+  <!-- First load: skeleton cards -->
+  <div class="ud-list" *ngIf="isLoading && !users.length">
+    <div class="mk-skel" *ngFor="let row of skeletonRows">
+      <ion-skeleton-text class="mk-skel-avatar" [animated]="true"></ion-skeleton-text>
+      <div class="mk-skel-lines">
+        <ion-skeleton-text [animated]="true" style="width: 58%; height: 14px"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 34%; height: 10px"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 76%; height: 10px"></ion-skeleton-text>
+      </div>
+    </div>
+  </div>
+
+  <div class="ud-list" *ngIf="!(isLoading && !users.length)">
+    <article
+      class="ud-card"
+      *ngFor="let user of pagedUsers; let i = index; trackBy: trackByUser"
+      [ngClass]="connectionBadgeClass(user.connection_type)"
+      [class.is-inactive]="isInactive(user)"
+      [style.--i]="i">
+
+      <div class="ud-card-main ion-activatable" role="button" tabindex="0"
+        (click)="openUserSheet(user)" (keydown.enter)="openUserSheet(user)">
+        <div class="mk-avatar">
+          <img *ngIf="user.photo" [src]="user.photo" alt="" loading="lazy" />
+          <span *ngIf="!user.photo">{{ userInitial(user) }}</span>
+          <span class="mk-avatar-badge"><i [class]="connectionIcon(user.connection_type)"></i></span>
+        </div>
+
+        <div class="ud-card-info">
+          <span class="ud-card-name">{{ user.user_name | titlecase }}</span>
+          <div class="mk-tags">
+            <span class="mk-id">#{{ user.internet_id }}</span>
+            <span class="mk-tone-pill">{{ connectionLabel(user.connection_type) }}</span>
+            <span class="mk-inactive-pill" *ngIf="isInactive(user)"><i class="ri-forbid-2-line"></i>Inactive</span>
+          </div>
+          <span class="ud-card-area">
+            <i class="ri-map-pin-2-line"></i>
+            <span>{{ user.sublocality | titlecase }}<ng-container *ngIf="user.sub_area"> · {{ user.sub_area | titlecase }}</ng-container></span>
+          </span>
+          <span class="ud-card-area" *ngIf="user.address">
+            <i class="ri-home-4-line"></i>
+            <span>{{ user.address }}</span>
+          </span>
+        </div>
+
+        <div class="ud-card-fee">
+          <strong><small>Rs</small>{{ userFee(user) | number }}</strong>
+          <span>{{ packageDisplay(user) }}</span>
+        </div>
+
+        <ion-ripple-effect></ion-ripple-effect>
+      </div>
+
+      <div class="ud-card-actions">
+        <a class="mk-tap ud-act ud-act--call" *ngIf="getContact(user) as phone" [href]="'tel:' + phone">
+          <i class="ri-phone-fill"></i><span>Call</span>
+        </a>
+        <span class="ud-act ud-act--none" *ngIf="!getContact(user)">
+          <i class="ri-phone-line"></i><span>No phone</span>
+        </span>
+        <button class="mk-tap ud-act ud-act--msg" type="button" (click)="openWhatsappModal(user)">
+          <i class="ri-whatsapp-line"></i><span>Message</span>
+        </button>
+        <button class="mk-tap ud-act ud-act--edit" type="button" (click)="editUser(user)">
+          <i class="ri-edit-2-line"></i><span>Edit</span>
+        </button>
+        <button class="mk-tap ud-act ud-act--more" type="button" (click)="openUserSheet(user)" aria-label="More actions">
+          <i class="ri-more-2-fill"></i>
+        </button>
+      </div>
+    </article>
+
+    <!-- Empty -->
+    <div class="mk-empty" *ngIf="!isLoading && pagedUsers.length === 0">
+      <div class="mk-empty-art"><i class="ri-user-search-line"></i></div>
+      <strong>No subscribers found</strong>
+      <p>{{ hasAnyFilter ? 'Nothing matches this search or area. Try something else.' : 'Add your first subscriber to get started.' }}</p>
+      <button class="mk-tap mk-btn mk-btn--ghost" type="button" *ngIf="hasAnyFilter" (click)="clearFilters()">
+        <i class="ri-filter-off-line"></i> Clear filters
+      </button>
+      <button class="mk-tap mk-btn mk-btn--primary" type="button" *ngIf="!hasAnyFilter" (click)="openUserModal()">
+        <i class="ri-user-add-line"></i> Add subscriber
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ Pagination ══ -->
+  <div class="mk-pager" *ngIf="totalPages > 1 && pagedUsers.length">
+    <div class="mk-pager-row">
+      <button class="mk-tap mk-icon-btn" type="button" (click)="goPrev()" [disabled]="currentPage === 1"
+        aria-label="Previous page">
+        <i class="ri-arrow-left-s-line"></i>
+      </button>
+
+      <div class="mk-pager-pages">
+        <ng-container *ngFor="let slot of pageWindow">
+          <span class="mk-page-gap" *ngIf="slot === 'gap'">…</span>
+          <button *ngIf="slot !== 'gap'" class="mk-tap mk-page" type="button"
+            [class.is-active]="slot === currentPage"
+            [class.is-near]="slot !== currentPage && slot !== 1 && slot !== totalPages"
+            [attr.aria-current]="slot === currentPage ? 'page' : null"
+            (click)="changePage(slot)">
+            {{ slot }}
+          </button>
+        </ng-container>
+      </div>
+
+      <button class="mk-tap mk-icon-btn" type="button" (click)="goNext()" [disabled]="currentPage === totalPages"
+        aria-label="Next page">
+        <i class="ri-arrow-right-s-line"></i>
+      </button>
+    </div>
+
+    <ion-range
+      *ngIf="totalPages > 5"
+      class="mk-scrub"
+      aria-label="Jump to page"
+      [min]="1"
+      [max]="totalPages"
+      [step]="1"
+      [pin]="true"
+      [value]="currentPage"
+      (ionChange)="onPageScrub($event)">
+    </ion-range>
+
+    <div class="mk-pager-meta">
+      <span>Showing <strong>{{ pageStart | number }}–{{ pageEnd | number }}</strong> of <strong>{{ filteredUsers.length | number }}</strong></span>
+      <span class="ud-page-size"><i class="ri-list-settings-line"></i> {{ pageSize }} / page</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════ Subscriber detail sheet ══════════════ -->
+<ion-modal class="ud-theme mk-sheet" [isOpen]="detailSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="onUserSheetDismiss()">
+  <ng-template>
+    <div class="mk-sheet-wrap" *ngIf="detailUser as u" [ngClass]="connectionBadgeClass(u.connection_type)"
+      [class.is-inactive]="isInactive(u)">
+      <div class="mk-sheet-head mk-sheet-head--profile">
+        <div class="mk-avatar mk-avatar--lg">
+          <img *ngIf="u.photo" [src]="u.photo" alt="" />
+          <span *ngIf="!u.photo">{{ userInitial(u) }}</span>
+          <span class="mk-avatar-badge"><i [class]="connectionIcon(u.connection_type)"></i></span>
+        </div>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">{{ u.user_name | titlecase }}</span>
+          <div class="mk-tags">
+            <span class="mk-id">#{{ u.internet_id }}</span>
+            <span class="mk-tone-pill">{{ connectionLabel(u.connection_type) }}</span>
+            <span class="mk-inactive-pill" *ngIf="isInactive(u)"><i class="ri-forbid-2-line"></i>Inactive</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="mk-inactive-note" *ngIf="isInactive(u)">
+          <i class="ri-user-forbid-line"></i>
+          <div>
+            <strong>Inactive customer</strong>
+            <span>Tap Edit to change the customer status.</span>
+          </div>
+        </div>
+
+        <div class="mk-fee-tile">
+          <div>
+            <span class="mk-fee-label">Monthly fee</span>
+            <span class="mk-fee-value"><small>Rs</small>{{ userFee(u) | number }}</span>
+          </div>
+          <span class="mk-fee-pkg"><i class="ri-box-3-line"></i>{{ packageDisplay(u) }}</span>
+        </div>
+
+        <div class="mk-info">
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-phone-line"></i></span>
+            <span class="mk-info-label">Contact</span>
+            <span class="mk-info-value mk-mono">{{ getContact(u) || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-map-pin-2-line"></i></span>
+            <span class="mk-info-label">Area</span>
+            <span class="mk-info-value">{{ (u.sublocality | titlecase) || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-map-pin-line"></i></span>
+            <span class="mk-info-label">Sub area</span>
+            <span class="mk-info-value">{{ (u.sub_area | titlecase) || '—' }}</span>
+          </div>
+          <div class="mk-info-row" *ngIf="u.address">
+            <span class="mk-info-icon"><i class="ri-home-4-line"></i></span>
+            <span class="mk-info-label">Address</span>
+            <span class="mk-info-value">{{ u.address }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-calendar-line"></i></span>
+            <span class="mk-info-label">Installed</span>
+            <span class="mk-info-value">{{ (u.installation_date | date: 'dd MMM yyyy') || '—' }}</span>
+          </div>
+        </div>
+
+        <div class="mk-grid">
+          <a class="mk-tap mk-grid-btn mk-g-blue" *ngIf="getContact(u) as phone" [href]="'tel:' + phone">
+            <span class="mk-grid-icon"><i class="ri-phone-fill"></i></span>Call
+          </a>
+          <button class="mk-tap mk-grid-btn mk-g-green" type="button" (click)="fromUserSheet('message')">
+            <span class="mk-grid-icon"><i class="ri-whatsapp-line"></i></span>Message
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-violet" type="button" (click)="fromUserSheet('edit')">
+            <span class="mk-grid-icon"><i class="ri-edit-2-line"></i></span>Edit
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-teal" type="button" (click)="fromUserSheet('receipt')">
+            <span class="mk-grid-icon"><i class="ri-bill-line"></i></span>Receipt
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-red" type="button" (click)="fromUserSheet('invoice')">
+            <span class="mk-grid-icon"><i class="ri-file-pdf-line"></i></span>Invoice
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-rose" type="button" (click)="fromUserSheet('delete')">
+            <span class="mk-grid-icon"><i class="ri-delete-bin-6-line"></i></span>Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Messaging sheet ══════════════ -->
+<ion-modal class="ud-theme mk-sheet" [isOpen]="whatsappSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="whatsappSheetOpen = false">
+  <ng-template>
+    <div class="mk-sheet-wrap">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon mk-sheet-icon--wa"><i class="ri-message-3-line"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">Send message</span>
+          <span class="mk-sheet-sub" *ngIf="selectedWhatsappUser">
+            {{ selectedWhatsappUser.user_name | titlecase }} · {{ getContact(selectedWhatsappUser) || 'No phone' }}
+          </span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="closeWhatsappSheet()" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="mk-msg">
+          <div class="mk-msg-row">
+            <span class="mk-msg-icon mk-t-green"><i class="ri-hand-heart-line"></i></span>
+            <div class="mk-msg-copy"><strong>Welcome message</strong><span>Greeting for new customer</span></div>
+          </div>
+          <div class="mk-msg-send">
+            <button class="mk-tap mk-send mk-send--wa" type="button" (click)="sendWhatsapp(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-whatsapp-line"></i> WhatsApp
+            </button>
+            <button class="mk-tap mk-send mk-send--sms" type="button" (click)="sendSmsWelcome(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-message-2-line"></i> SMS
+            </button>
+          </div>
+        </div>
+
+        <div class="mk-msg">
+          <div class="mk-msg-row">
+            <span class="mk-msg-icon mk-t-amber"><i class="ri-rocket-line"></i></span>
+            <div class="mk-msg-copy"><strong>Upgrade plan</strong><span>Package upgrade offer</span></div>
+          </div>
+          <div class="mk-msg-send">
+            <button class="mk-tap mk-send mk-send--wa" type="button" (click)="updratePlan(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-whatsapp-line"></i> WhatsApp
+            </button>
+            <button class="mk-tap mk-send mk-send--sms" type="button" (click)="sendSmsUpgrade(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-message-2-line"></i> SMS
+            </button>
+          </div>
+        </div>
+
+        <div class="mk-msg">
+          <div class="mk-msg-row">
+            <span class="mk-msg-icon mk-t-red"><i class="ri-tools-line"></i></span>
+            <div class="mk-msg-copy"><strong>Maintenance notice</strong><span>Set the schedule, then send</span></div>
+          </div>
+          <!-- Schedule fed into {Maintenance Date} / {Start Time} / {End Time} -->
+          <div class="mk-msg-fields">
+            <label class="mk-msg-field mk-msg-field--wide">
+              <span>Date</span>
+              <input class="mk-input" type="date" [(ngModel)]="maintenanceDate" />
+            </label>
+            <label class="mk-msg-field">
+              <span>From</span>
+              <input class="mk-input" type="time" [(ngModel)]="maintenanceStart" />
+            </label>
+            <label class="mk-msg-field">
+              <span>To</span>
+              <input class="mk-input" type="time" [(ngModel)]="maintenanceEnd" />
+            </label>
+          </div>
+          <div class="mk-msg-send">
+            <button class="mk-tap mk-send mk-send--wa" type="button" (click)="maintanancePlan(selectedWhatsappUser) && closeWhatsappSheet()">
+              <i class="ri-whatsapp-line"></i> WhatsApp
+            </button>
+            <button class="mk-tap mk-send mk-send--sms" type="button" (click)="sendSmsMaintenance(selectedWhatsappUser) && closeWhatsappSheet()">
+              <i class="ri-message-2-line"></i> SMS
+            </button>
+          </div>
+        </div>
+
+        <div class="mk-msg">
+          <div class="mk-msg-row">
+            <span class="mk-msg-icon mk-t-blue"><i class="ri-restart-line"></i></span>
+            <div class="mk-msg-copy"><strong>Service restoration</strong><span>Confirm service restored</span></div>
+          </div>
+          <div class="mk-msg-send">
+            <button class="mk-tap mk-send mk-send--wa" type="button" (click)="servicePlan(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-whatsapp-line"></i> WhatsApp
+            </button>
+            <button class="mk-tap mk-send mk-send--sms" type="button" (click)="sendSmsService(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-message-2-line"></i> SMS
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Delete confirmation ══════════════ -->
+<ion-modal class="ud-theme mk-sheet" [isOpen]="deleteSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  [backdropDismiss]="!isDeleting" (didDismiss)="deleteSheetOpen = false">
+  <ng-template>
+    <div class="mk-sheet-wrap mk-confirm">
+      <div class="mk-confirm-art"><i class="ri-user-unfollow-fill"></i></div>
+      <span class="mk-sheet-title">Delete subscriber?</span>
+      <p class="mk-confirm-text">All bills and records for this subscriber will be permanently removed.</p>
+
+      <div class="mk-sheet-foot">
+        <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="deleteSheet.dismiss()" [disabled]="isDeleting">
+          Cancel
+        </button>
+        <button class="mk-tap mk-btn mk-btn--danger" type="button" (click)="confirmDelete(deleteSheet)" [disabled]="isDeleting">
+          <ng-container *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</ng-container>
+          <ng-container *ngIf="isDeleting"><ion-spinner name="crescent"></ion-spinner> Deleting…</ng-container>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Receipt ══════════════ -->
+<ion-modal class="ud-theme mk-sheet" [isOpen]="showReceiptModal" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="showReceiptModal = false">
+  <ng-template>
+    <div class="mk-sheet-wrap" *ngIf="receiptData">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon mk-sheet-icon--teal"><i class="ri-bill-line"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">Receipt</span>
+          <span class="mk-sheet-sub">{{ receiptData.name | titlecase }} · #{{ receiptData.internetId }}</span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="showReceiptModal = false" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <!-- Captured as an image by save / print / share -->
+        <div class="mk-receipt" id="receipt">
+          <div class="mk-receipt-head">
+            <span class="mk-receipt-brand">{{ companyDetail.companyName }}</span>
+            <span class="mk-receipt-period">{{ receiptData.month | titlecase }} {{ receiptData.year | titlecase }}</span>
+          </div>
+
+          <div class="mk-receipt-body">
+            <div class="mk-receipt-row"><span>Name</span><strong>{{ receiptData.name }}</strong></div>
+            <div class="mk-receipt-row"><span>Internet ID</span><strong>{{ receiptData.internetId }}</strong></div>
+            <div class="mk-receipt-row"><span>Installation date</span><strong>{{ receiptData.installationDate }}</strong></div>
+            <div class="mk-receipt-row" *ngIf="receiptData.address"><span>Address</span><strong>{{ receiptData.address }}</strong></div>
+            <div class="mk-receipt-row" *ngIf="receiptData.area"><span>Area</span><strong>{{ receiptData.area | titlecase }}</strong></div>
+            <div class="mk-receipt-row">
+              <span>Package</span>
+              <strong>{{ receiptData.select_package | titlecase }}<ng-container *ngIf="receiptData.pkg_cable"> + {{ receiptData.pkg_cable | titlecase }}</ng-container></strong>
+            </div>
+
+            <div class="mk-receipt-cut" aria-hidden="true"></div>
+
+            <div class="mk-receipt-row"><span>Installation amount</span><strong>Rs. {{ receiptData.installation_amount }}</strong></div>
+            <div class="mk-receipt-total">
+              <span>Total amount</span>
+              <strong>Rs. {{ userFee(receiptData) | number }}</strong>
+            </div>
+            <div class="mk-receipt-row" *ngIf="receiptData.advanceBalance > 0"><span>Advance balance</span><strong>Rs. {{ receiptData.advanceBalance | number }}</strong></div>
+          </div>
+
+          <div class="mk-receipt-foot">
+            <span>Complain #: {{ companyDetail.complain_no1 }}, {{ companyDetail.complain_no2 }}</span>
+            <strong>✔ Internet Connection</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="mk-sheet-foot mk-thermal-foot">
+        <button class="mk-tap mk-btn mk-btn--primary mk-btn--block mk-thermal-btn" type="button"
+          (click)="printThermalReceipt()" [disabled]="printerBusy">
+          <ion-spinner *ngIf="printerBusy" name="crescent"></ion-spinner>
+          <i *ngIf="!printerBusy" class="ri-printer-fill"></i>
+          <span class="mk-thermal-copy">
+            <span>Print receipt</span>
+            <small>{{ printer.deviceName || 'Bluetooth printer' }}</small>
+          </span>
+        </button>
+
+        <div class="mk-receipt-actions mk-thermal-row">
+          <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="saveReceiptImage()" [disabled]="!!receiptBusy">
+            <ion-spinner *ngIf="receiptBusy === 'save'" name="crescent"></ion-spinner>
+            <i *ngIf="receiptBusy !== 'save'" class="ri-download-line"></i> Save
+          </button>
+          <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="printReceipt()">
+            <i class="ri-printer-cloud-line"></i> Web print
+          </button>
+          <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="shareReceiptImage()" [disabled]="!!receiptBusy">
+            <ion-spinner *ngIf="receiptBusy === 'share'" name="crescent"></ion-spinner>
+            <i *ngIf="receiptBusy !== 'share'" class="ri-whatsapp-line"></i> Share
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Invoice (PDF) ══════════════ -->
+<ion-modal class="ud-theme mk-sheet mk-sheet--tall" [isOpen]="showPdfModal" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="closePdfModal()">
+  <ng-template>
+    <div class="mk-sheet-wrap">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon mk-sheet-icon--red"><i class="ri-file-pdf-line"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">Invoice preview</span>
+          <span class="mk-sheet-sub">{{ pdfUser?.user_name | titlecase }} · #{{ pdfUser?.internet_id }}</span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="closePdfModal()" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host ud-invoice-scroll">
+        <!-- PDF CONTENT – captured for download -->
+        <div #pdfContent class="pdf-container">
+
+          <div class="watermark">Ranjha7Star</div>
+
+          <div class="invoice-header">
+            <div class="brand">
+              <img src="assets/ranjha-logo3.jpeg" alt="Ranjha7Star" class="logo">
+              <div>
+                <h1>Ranjha7Star</h1>
+                <span>Cable &amp; Internet Services</span>
+              </div>
+            </div>
+            <div class="invoice-meta">
+              <div class="meta-item">
+                <span class="label">Invoice #</span>
+                <span class="value">{{ pdfUser?.internet_id || '0000' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">Date</span>
+                <span class="value">{{ pdfUser?.installation_date | date : 'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">Due Date</span>
+                <span class="value">{{ pdfUser?.installation_date | date : 'dd/MM/yyyy' : '+7' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="address-section">
+            <div class="company-address">
+              <strong>Ranjha7Star Cable &amp; Internet</strong>
+              <p>123 Main Street, Lahore, Pakistan</p>
+              <p>Phone: +92-300-1234567</p>
+              <p>Email: ranjha7star.com</p>
+            </div>
+            <div class="customer-address">
+              <strong>Bill To:</strong>
+              <p>{{ pdfUser?.user_name }}</p>
+              <p>{{ pdfUser?.address }}</p>
+              <p>Phone: {{ getContact(pdfUser) || '—' }}</p>
+              <p>Connection: {{ pdfUser?.connection_type }} | Provider: {{ pdfUser?.connection_provider }}</p>
+            </div>
+          </div>
+
+          <table class="invoice-items">
+            <thead>
+              <tr>
+                <th class="col-sno">#</th>
+                <th class="col-desc">Description</th>
+                <th class="col-qty">Qty</th>
+                <th class="col-price">Unit Price</th>
+                <th class="col-amount">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="col-sno">1</td>
+                <td class="col-desc">Internet Package ({{ pdfUser?.select_package }})</td>
+                <td class="col-qty">1</td>
+                <td class="col-price">Rs. {{ pdfUser?.internet_package_fee }}</td>
+                <td class="col-amount">Rs. {{ pdfUser?.internet_package_fee }}</td>
+              </tr>
+              <tr>
+                <td class="col-sno">2</td>
+                <td class="col-desc">Cable TV Subscription</td>
+                <td class="col-qty">1</td>
+                <td class="col-price">Rs. {{ pdfUser?.cable_package_fee }}</td>
+                <td class="col-amount">Rs. {{ pdfUser?.cable_package_fee }}</td>
+              </tr>
+              <tr>
+                <td class="col-sno">3</td>
+                <td class="col-desc">Wire</td>
+                <td class="col-qty">1</td>
+                <td class="col-price">Rs. {{ pdfUser?.wire }}</td>
+                <td class="col-amount">Rs. {{ pdfUser?.wire }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="summary-section">
+            <div class="summary-left">
+              <div class="payment-terms">
+                <strong>Payment Method</strong>
+                <p>Bank Transfer / JazzCash / EasyPaisa</p>
+                <p class="bank-details">Phone: 0300-8800263</p>
+                <p class="bank-details">Name: Saqib Abbas Ranjha</p>
+              </div>
+            </div>
+            <div class="summary-right">
+              <div class="total-row">
+                <span>Subtotal</span>
+                <span>
+                  Rs.
+                  {{
+                  (pdfUser?.internet_package_fee || 0) +
+                  (pdfUser?.cable_package_fee || 0)
+                  }}
+                </span>
+              </div>
+              <div class="total-row discount">
+                <span>Discount</span>
+                <span>– Rs. {{ pdfUser?.internet_discount || 0 }}</span>
+              </div>
+              <div class="total-row grand-total">
+                <span>Grand Total</span>
+                <span>
+                  Rs.
+                  {{
+                  (pdfUser?.internet_package_fee || 0)
+                  }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="invoice-footer">
+            <p>Thank you for choosing Ranjha7Star! We value your trust.</p>
+            <span>This is a system-generated invoice. For queries, contact support.</span>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="mk-sheet-foot">
+        <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="closePdfModal()">Close</button>
+        <button class="mk-tap mk-btn mk-btn--primary" type="button" (click)="downloadPDF()">
+          <i class="ri-download-2-line"></i> Download PDF
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

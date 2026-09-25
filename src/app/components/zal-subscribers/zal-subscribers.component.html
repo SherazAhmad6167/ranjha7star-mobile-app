@@ -1,0 +1,730 @@
+<div class="zl zl-theme">
+
+  <!-- ══ Summary ══ -->
+  <div class="zl-hero">
+    <span class="zl-hero-glow" aria-hidden="true"></span>
+
+    <div class="zl-hero-top">
+      <div class="zl-hero-copy">
+        <span class="zl-hero-kicker"><i class="ri-server-fill"></i> ZAL Ultra</span>
+        <div class="zl-hero-count">
+          <span class="num">{{ (stats?.total | number) ?? '—' }}</span>
+          <span class="unit">subscribers</span>
+        </div>
+      </div>
+
+      <div class="zl-hero-stats">
+        <div class="zl-stat zl-stat--on">
+          <span class="zl-stat-label">Online</span>
+          <span class="zl-stat-value">{{ (stats?.online | number) ?? '—' }}</span>
+        </div>
+        <div class="zl-stat">
+          <span class="zl-stat-label">Active</span>
+          <span class="zl-stat-value">{{ (stats?.active | number) ?? '—' }}</span>
+        </div>
+        <div class="zl-stat zl-stat--off">
+          <span class="zl-stat-label">Disabled</span>
+          <span class="zl-stat-value">{{ (stats?.disable | number) ?? '—' }}</span>
+        </div>
+      </div>
+
+      <div class="zl-hero-actions">
+        <button class="mk-tap zl-hero-icon ion-activatable" type="button" (click)="refreshAll()"
+          [disabled]="isLoading" aria-label="Refresh list">
+          <i class="ri-refresh-line" [class.is-spinning]="isLoading"></i>
+          <ion-ripple-effect></ion-ripple-effect>
+        </button>
+        <button class="mk-tap zl-hero-add ion-activatable" type="button" (click)="openAdd()">
+          <i class="ri-user-add-line"></i><span>Add</span>
+          <ion-ripple-effect></ion-ripple-effect>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Cannot reach the panel ══ -->
+  <div class="mk-empty zl-error" *ngIf="proxyError">
+    <div class="mk-empty-art"><i class="ri-cloud-off-line"></i></div>
+    <strong>Can't reach ZAL Ultra</strong>
+    <p>{{ proxyError }}</p>
+    <button class="mk-tap mk-btn mk-btn--primary" type="button" (click)="refreshAll()" [disabled]="isLoading">
+      <i class="ri-refresh-line" [class.is-spinning]="isLoading"></i> Try again
+    </button>
+  </div>
+
+  <ng-container *ngIf="!proxyError">
+
+    <!-- ══ Search + inline filters ══ -->
+    <div class="zl-filter-area">
+      <div class="zl-inline-filters">
+        <div class="zl-filter-heading">
+          <div class="zl-filter-title">
+            <span><i class="ri-equalizer-line"></i> Filters</span>
+            <small *ngIf="knownTotal !== null">{{ totalLabel }} {{ isFiltered ? 'found' : 'total' }}</small>
+          </div>
+          <button class="mk-tap zl-filter-reset" type="button" (click)="clearPackage()"
+            [disabled]="!activeFilterCount" aria-label="Reset filters" title="Reset filters">
+            <i class="ri-refresh-line"></i>
+          </button>
+        </div>
+
+        <div class="zl-filter-grid">
+          <div class="zl-filter-field">
+            <span class="zl-filter-label"><i class="ri-price-tag-3-line"></i> Package</span>
+            <app-sheet-select
+              [(ngModel)]="packageId"
+              (selectionChange)="onFilterChange()"
+              [options]="packages"
+              valueKey="id"
+              displayKey="name"
+              [titleCase]="false"
+              title="Package"
+              icon="ri-price-tag-3-line"
+              emptyLabel="All packages">
+            </app-sheet-select>
+          </div>
+
+          <label class="zl-filter-field">
+            <span class="zl-filter-label"><i class="ri-list-settings-line"></i> Per page</span>
+            <span class="zl-select-wrap">
+              <select [(ngModel)]="pageSize" (change)="onFilterChange()" aria-label="Subscribers per page">
+                <option *ngFor="let size of pageSizes" [ngValue]="size">{{ size }}{{ size === maxLimit ? ' (max)' : '' }}</option>
+              </select>
+              <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <ion-searchbar
+        class="mk-searchbar zl-searchbar"
+        placeholder="Username, name, phone..."
+        inputmode="search"
+        enterkeyhint="search"
+        [value]="searchTerm"
+        [debounce]="400"
+        (ionInput)="onSearchInput($event)">
+      </ion-searchbar>
+
+      <span class="mk-progress" *ngIf="isLoading" aria-hidden="true"></span>
+    </div>
+
+    <!-- ══ List ══ -->
+    <div class="mk-list-head" #listTop *ngIf="subscribers.length">
+      <span>
+        <strong>{{ rangeStart | number }}–{{ rangeEnd | number }}</strong>
+        <ng-container *ngIf="knownTotal !== null"> of {{ totalLabel }}</ng-container>
+      </span>
+      <span class="mk-list-page">Page {{ currentPage }}<ng-container *ngIf="totalPages !== null"> / {{ totalPages }}</ng-container></span>
+    </div>
+
+    <!-- First load: skeleton cards -->
+    <div class="zl-list" *ngIf="isLoading && !subscribers.length">
+      <div class="mk-skel" *ngFor="let row of skeletonRows">
+        <ion-skeleton-text class="mk-skel-avatar" [animated]="true"></ion-skeleton-text>
+        <div class="mk-skel-lines">
+          <ion-skeleton-text [animated]="true" style="width: 58%; height: 14px"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" style="width: 34%; height: 10px"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" style="width: 76%; height: 10px"></ion-skeleton-text>
+        </div>
+      </div>
+    </div>
+
+    <!-- Later loads keep the current page on screen, dimmed, under the progress bar -->
+    <div class="zl-list" [class.is-stale]="isLoading" *ngIf="!(isLoading && !subscribers.length)">
+      <article
+        class="zl-card"
+        *ngFor="let s of subscribers; let i = index; trackBy: trackBySubscriber"
+        [class.net-on]="isOnline(s)"
+        [class.net-off]="!isOnline(s)"
+        [style.--i]="i">
+
+        <div class="zl-card-main ion-activatable" role="button" tabindex="0"
+          (click)="openDetailSheet(s)" (keydown.enter)="openDetailSheet(s)">
+          <div class="mk-avatar">
+            <span>{{ initial(s) }}</span>
+            <span class="mk-avatar-badge"><i [class]="isOnline(s) ? 'ri-wifi-line' : 'ri-wifi-off-line'"></i></span>
+          </div>
+
+          <div class="zl-card-info">
+            <span class="zl-card-name">{{ displayName(s) }}</span>
+            <div class="mk-tags">
+              <span class="mk-id">{{ username(s) }}</span>
+              <span class="zl-status" [ngClass]="'zl-status--' + status(s)">{{ status(s) | titlecase }}</span>
+            </div>
+            <span class="zl-card-area">
+              <i class="ri-map-pin-2-line"></i>
+              <span>{{ area(s) }}</span>
+            </span>
+          </div>
+
+          <div class="zl-card-side">
+            <span class="zl-pkg">{{ packageName(s) }}</span>
+            <span class="zl-expiry" [ngClass]="'is-' + expiryState(s)">
+              <i class="ri-calendar-event-line"></i>
+              <ng-container [ngSwitch]="expiryState(s)">
+                <ng-container *ngSwitchCase="'expired'">Expired</ng-container>
+                <ng-container *ngSwitchCase="'none'">No expiry</ng-container>
+                <ng-container *ngSwitchDefault>{{ expiryDate(s) | date: 'd MMM' }}</ng-container>
+              </ng-container>
+            </span>
+          </div>
+
+          <ion-ripple-effect></ion-ripple-effect>
+        </div>
+
+        <div class="zl-card-actions">
+          <a class="mk-tap zl-act zl-act--call" *ngIf="telNumber(s) as tel" [href]="'tel:' + tel">
+            <i class="ri-phone-fill"></i><span>Call</span>
+          </a>
+          <span class="zl-act zl-act--none" *ngIf="!telNumber(s)">
+            <i class="ri-phone-line"></i><span>No phone</span>
+          </span>
+          <button class="mk-tap zl-act zl-act--renew" type="button" (click)="openRenew(s)">
+            <i class="ri-flashlight-fill"></i><span>Renew</span>
+          </button>
+          <button class="mk-tap zl-act" type="button"
+            [class.zl-act--disable]="isOnline(s)" [class.zl-act--enable]="!isOnline(s)"
+            (click)="askAction(s, isOnline(s) ? 'disable' : 'enable')">
+            <i [class]="isOnline(s) ? 'ri-wifi-off-line' : 'ri-wifi-line'"></i>
+            <span>{{ isOnline(s) ? 'Disable' : 'Enable' }}</span>
+          </button>
+          <button class="mk-tap zl-act zl-act--more" type="button" (click)="openDetailSheet(s)" aria-label="More actions">
+            <i class="ri-more-2-fill"></i>
+          </button>
+        </div>
+      </article>
+
+      <!-- Empty -->
+      <div class="mk-empty" *ngIf="!isLoading && subscribers.length === 0">
+        <div class="mk-empty-art"><i class="ri-user-search-line"></i></div>
+        <strong>No subscribers found</strong>
+        <p>{{ isFiltered ? 'Nothing matches this search or package. Try something else.' : 'The panel returned no subscribers.' }}</p>
+        <button class="mk-tap mk-btn mk-btn--ghost" type="button" *ngIf="isFiltered" (click)="clearFilters()">
+          <i class="ri-filter-off-line"></i> Clear filters
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ Pagination (server-side; the total is only known when unfiltered) ══ -->
+    <div class="mk-pager" *ngIf="subscribers.length && (currentPage > 1 || canGoNext)">
+      <div class="mk-pager-row">
+        <button class="mk-tap mk-icon-btn" type="button" (click)="prevPage()"
+          [disabled]="currentPage === 1 || isLoading" aria-label="Previous page">
+          <i class="ri-arrow-left-s-line"></i>
+        </button>
+
+        <div class="mk-pager-pages">
+          <ng-container *ngFor="let slot of pageWindow">
+            <span class="mk-page-gap" *ngIf="slot === 'gap'">…</span>
+            <button *ngIf="slot !== 'gap'" class="mk-tap mk-page" type="button"
+              [class.is-active]="slot === currentPage"
+              [class.is-near]="slot !== currentPage && slot !== 1 && slot !== totalPages"
+              [attr.aria-current]="slot === currentPage ? 'page' : null"
+              [disabled]="isLoading"
+              (click)="changePage(slot)">
+              {{ slot }}
+            </button>
+          </ng-container>
+        </div>
+
+        <button class="mk-tap mk-icon-btn" type="button" (click)="nextPage()"
+          [disabled]="!canGoNext || isLoading" aria-label="Next page">
+          <i class="ri-arrow-right-s-line"></i>
+        </button>
+      </div>
+
+      <ion-range
+        *ngIf="(totalPages ?? 0) > 5"
+        class="mk-scrub"
+        aria-label="Jump to page"
+        [min]="1"
+        [max]="totalPages ?? 1"
+        [step]="1"
+        [pin]="true"
+        [value]="currentPage"
+        [disabled]="isLoading"
+        (ionChange)="onPageScrub($event)">
+      </ion-range>
+
+      <div class="mk-pager-meta">
+        <span>
+          Showing <strong>{{ rangeStart | number }}–{{ rangeEnd | number }}</strong>
+          <ng-container *ngIf="knownTotal !== null"> of <strong>{{ totalLabel }}</strong></ng-container>
+        </span>
+        <span class="zl-page-size"><i class="ri-list-settings-line"></i> {{ pageSize }} / page</span>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
+
+
+<!-- ══════════════ Subscriber detail sheet ══════════════ -->
+<ion-modal class="zl-theme mk-sheet" [isOpen]="detailSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="onDetailSheetDismiss()">
+  <ng-template>
+    <div class="mk-sheet-wrap" *ngIf="detailSubscriber as s" [class.net-on]="isOnline(s)" [class.net-off]="!isOnline(s)">
+      <div class="mk-sheet-head mk-sheet-head--profile">
+        <div class="mk-avatar mk-avatar--lg">
+          <span>{{ initial(s) }}</span>
+          <span class="mk-avatar-badge"><i [class]="isOnline(s) ? 'ri-wifi-line' : 'ri-wifi-off-line'"></i></span>
+        </div>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">{{ displayName(s) }}</span>
+          <div class="mk-tags">
+            <span class="mk-id">{{ username(s) }}</span>
+            <span class="mk-tone-pill">{{ isOnline(s) ? 'Internet on' : 'Internet off' }}</span>
+            <span class="zl-status" [ngClass]="'zl-status--' + status(s)">{{ status(s) | titlecase }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="mk-fee-tile">
+          <div class="zl-tile-copy">
+            <span class="mk-fee-label">Package</span>
+            <span class="mk-fee-value zl-tile-value">{{ packageName(s) }}</span>
+          </div>
+          <span class="mk-fee-pkg zl-tile-expiry">
+            <i [class]="expiryState(s) === 'expired' ? 'ri-error-warning-line' : 'ri-calendar-event-line'"></i>
+            <ng-container [ngSwitch]="expiryState(s)">
+              <ng-container *ngSwitchCase="'expired'">Expired</ng-container>
+              <ng-container *ngSwitchCase="'none'">No expiry</ng-container>
+              <ng-container *ngSwitchDefault>{{ expiryDate(s) | date: 'd MMM' }}</ng-container>
+            </ng-container>
+          </span>
+        </div>
+
+        <div class="mk-info">
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-phone-line"></i></span>
+            <span class="mk-info-label">Phone</span>
+            <span class="mk-info-value mk-mono">{{ phone(s) }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-map-pin-2-line"></i></span>
+            <span class="mk-info-label">Area</span>
+            <span class="mk-info-value">{{ area(s) }}</span>
+          </div>
+          <div class="mk-info-row" *ngIf="s.address">
+            <span class="mk-info-icon"><i class="ri-home-4-line"></i></span>
+            <span class="mk-info-label">Address</span>
+            <span class="mk-info-value">{{ s.address }}</span>
+          </div>
+          <div class="mk-info-row" *ngIf="s.identity">
+            <span class="mk-info-icon"><i class="ri-id-card-line"></i></span>
+            <span class="mk-info-label">Identity</span>
+            <span class="mk-info-value mk-mono">{{ s.identity }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-calendar-event-line"></i></span>
+            <span class="mk-info-label">Expires</span>
+            <span class="mk-info-value zl-expiry-text" [ngClass]="'is-' + expiryState(s)">
+              <ng-container *ngIf="expiryDate(s) as date; else rawExpiry">{{ date | date: 'd MMM yyyy, h:mm a' }}</ng-container>
+              <ng-template #rawExpiry>{{ expiry(s) }}</ng-template>
+            </span>
+          </div>
+        </div>
+
+        <div class="mk-grid">
+          <a class="mk-tap mk-grid-btn mk-g-blue" *ngIf="telNumber(s) as tel" [href]="'tel:' + tel">
+            <span class="mk-grid-icon"><i class="ri-phone-fill"></i></span>Call
+          </a>
+          <button class="mk-tap mk-grid-btn mk-g-green" type="button" (click)="fromDetailSheet('renew')">
+            <span class="mk-grid-icon"><i class="ri-flashlight-fill"></i></span>Renew
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-violet" type="button" (click)="fromDetailSheet('edit')">
+            <span class="mk-grid-icon"><i class="ri-edit-2-line"></i></span>Edit
+          </button>
+          <button class="mk-tap mk-grid-btn" type="button" [ngClass]="isOnline(s) ? 'mk-g-red' : 'mk-g-teal'"
+            (click)="fromDetailSheet('net')">
+            <span class="mk-grid-icon"><i [class]="isOnline(s) ? 'ri-wifi-off-line' : 'ri-wifi-line'"></i></span>
+            {{ isOnline(s) ? 'Disable net' : 'Enable net' }}
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-rose" type="button" (click)="fromDetailSheet('delete')">
+            <span class="mk-grid-icon"><i class="ri-delete-bin-6-line"></i></span>Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Enable / disable internet ══════════════ -->
+<ion-modal class="zl-theme mk-sheet" [isOpen]="confirmSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  [backdropDismiss]="!isActing" (didDismiss)="confirmSheetOpen = false">
+  <ng-template>
+    <div class="mk-sheet-wrap mk-confirm" [class.zl-confirm--safe]="pendingAction === 'enable'">
+      <div class="mk-confirm-art">
+        <i [class]="pendingAction === 'enable' ? 'ri-wifi-line' : 'ri-wifi-off-line'"></i>
+      </div>
+      <span class="mk-sheet-title">{{ pendingAction === 'enable' ? 'Enable' : 'Disable' }} internet?</span>
+      <p class="mk-confirm-text">
+        {{ pendingAction === 'enable' ? 'Restore' : 'Cut' }} the connection for
+        <strong>{{ displayName(selectedSubscriber) }}</strong>
+        <span class="zl-code">{{ username(selectedSubscriber) }}</span> on the ZAL Ultra panel.
+      </p>
+
+      <div class="mk-sheet-foot">
+        <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="confirmSheetOpen = false" [disabled]="isActing">
+          Cancel
+        </button>
+        <button class="mk-tap mk-btn" type="button" (click)="confirmAction()" [disabled]="isActing"
+          [ngClass]="pendingAction === 'enable' ? 'zl-btn--safe' : 'mk-btn--danger'">
+          <ng-container *ngIf="!isActing">
+            <i [class]="pendingAction === 'enable' ? 'ri-wifi-line' : 'ri-wifi-off-line'"></i>
+            {{ pendingAction === 'enable' ? 'Enable' : 'Disable' }}
+          </ng-container>
+          <ng-container *ngIf="isActing"><ion-spinner name="crescent"></ion-spinner> Working…</ng-container>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Delete ══════════════ -->
+<ion-modal class="zl-theme mk-sheet" [isOpen]="deleteSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  [backdropDismiss]="!isDeleting" (didDismiss)="deleteSheetOpen = false">
+  <ng-template>
+    <div class="mk-sheet-wrap mk-confirm">
+      <div class="mk-confirm-art"><i class="ri-user-unfollow-fill"></i></div>
+      <span class="mk-sheet-title">Delete subscriber?</span>
+      <p class="mk-confirm-text">
+        Permanently remove <strong>{{ displayName(selectedSubscriber) }}</strong>
+        <span class="zl-code">{{ username(selectedSubscriber) }}</span> from the ZAL Ultra panel.
+      </p>
+      <div class="zl-warn">
+        <i class="ri-error-warning-line"></i>
+        <span>This deletes the subscriber on the panel itself and cannot be undone from here.</span>
+      </div>
+
+      <div class="mk-sheet-foot">
+        <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="deleteSheetOpen = false" [disabled]="isDeleting">
+          Cancel
+        </button>
+        <button class="mk-tap mk-btn mk-btn--danger" type="button" (click)="confirmDelete()" [disabled]="isDeleting">
+          <ng-container *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</ng-container>
+          <ng-container *ngIf="isDeleting"><ion-spinner name="crescent"></ion-spinner> Deleting…</ng-container>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Add / edit subscriber (full-screen form) ══════════════ -->
+<ng-template #formModal let-modal>
+  <div class="zf zl-theme">
+    <header class="zf-top">
+      <button type="button" class="mk-tap mk-icon-btn" aria-label="Close" (click)="modal.dismiss()">
+        <i class="ri-close-line"></i>
+      </button>
+      <div class="zf-top-titles">
+        <span class="zf-top-kicker">{{ editMode ? 'Update subscriber' : 'New subscriber' }}</span>
+        <span class="zf-top-title">{{ form.get('fullname')?.value || (editMode ? 'Edit details' : 'ZAL Ultra panel') }}</span>
+      </div>
+      <span class="zf-top-icon"><i [class]="editMode ? 'ri-user-settings-line' : 'ri-user-add-line'"></i></span>
+    </header>
+
+    <form class="zf-form" [formGroup]="form" (ngSubmit)="saveSubscriber()">
+      <div class="zf-body">
+
+        <div class="zf-card">
+          <div class="zf-section-title"><span class="zf-dot indigo"><i class="ri-user-line"></i></span> Personal details</div>
+          <div class="zf-grid">
+            <div class="zf-field zf-span">
+              <label class="zf-label" for="zf-fullname">Name <span class="req">*</span></label>
+              <input id="zf-fullname" type="text" class="mk-input" formControlName="fullname" placeholder="Full name"
+                [class.is-invalid]="invalid(form, 'fullname')" />
+              <span class="zf-err" *ngIf="invalid(form, 'fullname')">Name is required</span>
+            </div>
+
+            <div class="zf-field">
+              <label class="zf-label" for="zf-phone">Phone <span class="req">*</span></label>
+              <input id="zf-phone" type="tel" inputmode="tel" class="mk-input" formControlName="phone" placeholder="03xxxxxxxxx"
+                [class.is-invalid]="invalid(form, 'phone')" />
+              <span class="zf-err" *ngIf="invalid(form, 'phone')">Phone is required</span>
+            </div>
+
+            <div class="zf-field">
+              <label class="zf-label" for="zf-identity">Identity <span class="req">*</span></label>
+              <input id="zf-identity" type="text" class="mk-input" formControlName="identity" placeholder="CNIC"
+                [class.is-invalid]="invalid(form, 'identity')" />
+              <span class="zf-err" *ngIf="invalid(form, 'identity')">Identity is required</span>
+            </div>
+
+            <div class="zf-field zf-span">
+              <label class="zf-label" for="zf-email">Email</label>
+              <input id="zf-email" type="email" inputmode="email" class="mk-input" formControlName="email"
+                placeholder="Email address" autocapitalize="off" />
+            </div>
+
+            <div class="zf-field zf-span">
+              <label class="zf-label" for="zf-address">Address</label>
+              <input id="zf-address" type="text" class="mk-input" formControlName="address" placeholder="Street / village" />
+            </div>
+
+            <div class="zf-field zf-span">
+              <span class="zf-label">Area</span>
+              <app-sheet-select
+                formControlName="area"
+                variant="field"
+                [options]="areaOptions"
+                valueKey="id"
+                displayKey="name"
+                title="Area"
+                icon="ri-map-pin-2-line"
+                placeholder="Select area"
+                emptyLabel="No area">
+              </app-sheet-select>
+            </div>
+          </div>
+        </div>
+
+        <div class="zf-card">
+          <div class="zf-section-title"><span class="zf-dot blue"><i class="ri-key-2-line"></i></span> Login &amp; connection</div>
+          <div class="zf-grid">
+            <div class="zf-field zf-span">
+              <label class="zf-label" for="zf-username">Username <span class="req">*</span></label>
+              <input id="zf-username" type="text" class="mk-input" formControlName="username" placeholder="Login username"
+                autocapitalize="off" autocomplete="off" [class.is-invalid]="invalid(form, 'username')" />
+              <span class="zf-err" *ngIf="invalid(form, 'username')">Username is required</span>
+            </div>
+
+            <div class="zf-field">
+              <label class="zf-label" for="zf-password">Portal password <span class="req" *ngIf="!editMode">*</span></label>
+              <input id="zf-password" type="text" class="mk-input" formControlName="password"
+                autocapitalize="off" autocomplete="off"
+                [placeholder]="editMode ? 'Keep current' : 'Password'" [class.is-invalid]="invalid(form, 'password')" />
+              <span class="zf-err" *ngIf="invalid(form, 'password')">Password is required</span>
+            </div>
+
+            <div class="zf-field">
+              <label class="zf-label" for="zf-conn-password">PPPoE password</label>
+              <input id="zf-conn-password" type="text" class="mk-input" formControlName="connection_password"
+                autocapitalize="off" autocomplete="off" placeholder="Connection" />
+            </div>
+
+            <span class="zf-hint zf-span" *ngIf="editMode">Leave the portal password blank to keep the existing one.</span>
+
+            <div class="zf-field zf-span">
+              <span class="zf-label">NAS / router</span>
+              <app-sheet-select
+                formControlName="nas_id"
+                variant="field"
+                [options]="nasOptions"
+                valueKey="id"
+                displayKey="name"
+                [titleCase]="false"
+                title="NAS / router"
+                icon="ri-router-line"
+                placeholder="Select NAS"
+                emptyLabel="No NAS">
+              </app-sheet-select>
+            </div>
+          </div>
+        </div>
+
+        <div class="zf-card">
+          <div class="zf-section-title"><span class="zf-dot green"><i class="ri-price-tag-3-line"></i></span> Package &amp; service</div>
+          <div class="zf-grid">
+            <div class="zf-field zf-span">
+              <span class="zf-label">Package <span class="req">*</span></span>
+              <app-sheet-select
+                formControlName="package_id"
+                variant="field"
+                [options]="packages"
+                valueKey="id"
+                displayKey="name"
+                [titleCase]="false"
+                [allowEmpty]="false"
+                [isInvalid]="invalid(form, 'package_id')"
+                title="Package"
+                icon="ri-price-tag-3-line"
+                placeholder="Select package">
+              </app-sheet-select>
+              <span class="zf-err" *ngIf="invalid(form, 'package_id')">Package is required</span>
+            </div>
+
+            <div class="zf-field zf-span">
+              <span class="zf-label">Salesperson <span class="req">*</span></span>
+              <app-sheet-select
+                formControlName="salesperson_id"
+                variant="field"
+                [options]="salespersonOptions"
+                valueKey="id"
+                displayKey="name"
+                [titleCase]="false"
+                [allowEmpty]="false"
+                [isInvalid]="invalid(form, 'salesperson_id')"
+                title="Salesperson"
+                icon="ri-user-star-line"
+                placeholder="Select salesperson">
+              </app-sheet-select>
+              <span class="zf-err" *ngIf="invalid(form, 'salesperson_id')">Salesperson is required</span>
+            </div>
+
+            <div class="zf-field zf-span">
+              <label class="zf-label" for="zf-expiry">Expiry</label>
+              <input id="zf-expiry" type="datetime-local" class="mk-input" formControlName="expiration_date" />
+            </div>
+
+            <div class="zf-field zf-span">
+              <span class="zf-label">Account status</span>
+              <ion-segment class="zf-segment" mode="ios" formControlName="profile_status">
+                <ion-segment-button [value]="2"><span class="zf-seg"><i class="ri-checkbox-circle-line"></i> Active</span></ion-segment-button>
+                <ion-segment-button [value]="1"><span class="zf-seg"><i class="ri-time-line"></i> Pending</span></ion-segment-button>
+                <ion-segment-button [value]="0"><span class="zf-seg"><i class="ri-forbid-2-line"></i> Inactive</span></ion-segment-button>
+              </ion-segment>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <footer class="zf-foot">
+        <button type="button" class="mk-tap mk-btn mk-btn--ghost" (click)="modal.dismiss()">Cancel</button>
+        <button type="submit" class="mk-tap mk-btn mk-btn--primary zf-save" [disabled]="isSaving">
+          <ng-container *ngIf="!isSaving">
+            <i class="ri-check-line"></i> {{ editMode ? 'Update subscriber' : 'Create subscriber' }}
+          </ng-container>
+          <ng-container *ngIf="isSaving">
+            <ion-spinner name="crescent"></ion-spinner> {{ editMode ? 'Updating…' : 'Creating…' }}
+          </ng-container>
+        </button>
+      </footer>
+    </form>
+  </div>
+</ng-template>
+
+
+<!-- ══════════════ Renew / activate (full-screen form) ══════════════ -->
+<ng-template #renewModal let-modal>
+  <div class="zf zl-theme">
+    <header class="zf-top">
+      <button type="button" class="mk-tap mk-icon-btn" aria-label="Close" (click)="modal.dismiss()">
+        <i class="ri-close-line"></i>
+      </button>
+      <div class="zf-top-titles">
+        <span class="zf-top-kicker">Renew / activate</span>
+        <span class="zf-top-title">{{ displayName(selectedSubscriber) }}</span>
+      </div>
+      <span class="zf-top-icon"><i class="ri-flashlight-fill"></i></span>
+    </header>
+
+    <!-- No ngSubmit: Enter in the amount field must never charge the subscriber. -->
+    <form class="zf-form" [formGroup]="renewForm">
+      <div class="zf-body">
+
+        <!-- Where the subscriber stands now -->
+        <div class="zf-now" [class.net-on]="isOnline(selectedSubscriber)" [class.net-off]="!isOnline(selectedSubscriber)">
+          <div class="zf-now-item">
+            <span>Username</span>
+            <strong class="mk-mono">{{ username(selectedSubscriber) }}</strong>
+          </div>
+          <div class="zf-now-item">
+            <span>Package</span>
+            <strong>{{ packageName(selectedSubscriber) }}</strong>
+          </div>
+          <div class="zf-now-item" [ngClass]="'is-' + expiryState(selectedSubscriber)">
+            <span>Expires</span>
+            <strong>
+              <ng-container *ngIf="expiryDate(selectedSubscriber) as date; else rawRenewExpiry">{{ date | date: 'd MMM yyyy' }}</ng-container>
+              <ng-template #rawRenewExpiry>{{ expiry(selectedSubscriber) }}</ng-template>
+            </strong>
+          </div>
+        </div>
+
+        <div class="zf-card">
+          <div class="zf-section-title"><span class="zf-dot green"><i class="ri-coins-line"></i></span> Activation</div>
+          <div class="zf-grid">
+            <div class="zf-field zf-span">
+              <span class="zf-label">Package</span>
+              <app-sheet-select
+                formControlName="package_id"
+                variant="field"
+                [options]="packages"
+                valueKey="id"
+                displayKey="name"
+                [titleCase]="false"
+                title="Package"
+                icon="ri-price-tag-3-line"
+                placeholder="Keep current package"
+                emptyLabel="Keep current package">
+              </app-sheet-select>
+            </div>
+
+            <div class="zf-field zf-span">
+              <span class="zf-label">Payment</span>
+              <ion-segment class="zf-segment" mode="ios" formControlName="take_payment">
+                <ion-segment-button [value]="1"><span class="zf-seg"><i class="ri-hand-coin-line"></i> Collect now</span></ion-segment-button>
+                <ion-segment-button [value]="0"><span class="zf-seg"><i class="ri-wallet-3-line"></i> From balance</span></ion-segment-button>
+              </ion-segment>
+              <span class="zf-hint" *ngIf="!renewForm.get('take_payment')?.value">
+                Nothing is collected; the fee is charged to the subscriber's existing balance.
+              </span>
+            </div>
+
+            <ng-container *ngIf="renewForm.get('take_payment')?.value">
+              <div class="zf-field zf-span">
+                <span class="zf-label">Payment method</span>
+                <ion-segment class="zf-segment" mode="ios" formControlName="payment_method">
+                  <ion-segment-button [value]="1"><span class="zf-seg"><i class="ri-money-dollar-circle-line"></i> Cash</span></ion-segment-button>
+                  <ion-segment-button [value]="4"><span class="zf-seg"><i class="ri-bank-card-line"></i> Subscriber balance</span></ion-segment-button>
+                </ion-segment>
+              </div>
+
+              <div class="zf-field zf-span">
+                <label class="zf-label" for="zf-amount">Payment amount <span class="req">*</span></label>
+                <div class="zf-affix">
+                  <span class="zf-prefix">Rs</span>
+                  <input id="zf-amount" type="number" inputmode="numeric" class="mk-input zf-has-prefix"
+                    formControlName="payment_amount" placeholder="0"
+                    [class.is-invalid]="invalid(renewForm, 'payment_amount')" />
+                </div>
+                <span class="zf-err" *ngIf="invalid(renewForm, 'payment_amount')">Enter an amount above 0</span>
+                <span class="zf-hint zf-hint--brand" *ngIf="renewPreview?.required_payment">
+                  <i class="ri-information-line"></i> Panel is asking for Rs {{ renewPreview.required_payment }}
+                </span>
+              </div>
+            </ng-container>
+
+            <div class="zf-field zf-span">
+              <label class="zf-label" for="zf-custom-expiry">Custom expiry</label>
+              <input id="zf-custom-expiry" type="datetime-local" class="mk-input" formControlName="custom_expiry_datetime" />
+              <span class="zf-hint">Leave blank to use the package duration.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost preview from the panel (preview_only: 1) -->
+        <div class="zf-card zf-preview" *ngIf="renewPreview">
+          <div class="zf-section-title"><span class="zf-dot indigo"><i class="ri-eye-line"></i></span> Cost preview</div>
+          <div class="zf-preview-due" *ngIf="renewPreview?.required_payment !== undefined">
+            <span>Required payment</span>
+            <strong><small>Rs</small>{{ renewPreview.required_payment }}</strong>
+          </div>
+          <details class="zf-preview-raw">
+            <summary>Full panel response</summary>
+            <pre>{{ renewPreview | json }}</pre>
+          </details>
+        </div>
+
+      </div>
+
+      <footer class="zf-foot">
+        <button type="button" class="mk-tap mk-btn mk-btn--ghost zf-preview-btn" (click)="previewRenew()" [disabled]="isPreviewing">
+          <ion-spinner *ngIf="isPreviewing" name="crescent"></ion-spinner>
+          <i *ngIf="!isPreviewing" class="ri-eye-line"></i> Preview
+        </button>
+        <button type="button" class="mk-tap mk-btn mk-btn--primary zf-save" (click)="confirmRenew()" [disabled]="isActing">
+          <ion-spinner *ngIf="isActing" name="crescent"></ion-spinner>
+          <i *ngIf="!isActing" class="ri-flashlight-fill"></i> {{ isActing ? 'Activating…' : 'Activate' }}
+        </button>
+      </footer>
+    </form>
+  </div>
+</ng-template>

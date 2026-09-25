@@ -1,0 +1,956 @@
+<div class="uc uc-theme">
+
+  <!-- ══ Summary ══ -->
+  <div class="uc-hero">
+    <span class="uc-hero-glow" aria-hidden="true"></span>
+
+    <div class="uc-hero-top">
+      <div class="uc-hero-copy">
+        <span class="uc-hero-kicker"><i class="ri-wallet-3-fill"></i> Collections</span>
+        <div class="uc-hero-count">
+          <span class="num">{{ summary.totalUsers | number }}</span>
+          <span class="unit">bills</span>
+        </div>
+      </div>
+
+      <div class="uc-hero-stats">
+        <div class="uc-stat uc-stat--third">
+          <span class="uc-stat-label">Bill</span>
+          <span class="uc-stat-value"><small>Rs</small>{{ money(summary.totalBillAmount) }}</span>
+        </div>
+        <div class="uc-stat uc-stat--third uc-stat--paid">
+          <span class="uc-stat-label">Collected</span>
+          <span class="uc-stat-value"><small>Rs</small>{{ money(summary.totalPaidAmount) }}</span>
+        </div>
+        <div class="uc-stat uc-stat--third uc-stat--unpaid">
+          <span class="uc-stat-label">Pending</span>
+          <span class="uc-stat-value"><small>Rs</small>{{ money(summary.totalUnpaidAmount) }}</span>
+        </div>
+        <div class="uc-stat uc-stat--half uc-stat--advance">
+          <span class="uc-stat-label">Advance</span>
+          <span class="uc-stat-value"><small>Rs</small>{{ money(summary.totalAdvanceAmount) }}</span>
+        </div>
+        <div class="uc-stat uc-stat--half uc-stat--partial">
+          <span class="uc-stat-label">Partial</span>
+          <span class="uc-stat-value"><small>Rs</small>{{ money(summary.totalRemainingAmount) }}</span>
+        </div>
+      </div>
+
+      <div class="uc-hero-actions">
+        <button class="mk-tap uc-hero-icon ion-activatable" type="button" (click)="loadUsers()"
+          [disabled]="isLoading" aria-label="Refresh list">
+          <i class="ri-refresh-line" [class.is-spinning]="isLoading"></i>
+          <ion-ripple-effect></ion-ripple-effect>
+        </button>
+        <button class="mk-tap uc-hero-add ion-activatable" type="button" *ngIf="selectedStatus === 'unpaid' && !isBulkMode"
+          (click)="startBulkMode()">
+          <i class="ri-checkbox-multiple-line"></i><span>Bulk</span>
+          <ion-ripple-effect></ion-ripple-effect>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Search + inline filters ══ -->
+  <div class="uc-filter-area">
+    <div class="uc-inline-filters">
+      <div class="uc-filter-heading">
+        <div class="uc-filter-title">
+          <span><i class="ri-equalizer-line"></i> Filters</span>
+          <small>{{ filteredUsers.length | number }} / {{ users.length | number }}</small>
+        </div>
+        <button class="mk-tap uc-filter-reset" type="button" (click)="resetFilters()"
+          [disabled]="!activeFilterCount" aria-label="Reset filters" title="Reset filters">
+          <i class="ri-refresh-line"></i>
+        </button>
+      </div>
+
+      <div class="uc-status-tabs" role="group" aria-label="Bill status">
+        <button class="mk-tap uc-status-tab" type="button" [class.is-active]="selectedStatus === 'all'"
+          (click)="selectedStatus='all'; onFilterChange()">
+          <i class="ri-list-check-2"></i><span>All</span>
+          <b>{{ summary.totalUsers }}</b>
+        </button>
+        <button class="mk-tap uc-status-tab uc-status-tab--paid" type="button" [class.is-active]="selectedStatus === 'paid'"
+          (click)="selectedStatus='paid'; onFilterChange()">
+          <i class="ri-checkbox-circle-line"></i><span>Paid</span>
+          <b>{{ summary.totalPaidUsers }}</b>
+        </button>
+        <button class="mk-tap uc-status-tab uc-status-tab--unpaid" type="button" [class.is-active]="selectedStatus === 'unpaid'"
+          (click)="selectedStatus='unpaid'; onFilterChange()">
+          <i class="ri-time-line"></i><span>Unpaid</span>
+          <b>{{ summary.totalUnpaidUsers }}</b>
+        </button>
+        <button class="mk-tap uc-status-tab uc-status-tab--advance" type="button" [class.is-active]="selectedStatus === 'advance'"
+          (click)="selectedStatus='advance'; onFilterChange()">
+          <i class="ri-arrow-up-circle-line"></i><span>Advance</span>
+          <b>{{ summary.totalAdvanceUsers }}</b>
+        </button>
+        <button class="mk-tap uc-status-tab uc-status-tab--partial" type="button" [class.is-active]="selectedStatus === 'remaining'"
+          (click)="selectedStatus='remaining'; onFilterChange()">
+          <i class="ri-error-warning-line"></i><span>Partial</span>
+          <b>{{ summary.totalRemainingUsers }}</b>
+        </button>
+      </div>
+
+      <div class="uc-filter-grid">
+        <div class="uc-filter-field">
+          <span class="uc-filter-label"><i class="ri-map-pin-2-line"></i> Area</span>
+          <app-sheet-select
+            [(ngModel)]="sublocality"
+            (selectionChange)="onAreaChange()"
+            [options]="areaOptions"
+            valueKey="sublocality"
+            displayKey="sublocality"
+            title="Area"
+            icon="ri-map-pin-2-line"
+            emptyLabel="All areas">
+          </app-sheet-select>
+        </div>
+
+        <div class="uc-filter-field">
+          <span class="uc-filter-label"><i class="ri-map-pin-line"></i> Sub-area</span>
+          <app-sheet-select
+            [(ngModel)]="subArea"
+            (selectionChange)="onFilterChange()"
+            [options]="filteredSubAreas"
+            valueKey="sub_area"
+            displayKey="sub_area"
+            title="Sub-area"
+            icon="ri-map-pin-line"
+            emptyLabel="All sub-areas">
+          </app-sheet-select>
+        </div>
+
+        <label class="uc-filter-field uc-filter-field--page">
+          <span class="uc-filter-label"><i class="ri-list-settings-line"></i> Per page</span>
+          <span class="uc-select-wrap">
+            <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" aria-label="Bills per page">
+              <option *ngFor="let size of pageSizes" [ngValue]="size">{{ size }}</option>
+            </select>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </span>
+        </label>
+      </div>
+
+      <div class="uc-filter-grid uc-filter-grid--more" [class.uc-filter-grid--three]="role === 'admin'">
+        <div class="uc-filter-field" *ngIf="role === 'admin'">
+          <span class="uc-filter-label"><i class="ri-user-star-line"></i> Recovery officer</span>
+          <app-sheet-select
+            [(ngModel)]="selectedOfficer"
+            (selectionChange)="onOfficerChange()"
+            [options]="recoveryOfficers"
+            valueKey="user_name"
+            displayKey="display_name"
+            [titleCase]="false"
+            title="Recovery officer"
+            icon="ri-user-star-line"
+            emptyLabel="All officers">
+          </app-sheet-select>
+        </div>
+
+        <label class="uc-filter-field">
+          <span class="uc-filter-label"><i class="ri-calendar-line"></i> Month</span>
+          <span class="uc-select-wrap">
+            <select [(ngModel)]="selectedMonth" (change)="onFilterChange()" aria-label="Filter by month">
+              <option [ngValue]="null">All</option>
+              <option *ngFor="let m of monthsList" [value]="m">{{ m | titlecase }}</option>
+            </select>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </span>
+        </label>
+
+        <label class="uc-filter-field">
+          <span class="uc-filter-label"><i class="ri-user-follow-line"></i> Customer status</span>
+          <span class="uc-select-wrap">
+            <select [(ngModel)]="customerStatus" (change)="onFilterChange()" aria-label="Filter by customer status">
+              <option value="">All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <ion-searchbar
+      class="mk-searchbar uc-searchbar"
+      placeholder="Search name, ID, address..."
+      inputmode="search"
+      enterkeyhint="search"
+      [value]="searchTerm"
+      [debounce]="250"
+      (ionInput)="onSearchInput($event)">
+    </ion-searchbar>
+
+    <span class="mk-progress" *ngIf="isLoading" aria-hidden="true"></span>
+  </div>
+
+  <!-- ══ List ══ -->
+  <div class="mk-list-head" #listTop *ngIf="pagedUsers.length">
+    <span><strong>{{ pageStart | number }}–{{ pageEnd | number }}</strong> of {{ filteredUsers.length | number }}</span>
+    <span class="mk-list-page">Page {{ currentPage }} / {{ totalPages }}</span>
+  </div>
+
+  <!-- First load: skeleton cards -->
+  <div class="uc-list" *ngIf="isLoading && !users.length">
+    <div class="mk-skel" *ngFor="let row of skeletonRows">
+      <ion-skeleton-text class="mk-skel-avatar" [animated]="true"></ion-skeleton-text>
+      <div class="mk-skel-lines">
+        <ion-skeleton-text [animated]="true" style="width: 58%; height: 14px"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 34%; height: 10px"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 76%; height: 10px"></ion-skeleton-text>
+      </div>
+    </div>
+  </div>
+
+  <div class="uc-list" *ngIf="!(isLoading && !users.length)">
+    <article
+      class="uc-card"
+      *ngFor="let row of pagedUsers; let i = index"
+      [ngClass]="statusClass(row)"
+      [class.is-selected]="isBulkMode && isSelected(row)"
+      [style.--i]="i">
+
+      <div class="uc-card-main ion-activatable" role="button" tabindex="0"
+        (click)="onCardTap(row)" (keydown.enter)="onCardTap(row)">
+        <div class="mk-avatar">
+          <span>{{ userInitial(row) }}</span>
+          <span class="mk-avatar-badge"><i [class]="statusIcon(row)"></i></span>
+        </div>
+
+        <div class="uc-card-info">
+          <span class="uc-card-name">{{ row.user_name | titlecase }}</span>
+          <div class="mk-tags">
+            <span class="mk-id">#{{ row.internet_id }}</span>
+            <span class="mk-tone-pill">{{ statusLabel(row) }}</span>
+          </div>
+          <span class="uc-card-line">
+            <i class="ri-calendar-line"></i>
+            <span>{{ row.month | titlecase }} {{ row.year }}</span>
+          </span>
+          <span class="uc-card-line">
+            <i class="ri-map-pin-2-line"></i>
+            <span>{{ (row.sublocality | titlecase) || '—' }}<ng-container *ngIf="row.sub_area"> · {{ row.sub_area | titlecase }}</ng-container></span>
+          </span>
+          <span class="uc-card-line" *ngIf="row.address">
+            <i class="ri-home-4-line"></i>
+            <span>{{ row.address }}</span>
+          </span>
+        </div>
+
+        <div class="uc-card-fee">
+          <strong><small>Rs</small>{{ money(row.amount) }}</strong>
+          <span>{{ (row.select_package | titlecase) || (row.connection_type | titlecase) || '—' }}</span>
+        </div>
+
+        <span class="uc-check" *ngIf="isBulkMode" [class.is-on]="isSelected(row)" aria-hidden="true">
+          <i class="ri-check-line"></i>
+        </span>
+
+        <ion-ripple-effect></ion-ripple-effect>
+      </div>
+
+      <!-- Collection details (paid / partial / advance) -->
+      <div class="uc-money" *ngIf="showCollectionColumns && row.status !== 'unpaid'">
+        <div class="uc-money-cell uc-money-cell--collected">
+          <span>Collected</span>
+          <strong><small>Rs</small>{{ money(row.collected_amount || 0) }}</strong>
+        </div>
+        <div class="uc-money-cell" [class.is-due]="row.remaining_amount > 0">
+          <span>Remaining</span>
+          <strong><small>Rs</small>{{ money(row.remaining_amount > 0 ? row.remaining_amount : row.extra_advance > 0 ? -row.extra_advance : 0) }}</strong>
+        </div>
+        <div class="uc-money-cell">
+          <span>{{ row.collected_by || '—' }}</span>
+          <strong class="uc-money-date">{{ (row.collected_date?.toDate() | date: 'dd MMM yy') || '—' }}</strong>
+        </div>
+      </div>
+
+      <!-- Bulk mode: amount actually received from this user -->
+      <div class="uc-bulk-row" *ngIf="isBulkMode && isSelected(row)">
+        <label class="uc-bulk-field">
+          <span class="uc-bulk-label">Received</span>
+          <span class="uc-bulk-affix">
+            <span class="uc-bulk-prefix">Rs</span>
+            <input type="number" min="0" inputmode="numeric" class="mk-input uc-bulk-input"
+              [ngModel]="getBulkAmount(row)" (ngModelChange)="setBulkAmount(row, $event)" />
+          </span>
+        </label>
+        <span class="uc-bulk-hint">
+          <ng-container *ngIf="getBulkDifference(row) === 0">of Rs {{ getBulkPending(row) }}</ng-container>
+          <span class="left" *ngIf="getBulkDifference(row) < 0">Rs {{ -getBulkDifference(row) }} left</span>
+          <span class="extra" *ngIf="getBulkDifference(row) > 0">+Rs {{ getBulkDifference(row) }} advance</span>
+        </span>
+      </div>
+
+      <!-- Actions -->
+      <div class="uc-card-actions uc-card-actions--bulk" *ngIf="isBulkMode; else normalActions">
+        <button class="mk-tap uc-act uc-act--select" type="button" [class.is-on]="isSelected(row)" (click)="toggleBulkSelection(row)">
+          <i [class]="isSelected(row) ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"></i>
+          <span>{{ isSelected(row) ? 'Selected' : 'Select' }}</span>
+        </button>
+        <button class="mk-tap uc-act uc-act--update" type="button" *ngIf="row.status === 'unpaid'" (click)="openUpdateModal(row)">
+          <i class="ri-edit-2-line"></i><span>Update</span>
+        </button>
+      </div>
+
+      <ng-template #normalActions>
+        <div class="uc-card-actions">
+          <!-- Slot 1 -->
+          <button class="mk-tap uc-act uc-act--collect" type="button" *ngIf="canCollect(row)" (click)="openCollectModal(row, row.docId)">
+            <i class="ri-hand-coin-line"></i><span>Collect</span>
+          </button>
+          <button class="mk-tap uc-act uc-act--receipt" type="button" *ngIf="!canCollect(row) && row.status === 'paid'" (click)="openReceiptModal(row)">
+            <i class="ri-bill-line"></i><span>Receipt</span>
+          </button>
+          <button class="mk-tap uc-act uc-act--history" type="button" *ngIf="!canCollect(row) && row.status !== 'paid'" (click)="openUserDetails(row.docId)">
+            <i class="ri-history-line"></i><span>History</span>
+          </button>
+
+          <!-- Slot 2 -->
+          <button class="mk-tap uc-act uc-act--cash" type="button" *ngIf="canCollect(row)" (click)="quickCashPay(row)" [disabled]="isSubmitting">
+            <i class="ri-money-dollar-circle-fill"></i><span>Cash</span>
+          </button>
+          <button class="mk-tap uc-act uc-act--history" type="button" *ngIf="!canCollect(row) && row.status === 'paid'" (click)="openUserDetails(row.docId)">
+            <i class="ri-history-line"></i><span>History</span>
+          </button>
+          <button class="mk-tap uc-act uc-act--revert" type="button" *ngIf="!canCollect(row) && row.status !== 'paid'" (click)="revertAdvance(row)">
+            <i class="ri-arrow-go-back-line"></i><span>Revert</span>
+          </button>
+
+          <button class="mk-tap uc-act uc-act--msg" type="button" (click)="openWhatsappModal(row)">
+            <i class="ri-whatsapp-line"></i><span>Message</span>
+          </button>
+          <button class="mk-tap uc-act uc-act--more" type="button" (click)="openDetailSheet(row)" aria-label="More actions">
+            <i class="ri-more-2-fill"></i>
+          </button>
+        </div>
+      </ng-template>
+    </article>
+
+    <!-- Empty -->
+    <div class="mk-empty" *ngIf="!isLoading && pagedUsers.length === 0">
+      <div class="mk-empty-art"><i class="ri-inbox-2-line"></i></div>
+      <strong>No records found</strong>
+      <p>{{ hasAnyFilter ? 'Nothing matches this search or filter. Try something else.' : 'There are no bills in this tab yet.' }}</p>
+      <button class="mk-tap mk-btn mk-btn--ghost" type="button" *ngIf="hasAnyFilter" (click)="clearFilters()">
+        <i class="ri-filter-off-line"></i> Clear filters
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ Pagination ══ -->
+  <div class="mk-pager" *ngIf="totalPages > 1 && pagedUsers.length">
+    <div class="mk-pager-row">
+      <button class="mk-tap mk-icon-btn" type="button" (click)="goPrev()" [disabled]="currentPage === 1"
+        aria-label="Previous page">
+        <i class="ri-arrow-left-s-line"></i>
+      </button>
+
+      <div class="mk-pager-pages">
+        <ng-container *ngFor="let slot of pageWindow">
+          <span class="mk-page-gap" *ngIf="slot === 'gap'">…</span>
+          <button *ngIf="slot !== 'gap'" class="mk-tap mk-page" type="button"
+            [class.is-active]="slot === currentPage"
+            [class.is-near]="slot !== currentPage && slot !== 1 && slot !== totalPages"
+            [attr.aria-current]="slot === currentPage ? 'page' : null"
+            (click)="changePage(slot)">
+            {{ slot }}
+          </button>
+        </ng-container>
+      </div>
+
+      <button class="mk-tap mk-icon-btn" type="button" (click)="goNext()" [disabled]="currentPage === totalPages"
+        aria-label="Next page">
+        <i class="ri-arrow-right-s-line"></i>
+      </button>
+    </div>
+
+    <ion-range
+      *ngIf="totalPages > 5"
+      class="mk-scrub"
+      aria-label="Jump to page"
+      [min]="1"
+      [max]="totalPages"
+      [step]="1"
+      [pin]="true"
+      [value]="currentPage"
+      (ionChange)="onPageScrub($event)">
+    </ion-range>
+
+    <div class="mk-pager-meta">
+      <span>Showing <strong>{{ pageStart | number }}–{{ pageEnd | number }}</strong> of <strong>{{ filteredUsers.length | number }}</strong></span>
+      <span class="uc-page-size"><i class="ri-list-settings-line"></i> {{ pageSize }} / page</span>
+    </div>
+  </div>
+
+  <!-- ══ Bulk collect bar (unpaid tab) ══ -->
+  <div class="uc-bulk-bar" *ngIf="isBulkMode && selectedStatus === 'unpaid'">
+    <div class="uc-bulk-bar-copy">
+      <strong>{{ selectedBulkBills.length }} selected</strong>
+      <span *ngIf="selectedBulkBills.length">Rs {{ money(bulkTotal) }}</span>
+      <span *ngIf="!selectedBulkBills.length">Tap bills to select</span>
+    </div>
+    <button class="mk-tap uc-bulk-cancel" type="button" (click)="cancelBulkMode()">Cancel</button>
+    <button class="mk-tap uc-bulk-done" type="button" [disabled]="!selectedBulkBills.length || isBulkSubmitting"
+      (click)="submitBulkCollection()">
+      <ng-container *ngIf="!isBulkSubmitting"><i class="ri-check-line"></i> Done</ng-container>
+      <ion-spinner *ngIf="isBulkSubmitting" name="crescent"></ion-spinner>
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════ Bill detail sheet ══════════════ -->
+<ion-modal class="uc-theme mk-sheet" [isOpen]="detailSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="onDetailSheetDismiss()">
+  <ng-template>
+    <div class="mk-sheet-wrap" *ngIf="detailRow as u" [ngClass]="statusClass(u)">
+      <div class="mk-sheet-head mk-sheet-head--profile">
+        <div class="mk-avatar mk-avatar--lg">
+          <span>{{ userInitial(u) }}</span>
+          <span class="mk-avatar-badge"><i [class]="statusIcon(u)"></i></span>
+        </div>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">{{ u.user_name | titlecase }}</span>
+          <div class="mk-tags">
+            <span class="mk-id">#{{ u.internet_id }}</span>
+            <span class="mk-tone-pill">{{ statusLabel(u) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="mk-fee-tile">
+          <div>
+            <span class="mk-fee-label">{{ (u.month | titlecase) || 'Bill' }} {{ u.year }}</span>
+            <span class="mk-fee-value"><small>Rs</small>{{ money(u.amount) }}</span>
+          </div>
+          <span class="mk-fee-pkg"><i class="ri-box-3-line"></i>{{ (u.select_package | titlecase) || '—' }}</span>
+        </div>
+
+        <div class="uc-money uc-money--sheet" *ngIf="u.status !== 'unpaid'">
+          <div class="uc-money-cell uc-money-cell--collected">
+            <span>Collected</span>
+            <strong><small>Rs</small>{{ money(u.collected_amount || 0) }}</strong>
+          </div>
+          <div class="uc-money-cell" [class.is-due]="u.remaining_amount > 0">
+            <span>Remaining</span>
+            <strong><small>Rs</small>{{ money(u.remaining_amount > 0 ? u.remaining_amount : u.extra_advance > 0 ? -u.extra_advance : 0) }}</strong>
+          </div>
+        </div>
+
+        <div class="mk-info">
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-phone-line"></i></span>
+            <span class="mk-info-label">Contact</span>
+            <span class="mk-info-value mk-mono">{{ getContact(u) || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-map-pin-2-line"></i></span>
+            <span class="mk-info-label">Area</span>
+            <span class="mk-info-value">{{ (u.sublocality | titlecase) || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-map-pin-line"></i></span>
+            <span class="mk-info-label">Sub area</span>
+            <span class="mk-info-value">{{ (u.sub_area | titlecase) || '—' }}</span>
+          </div>
+          <div class="mk-info-row" *ngIf="u.address">
+            <span class="mk-info-icon"><i class="ri-home-4-line"></i></span>
+            <span class="mk-info-label">Address</span>
+            <span class="mk-info-value">{{ u.address }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-links-line"></i></span>
+            <span class="mk-info-label">Type</span>
+            <span class="mk-info-value">{{ (u.connection_type | titlecase) || '—' }}</span>
+          </div>
+          <ng-container *ngIf="u.status !== 'unpaid'">
+            <div class="mk-info-row">
+              <span class="mk-info-icon"><i class="ri-user-received-line"></i></span>
+              <span class="mk-info-label">Coll. by</span>
+              <span class="mk-info-value">{{ u.collected_by || '—' }}</span>
+            </div>
+            <div class="mk-info-row">
+              <span class="mk-info-icon"><i class="ri-calendar-check-line"></i></span>
+              <span class="mk-info-label">Coll. date</span>
+              <span class="mk-info-value">{{ (u.collected_date?.toDate() | date: 'dd MMM yyyy') || '—' }}</span>
+            </div>
+            <div class="mk-info-row" *ngIf="u.collected_method">
+              <span class="mk-info-icon"><i class="ri-bank-card-line"></i></span>
+              <span class="mk-info-label">Method</span>
+              <span class="mk-info-value">{{ u.collected_method | titlecase }}<ng-container *ngIf="u.collected_bank"> · {{ u.collected_bank }}</ng-container></span>
+            </div>
+          </ng-container>
+        </div>
+
+        <div class="mk-grid">
+          <a class="mk-tap mk-grid-btn mk-g-blue" *ngIf="getContact(u) as phone" [href]="'tel:' + phone">
+            <span class="mk-grid-icon"><i class="ri-phone-fill"></i></span>Call
+          </a>
+          <button class="mk-tap mk-grid-btn mk-g-blue" type="button" *ngIf="canCollect(u)" (click)="fromDetailSheet('collect')">
+            <span class="mk-grid-icon"><i class="ri-hand-coin-line"></i></span>Collect
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-amber" type="button" *ngIf="canCollect(u)" [disabled]="isSubmitting"
+            (click)="fromDetailSheet('cash')">
+            <span class="mk-grid-icon"><i class="ri-money-dollar-circle-fill"></i></span>Cash pay
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-teal" type="button" *ngIf="u.status === 'paid'" (click)="fromDetailSheet('receipt')">
+            <span class="mk-grid-icon"><i class="ri-bill-line"></i></span>Receipt
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-rose" type="button" *ngIf="u.status === 'paid'" (click)="fromDetailSheet('revert')">
+            <span class="mk-grid-icon"><i class="ri-arrow-go-back-line"></i></span>Revert bill
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-rose" type="button" *ngIf="u.status === 'advance'" (click)="fromDetailSheet('revertAdvance')">
+            <span class="mk-grid-icon"><i class="ri-arrow-go-back-line"></i></span>Revert adv.
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-violet" type="button" *ngIf="u.status === 'unpaid'" (click)="fromDetailSheet('update')">
+            <span class="mk-grid-icon"><i class="ri-edit-2-line"></i></span>Update bill
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-indigo" type="button" [disabled]="getAdvanceButtonDisabled(u)"
+            (click)="fromDetailSheet('advance')">
+            <span class="mk-grid-icon"><i class="ri-money-dollar-circle-line"></i></span>
+            {{ isAdvanceButtonDisabled(u) ? 'Adv. taken' : 'Advance' }}
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-slate" type="button" (click)="fromDetailSheet('history')">
+            <span class="mk-grid-icon"><i class="ri-history-line"></i></span>History
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-green" type="button" (click)="fromDetailSheet('message')">
+            <span class="mk-grid-icon"><i class="ri-whatsapp-line"></i></span>Message
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Bill collection ══════════════ -->
+<ion-modal class="uc-theme mk-sheet" [isOpen]="showCollectModal" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  [backdropDismiss]="!isSubmitting" (didDismiss)="showCollectModal = false">
+  <ng-template>
+    <div class="mk-sheet-wrap" *ngIf="selectedBill">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon mk-sheet-icon--green"><i class="ri-hand-coin-line"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">Bill collection</span>
+          <span class="mk-sheet-sub">{{ selectedBill.user_name | titlecase }} · {{ selectedBill.month | titlecase }} {{ selectedBill.year }}</span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="showCollectModal = false" [disabled]="isSubmitting" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="uc-due">
+          <div class="uc-due-cell">
+            <span>Bill</span>
+            <strong><small>Rs</small>{{ money(selectedBill.amount) }}</strong>
+          </div>
+          <div class="uc-due-cell uc-due-cell--paid" *ngIf="selectedBill.collected_amount > 0">
+            <span>Collected</span>
+            <strong><small>Rs</small>{{ money(selectedBill.collected_amount) }}</strong>
+          </div>
+          <div class="uc-due-cell uc-due-cell--pending" *ngIf="selectedBill.collected_amount > 0">
+            <span>Pending</span>
+            <strong><small>Rs</small>{{ money(selectedBill.remaining_amount) }}</strong>
+          </div>
+        </div>
+
+        <div class="uc-form">
+          <div class="uc-field">
+            <span class="uc-label">Collection method <span class="req">*</span></span>
+            <div class="uc-methods">
+              <button *ngFor="let m of paymentMethods" type="button" class="mk-tap uc-method"
+                [class.is-active]="collectionForm.method === m.value" (click)="collectionForm.method = m.value">
+                <i [class]="m.icon"></i><span>{{ m.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <label class="uc-field" *ngIf="collectionForm.method === 'bank'">
+            <span class="uc-label">Bank name <span class="req">*</span></span>
+            <input type="text" class="mk-input" [(ngModel)]="collectionForm.bank_name" placeholder="e.g. HBL, Meezan, UBL" />
+          </label>
+
+          <label class="uc-field">
+            <span class="uc-label">
+              Transaction / reference ID
+              <span class="req" *ngIf="collectionForm.method && collectionForm.method !== 'cash'">*</span>
+            </span>
+            <input type="text" class="mk-input" [(ngModel)]="collectionForm.collected_id"
+              [required]="collectionForm.method && collectionForm.method !== 'cash'"
+              placeholder="Required for EasyPaisa, JazzCash & Bank" />
+            <span class="uc-err" *ngIf="collectionForm.method && collectionForm.method !== 'cash' && !collectionForm.collected_id">
+              Transaction ID is required for this payment method
+            </span>
+          </label>
+
+          <label class="uc-field">
+            <span class="uc-label">Collected amount</span>
+            <span class="uc-affix">
+              <span class="uc-prefix">Rs</span>
+              <input type="number" inputmode="numeric" class="mk-input uc-has-prefix" [(ngModel)]="collectionForm.collected_amount" />
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="mk-sheet-foot">
+        <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="showCollectModal = false" [disabled]="isSubmitting">
+          Cancel
+        </button>
+        <button class="mk-tap mk-btn mk-btn--primary" type="button" [disabled]="
+          isSubmitting ||
+          !collectionForm.method ||
+          (collectionForm.method !== 'cash' && !collectionForm.collected_id) ||
+          (collectionForm.method === 'bank' && !collectionForm.bank_name)
+        " (click)="submitCollection()">
+          <ng-container *ngIf="!isSubmitting"><i class="ri-check-line"></i> Submit</ng-container>
+          <ng-container *ngIf="isSubmitting"><ion-spinner name="crescent"></ion-spinner> Submitting…</ng-container>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Receipt ══════════════ -->
+<ion-modal class="uc-theme mk-sheet" [isOpen]="showReceiptModal" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="showReceiptModal = false">
+  <ng-template>
+    <div class="mk-sheet-wrap" *ngIf="receiptData">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon mk-sheet-icon--teal"><i class="ri-bill-line"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">Receipt</span>
+          <span class="mk-sheet-sub">{{ receiptData.name | titlecase }} · #{{ receiptData.internetId }}</span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="showReceiptModal = false" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <!-- Captured as an image by save / print / share -->
+        <div class="mk-receipt" id="receipt">
+          <div class="mk-receipt-head">
+            <span class="mk-receipt-brand">{{ companyDetail.companyName }}</span>
+            <span class="mk-receipt-period">{{ receiptData.month | titlecase }} {{ receiptData.year | titlecase }}</span>
+            <span class="uc-receipt-tag" *ngIf="receiptData.advance">{{ receiptData.advance | titlecase }}</span>
+          </div>
+
+          <div class="mk-receipt-body">
+            <div class="mk-receipt-row"><span>Name</span><strong>{{ receiptData.name }}</strong></div>
+            <div class="mk-receipt-row"><span>Internet ID</span><strong>{{ receiptData.internetId }}</strong></div>
+            <div class="mk-receipt-row"><span>Installation date</span><strong>{{ receiptData.installationDate }}</strong></div>
+            <div class="mk-receipt-row" *ngIf="receiptData.address"><span>Address</span><strong>{{ receiptData.address }}</strong></div>
+            <div class="mk-receipt-row" *ngIf="receiptData.area"><span>Area</span><strong>{{ receiptData.area | titlecase }}</strong></div>
+
+            <ng-container *ngIf="receiptData.previousAmount">
+              <div class="mk-receipt-cut" aria-hidden="true"></div>
+              <div class="mk-receipt-row">
+                <span>{{ receiptData.previousMonth ? (receiptData.previousMonth | titlecase) : 'Previous' }} (previous balance)</span>
+                <strong>Rs. {{ receiptData.previousAmount }}</strong>
+              </div>
+              <div class="mk-receipt-row">
+                <span>{{ receiptData.month | titlecase }} (current)</span>
+                <strong>Rs. {{ receiptData.currentAmount }}</strong>
+              </div>
+            </ng-container>
+
+            <div class="mk-receipt-cut" aria-hidden="true"></div>
+
+            <div class="mk-receipt-row"><span>Total amount</span><strong class="uc-r-total">Rs. {{ receiptData.totalAmount }}</strong></div>
+            <div class="mk-receipt-row"><span>Collected amount</span><strong class="uc-r-paid">Rs. {{ receiptData.collectedAmount }}</strong></div>
+            <div class="mk-receipt-row"><span>Remaining amount</span><strong class="uc-r-due">Rs. {{ receiptData.remainingAmount || 0 }}</strong></div>
+            <div class="mk-receipt-row" *ngIf="receiptData.extraAmount > 0"><span>Extra amount (advance)</span><strong class="uc-r-total">Rs. {{ receiptData.extraAmount }}</strong></div>
+            <div class="mk-receipt-row" *ngIf="receiptData.advanceBalance > 0"><span>Advance balance</span><strong class="uc-r-total">Rs. {{ receiptData.advanceBalance }}</strong></div>
+
+            <div class="mk-receipt-cut" aria-hidden="true"></div>
+
+            <div class="mk-receipt-row"><span>Payment method</span><strong>{{ receiptData.method | titlecase }}</strong></div>
+            <div class="mk-receipt-row" *ngIf="receiptData.method === 'bank'"><span>Bank</span><strong>{{ receiptData.bank }}</strong></div>
+            <div class="mk-receipt-row"><span>Collected by</span><strong>{{ receiptData.collectedBy }}</strong></div>
+            <div class="mk-receipt-row"><span>Date</span><strong>{{ receiptData.date | date: 'dd MMM yyyy, hh:mm a' }}</strong></div>
+          </div>
+
+          <div class="mk-receipt-foot">
+            <span>Complain #: {{ companyDetail.complain_no1 }}, {{ companyDetail.complain_no2 }}</span>
+            <strong>✔ Payment Successful</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="mk-sheet-foot mk-thermal-foot">
+        <button class="mk-tap mk-btn mk-btn--primary mk-btn--block mk-thermal-btn" type="button"
+          (click)="printThermalReceipt()" [disabled]="printerBusy">
+          <ion-spinner *ngIf="printerBusy" name="crescent"></ion-spinner>
+          <i *ngIf="!printerBusy" class="ri-printer-fill"></i>
+          <span class="mk-thermal-copy">
+            <span>Print receipt</span>
+            <small>{{ printer.deviceName || 'Bluetooth printer' }}</small>
+          </span>
+        </button>
+
+        <div class="uc-receipt-actions">
+        <button class="mk-tap uc-receipt-btn" type="button" (click)="saveReceiptImage()" [disabled]="!!receiptBusy">
+          <ion-spinner *ngIf="receiptBusy === 'save'" name="crescent"></ion-spinner>
+          <i *ngIf="receiptBusy !== 'save'" class="ri-download-line"></i><span>Save</span>
+        </button>
+        <button class="mk-tap uc-receipt-btn" type="button" (click)="printReceipt()">
+          <i class="ri-printer-cloud-line"></i><span>Web print</span>
+        </button>
+        <button class="mk-tap uc-receipt-btn uc-receipt-btn--wa" type="button" (click)="sendWhatsapp(receiptData)">
+          <i class="ri-whatsapp-line"></i><span>WhatsApp</span>
+        </button>
+        <button class="mk-tap uc-receipt-btn uc-receipt-btn--primary" type="button" (click)="shareReceiptImage()" [disabled]="!!receiptBusy">
+          <ion-spinner *ngIf="receiptBusy === 'share'" name="crescent"></ion-spinner>
+          <i *ngIf="receiptBusy !== 'share'" class="ri-share-forward-line"></i><span>Share</span>
+        </button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Advance payment ══════════════ -->
+<ion-modal class="uc-theme mk-sheet" [isOpen]="showAdvanceModal" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  [backdropDismiss]="!isLoadingAdvance" (didDismiss)="showAdvanceModal = false">
+  <ng-template>
+    <div class="mk-sheet-wrap" *ngIf="selectedBill">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon mk-sheet-icon--indigo"><i class="ri-money-dollar-circle-line"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">Advance payment</span>
+          <span class="mk-sheet-sub">{{ selectedBill.user_name | titlecase }} · #{{ selectedBill.internet_id }}</span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="showAdvanceModal = false" [disabled]="isLoadingAdvance" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="uc-form">
+          <div class="uc-field">
+            <span class="uc-label">
+              Advance for months
+              <small *ngIf="advanceForm.months.length">{{ advanceForm.months.length }} selected</small>
+            </span>
+            <div class="uc-months">
+              <button *ngFor="let m of nextMonths" type="button" class="mk-tap uc-month"
+                [class.is-active]="isAdvanceMonthSelected(m)" (click)="toggleAdvanceMonthSeparate(m)">
+                <strong>{{ m.month | titlecase | slice: 0 : 3 }}</strong><span>{{ m.year }}</span>
+              </button>
+            </div>
+          </div>
+
+          <label class="uc-field">
+            <span class="uc-label">Advance amount</span>
+            <span class="uc-affix">
+              <span class="uc-prefix">Rs</span>
+              <input type="number" inputmode="numeric" class="mk-input uc-has-prefix" [(ngModel)]="advanceForm.amount" />
+            </span>
+          </label>
+
+          <div class="uc-field">
+            <span class="uc-label">Payment method</span>
+            <div class="uc-methods">
+              <button *ngFor="let m of paymentMethods" type="button" class="mk-tap uc-method"
+                [class.is-active]="advanceForm.method === m.value" (click)="advanceForm.method = m.value">
+                <i [class]="m.icon"></i><span>{{ m.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <label class="uc-field" *ngIf="advanceForm.method === 'bank'">
+            <span class="uc-label">Bank name</span>
+            <input type="text" class="mk-input" placeholder="Bank name" [(ngModel)]="advanceForm.bank_name" />
+          </label>
+
+          <label class="uc-field" *ngIf="advanceForm.method !== 'cash'">
+            <span class="uc-label">Transaction ID</span>
+            <input type="text" class="mk-input" placeholder="Transaction ID" [(ngModel)]="advanceForm.collected_id" />
+          </label>
+        </div>
+      </div>
+
+      <div class="mk-sheet-foot">
+        <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="showAdvanceModal = false" [disabled]="isLoadingAdvance">
+          Cancel
+        </button>
+        <button class="mk-tap mk-btn mk-btn--primary" type="button" (click)="submitAdvance()" [disabled]="isLoadingAdvance">
+          <ion-spinner *ngIf="isLoadingAdvance" name="crescent"></ion-spinner>
+          <i *ngIf="!isLoadingAdvance" class="ri-check-line"></i> Save advance
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Update bill ══════════════ -->
+<ion-modal class="uc-theme mk-sheet" [isOpen]="showUpdateModal" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  [backdropDismiss]="!isSubmitting" (didDismiss)="showUpdateModal = false">
+  <ng-template>
+    <div class="mk-sheet-wrap">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon mk-sheet-icon--amber"><i class="ri-edit-2-line"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">Update bill</span>
+          <span class="mk-sheet-sub" *ngIf="selectedRow">{{ selectedRow.user_name | titlecase }} · {{ selectedRow.month | titlecase }}</span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="showUpdateModal = false" [disabled]="isSubmitting" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <form class="uc-form" [formGroup]="userForm">
+          <label class="uc-field">
+            <span class="uc-label">Internet package <span class="req">*</span></span>
+            <select class="mk-input uc-select" formControlName="select_package"
+              [class.is-invalid]="userForm.get('select_package')?.invalid && userForm.get('select_package')?.touched">
+              <option value="" disabled>Select internet package</option>
+              <option *ngFor="let area of internetPackages" [value]="area.package_name">
+                {{ area.package_name | titlecase }}
+              </option>
+            </select>
+            <span class="uc-err" *ngIf="userForm.get('select_package')?.hasError('required') && userForm.get('select_package')?.touched">
+              Select a package
+            </span>
+          </label>
+
+          <label class="uc-field">
+            <span class="uc-label">Internet package fee <span class="req">*</span></span>
+            <span class="uc-affix">
+              <span class="uc-prefix">Rs</span>
+              <input type="text" inputmode="numeric" class="mk-input uc-has-prefix" formControlName="internet_package_fee"
+                placeholder="Enter package fee"
+                [class.is-invalid]="userForm.get('internet_package_fee')?.invalid && userForm.get('internet_package_fee')?.touched" />
+            </span>
+            <span class="uc-err" *ngIf="userForm.get('internet_package_fee')?.hasError('required') && userForm.get('internet_package_fee')?.touched">
+              Select a package fee
+            </span>
+          </label>
+
+          <label class="uc-field">
+            <span class="uc-label">Previous remaining amount</span>
+            <span class="uc-affix">
+              <span class="uc-prefix">Rs</span>
+              <input type="number" inputmode="numeric" class="mk-input uc-has-prefix" formControlName="previous_remaining"
+                placeholder="Previous balance (optional)" />
+            </span>
+            <span class="uc-hint">Leave empty if none. This amount is added on top of the bill.</span>
+          </label>
+
+          <label class="uc-field" *ngIf="userForm.value.previous_remaining">
+            <span class="uc-label">Previous amount of month</span>
+            <select class="mk-input uc-select" formControlName="previous_remaining_month">
+              <option [ngValue]="null">Select month</option>
+              <option *ngFor="let m of monthsList" [value]="m">{{ m | titlecase }}</option>
+            </select>
+          </label>
+
+          <div class="uc-preview" *ngIf="userForm.value.previous_remaining">
+            <span class="uc-preview-label">New bill total</span>
+            <strong>Rs. {{ updatedBillPreview }}</strong>
+            <span class="uc-preview-calc">
+              {{ baseBillAmount }} current
+              <ng-container *ngIf="feeDifference !== 0">
+                {{ feeDifference > 0 ? '+' : '−' }} {{ feeDifference < 0 ? -feeDifference : feeDifference }} fee change
+              </ng-container>
+              + {{ userForm.value.previous_remaining }} previous
+              <ng-container *ngIf="userForm.value.previous_remaining_month">
+                ({{ userForm.value.previous_remaining_month | titlecase }})
+              </ng-container>
+            </span>
+          </div>
+        </form>
+      </div>
+
+      <div class="mk-sheet-foot">
+        <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="showUpdateModal = false" [disabled]="isSubmitting">
+          Cancel
+        </button>
+        <button class="mk-tap mk-btn mk-btn--primary" type="button" (click)="updateBill()" [disabled]="isSubmitting">
+          <ng-container *ngIf="!isSubmitting"><i class="ri-check-line"></i> Submit</ng-container>
+          <ng-container *ngIf="isSubmitting"><ion-spinner name="crescent"></ion-spinner> Submitting…</ng-container>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Messaging sheet ══════════════ -->
+<ion-modal class="uc-theme mk-sheet" [isOpen]="whatsappSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="whatsappSheetOpen = false">
+  <ng-template>
+    <div class="mk-sheet-wrap">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon mk-sheet-icon--wa"><i class="ri-message-3-line"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">Send message</span>
+          <span class="mk-sheet-sub" *ngIf="selectedWhatsappUser">
+            {{ selectedWhatsappUser.user_name | titlecase }} · {{ getContact(selectedWhatsappUser) || 'No phone' }}
+          </span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="closeWhatsappSheet()" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="mk-msg">
+          <div class="mk-msg-row">
+            <span class="mk-msg-icon mk-t-amber"><i class="ri-notification-3-line"></i></span>
+            <div class="mk-msg-copy"><strong>Payment reminder</strong><span>Remind about pending payment</span></div>
+          </div>
+          <div class="mk-msg-send">
+            <button class="mk-tap mk-send mk-send--wa" type="button" (click)="paymentRemainder(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-whatsapp-line"></i> WhatsApp
+            </button>
+            <button class="mk-tap mk-send mk-send--sms" type="button" (click)="sendSmsReminder(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-message-2-line"></i> SMS
+            </button>
+          </div>
+        </div>
+
+        <div class="mk-msg" *ngIf="selectedWhatsappUser?.status === 'unpaid'">
+          <div class="mk-msg-row">
+            <span class="mk-msg-icon mk-t-red"><i class="ri-error-warning-line"></i></span>
+            <div class="mk-msg-copy"><strong>Disconnection warning</strong><span>Warn about overdue disconnection</span></div>
+          </div>
+          <div class="mk-msg-send">
+            <button class="mk-tap mk-send mk-send--wa" type="button" (click)="disconnectionWarning(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-whatsapp-line"></i> WhatsApp
+            </button>
+            <button class="mk-tap mk-send mk-send--sms" type="button" (click)="sendSmsDisconnection(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-message-2-line"></i> SMS
+            </button>
+          </div>
+        </div>
+
+        <div class="mk-msg" *ngIf="selectedWhatsappUser?.status === 'paid'">
+          <div class="mk-msg-row">
+            <span class="mk-msg-icon mk-t-green"><i class="ri-checkbox-circle-line"></i></span>
+            <div class="mk-msg-copy"><strong>Payment received</strong><span>Confirm payment received</span></div>
+          </div>
+          <div class="mk-msg-send">
+            <button class="mk-tap mk-send mk-send--wa" type="button" (click)="sendWhatsapp(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-whatsapp-line"></i> WhatsApp
+            </button>
+            <button class="mk-tap mk-send mk-send--sms" type="button" (click)="sendSmsPaymentReceived(selectedWhatsappUser); closeWhatsappSheet()">
+              <i class="ri-message-2-line"></i> SMS
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

@@ -1,0 +1,62 @@
+/* ═══════════════════════════════════════
+   LOGS PAGE
+   ═══════════════════════════════════════ */
+
+$accent: #4f46e5;
+$accent-dark: #4338ca;
+$accent-light: #eef2ff;
+$accent-border: #c7d2fe;
+
+.lg-wrapper { padding-top: 16px; padding-bottom: 40px; }
+
+/* ── Page Header ── */
+.lg-page-header {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.lg-header-left { display: flex; align-items: center; gap: 14px; }
+.lg-header-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: linear-gradient(135deg, $accent, $accent-dark);
+  display: flex; align-items: center; justify-content: center; font-size: 22px; color: #fff; flex-shrink: 0;
+}
+.lg-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 0; }
+.lg-sub   { font-size: 13px; color: #64748b; margin: 0; }
+.lg-stat-pill {
+  display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px;
+  background: $accent-light; color: $accent-dark; font-size: 13px; font-weight: 500; border: 1px solid $accent-border;
+  i { font-size: 15px; }
+}
+
+/* ── Card ── */
+.lg-card {
+  background: #fff; border-radius: 16px; overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07); border: 1px solid #f1f5f9;
+}
+
+/* ── Tabs Bar ── */
+.lg-tabs-bar {
+  padding: 16px 20px; border-bottom: 1px solid #f1f5f9; background: #fafbfc;
+  overflow-x: auto;
+}
+.lg-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.lg-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  border: 1px solid #e2e8f0; background: #fff; color: #64748b; cursor: pointer; transition: all 0.15s;
+  white-space: nowrap;
+  i { font-size: 15px; }
+  &:hover { background: #f8fafc; color: #334155; }
+  &.active {
+    background: $accent-light; border-color: $accent-border; color: $accent-dark;
+    box-shadow: 0 2px 8px rgba(79,70,229,0.12);
+  }
+}
+
+/* ── Tab Content ── */
+.lg-tab-content { padding: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+  .lg-wrapper { padding-top: 24px; padding-bottom: 24px; }
+  .lg-tab { font-size: 12px; padding: 7px 12px; }
+}

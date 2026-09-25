@@ -1,0 +1,157 @@
+<div class="exm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="exm-header">
+    <div class="exm-header-left">
+      <div class="exm-header-icon"><i class="ri-shopping-cart-2-line"></i></div>
+      <div>
+        <h4 class="exm-title">{{ editMode ? 'Update' : 'Add' }} Expense</h4>
+        <p class="exm-subtitle">{{ editMode ? 'Edit expense details below' : 'Fill in the expense details below' }}</p>
+      </div>
+    </div>
+    <button type="button" class="exm-close-btn" aria-label="Close" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div *ngIf="isLoading" class="exm-loading">
+    <div class="spinner-border" style="color:#ea580c" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="exm-body">
+    <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+
+      <!-- ══ Section 1 — General Info ══ -->
+      <div class="exm-section">
+        <div class="exm-section-head">
+          <div class="exm-section-icon si-orange"><i class="ri-calendar-line"></i></div>
+          <span class="exm-section-title">General Information</span>
+        </div>
+        <div class="exm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <label class="exm-label">Date <span class="req">*</span></label>
+              <input type="date" class="exm-input"
+                [class.exm-invalid]="expenseForm.get('date')?.invalid && expenseForm.get('date')?.touched"
+                formControlName="date">
+              <span class="exm-err" *ngIf="expenseForm.get('date')?.hasError('required') && expenseForm.get('date')?.touched">Date is required</span>
+            </div>
+
+            <div class="col-md-6">
+              <label class="exm-label">Operator / Officer</label>
+              <select class="exm-input exm-select" formControlName="recovery_officer">
+                <option value="" disabled>Select operator</option>
+                <option *ngFor="let operator of internetOperators" [value]="operator.operator_name">
+                  {{ operator.operator_name | titlecase }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="exm-label">Total Recovery</label>
+              <div class="exm-prefix-wrap">
+                <span class="exm-prefix">Rs</span>
+                <input type="number" class="exm-input exm-prefixed" formControlName="total_recovery" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="exm-label">Motorcycle</label>
+              <input type="text" class="exm-input" formControlName="motorcycle" placeholder="e.g. Honda 125">
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Section 2 — Expense Breakdown ══ -->
+      <div class="exm-section">
+        <div class="exm-section-head">
+          <div class="exm-section-icon si-red"><i class="ri-coins-line"></i></div>
+          <span class="exm-section-title">Expense Breakdown</span>
+        </div>
+        <div class="exm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="exm-label">Petrol</label>
+              <div class="exm-prefix-wrap">
+                <span class="exm-prefix">Rs</span>
+                <input type="number" class="exm-input exm-prefixed" formControlName="petrol" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="exm-label">Food</label>
+              <div class="exm-prefix-wrap">
+                <span class="exm-prefix">Rs</span>
+                <input type="number" class="exm-input exm-prefixed" formControlName="food" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="exm-label">Stationary</label>
+              <div class="exm-prefix-wrap">
+                <span class="exm-prefix">Rs</span>
+                <input type="number" class="exm-input exm-prefixed" formControlName="stationary" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="exm-label">Electricity</label>
+              <div class="exm-prefix-wrap">
+                <span class="exm-prefix">Rs</span>
+                <input type="number" class="exm-input exm-prefixed" formControlName="electricity" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="exm-label">Salary</label>
+              <div class="exm-prefix-wrap">
+                <span class="exm-prefix">Rs</span>
+                <input type="number" class="exm-input exm-prefixed" formControlName="salary" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="exm-label">Other Reason</label>
+              <input type="text" class="exm-input" formControlName="other_reason" placeholder="Describe reason">
+            </div>
+
+            <div class="col-md-4">
+              <label class="exm-label">Other Amount</label>
+              <div class="exm-prefix-wrap">
+                <span class="exm-prefix">Rs</span>
+                <input type="number" class="exm-input exm-prefixed" formControlName="other_amount" placeholder="0">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Footer ── -->
+      <div class="exm-footer">
+        <button type="button" class="exm-btn exm-btn-cancel" (click)="activeModal.close()">
+          <i class="ri-close-line me-1"></i> Cancel
+        </button>
+        <button type="submit" class="exm-btn exm-btn-save" [disabled]="isLoading || isSaving">
+          <ng-container *ngIf="!isSaving">
+            <i class="ri-save-line me-1"></i>
+            {{ editMode ? 'Update Expense' : 'Save Expense' }}
+          </ng-container>
+          <ng-container *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            {{ editMode ? 'Updating...' : 'Saving...' }}
+          </ng-container>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

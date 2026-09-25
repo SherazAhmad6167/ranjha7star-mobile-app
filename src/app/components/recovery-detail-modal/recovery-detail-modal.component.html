@@ -1,0 +1,149 @@
+<div class="rdm">
+
+  <!-- ══ Top bar ══ -->
+  <header class="rdm-top">
+    <button type="button" class="mk-tap mk-icon-btn" aria-label="Close" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="rdm-top-titles">
+      <span class="rdm-top-kicker">{{ editMode ? 'Update recovery' : 'New recovery' }}</span>
+      <span class="rdm-top-title">{{ (expenseForm.get('operator_name')?.value | titlecase) || (editMode ? 'Edit details' : 'Fill in the details') }}</span>
+    </div>
+    <span class="rdm-top-icon">
+      <i [class]="editMode ? 'ri-edit-circle-line' : 'ri-hand-coin-line'"></i>
+    </span>
+  </header>
+
+  <!-- Section shortcuts -->
+  <div class="rdm-jump">
+    <button type="button" class="mk-tap rdm-jump-chip" (click)="secRecovery.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-calendar-check-line"></i> Recovery
+    </button>
+    <button type="button" class="mk-tap rdm-jump-chip" (click)="secAmounts.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-coins-line"></i> Amounts
+    </button>
+  </div>
+
+  <!-- ══ Loading ══ -->
+  <div *ngIf="isLoading" class="rdm-loading">
+    <div class="rdm-loading-inner">
+      <span class="spinner-border" role="status"></span>
+      <span>Loading…</span>
+    </div>
+  </div>
+
+  <form class="rdm-form" [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+    <div class="rdm-body">
+
+      <!-- ── Recovery information ── -->
+      <div class="rdm-card" #secRecovery>
+        <div class="rdm-section-title"><span class="rdm-dot green"><i class="ri-calendar-check-line"></i></span> Recovery information</div>
+
+        <div class="rdm-grid">
+          <div class="rdm-field rdm-span">
+            <label class="rdm-label">Recovery date <span class="req">*</span></label>
+            <input type="date" class="mk-input" formControlName="date"
+              [class.is-invalid]="expenseForm.get('date')?.invalid && expenseForm.get('date')?.touched" />
+            <span class="rdm-err" *ngIf="expenseForm.get('date')?.hasError('required') && expenseForm.get('date')?.touched">
+              Date is required
+            </span>
+          </div>
+
+          <div class="rdm-field rdm-span">
+            <label class="rdm-label">Operator name <span class="req">*</span></label>
+            <select class="mk-input rdm-select" formControlName="operator_name"
+              [class.is-invalid]="expenseForm.get('operator_name')?.invalid && expenseForm.get('operator_name')?.touched">
+              <option value="" disabled>Select operator</option>
+              <option *ngFor="let operator of operatorOptions" [value]="operator.operator_name">
+                {{ operator.operator_name | titlecase }}
+              </option>
+            </select>
+            <span class="rdm-err" *ngIf="expenseForm.get('operator_name')?.hasError('required') && expenseForm.get('operator_name')?.touched">
+              Operator is required
+            </span>
+          </div>
+
+          <div class="rdm-field rdm-span">
+            <label class="rdm-label">Operator mobile no</label>
+            <input type="tel" class="mk-input" formControlName="operator_phone"
+              placeholder="Auto-filled on selection" readonly />
+          </div>
+
+          <div class="rdm-field rdm-span">
+            <label class="rdm-label">Area</label>
+            <app-search-select
+              formControlName="sublocality"
+              [options]="areaOptions"
+              valueKey="sublocality"
+              displayKey="sublocality"
+              placeholder="Select area"
+              [allowEmpty]="true"
+              emptyLabel="All Areas"
+              [isInvalid]="!!(expenseForm.get('sublocality')?.invalid && expenseForm.get('sublocality')?.touched)">
+            </app-search-select>
+          </div>
+
+          <div class="rdm-field rdm-span">
+            <label class="rdm-label">Received by</label>
+            <select class="mk-input rdm-select" formControlName="recieved_by">
+              <option value="">Select received by</option>
+              <option *ngFor="let name of recievedByList" [value]="name">{{ name }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Amounts ── -->
+      <div class="rdm-card" #secAmounts>
+        <div class="rdm-section-title"><span class="rdm-dot teal"><i class="ri-coins-line"></i></span> Amount summary</div>
+
+        <div class="rdm-grid">
+          <div class="rdm-field rdm-span">
+            <label class="rdm-label">Total recovery <span class="req">*</span></label>
+            <div class="rdm-affix">
+              <span class="rdm-prefix">Rs</span>
+              <input type="number" inputmode="numeric" class="mk-input rdm-has-prefix" formControlName="total_recovery" placeholder="0"
+                [class.is-invalid]="expenseForm.get('total_recovery')?.invalid && expenseForm.get('total_recovery')?.touched" />
+            </div>
+            <span class="rdm-err" *ngIf="expenseForm.get('total_recovery')?.hasError('required') && expenseForm.get('total_recovery')?.touched">
+              Total recovery is required
+            </span>
+          </div>
+
+          <div class="rdm-field">
+            <label class="rdm-label">Total expenses</label>
+            <div class="rdm-affix">
+              <span class="rdm-prefix">Rs</span>
+              <input type="number" inputmode="numeric" class="mk-input rdm-has-prefix" formControlName="total_expenses" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="rdm-field">
+            <label class="rdm-label">Remaining</label>
+            <div class="rdm-affix">
+              <span class="rdm-prefix">Rs</span>
+              <input type="number" inputmode="numeric" class="mk-input rdm-has-prefix" formControlName="remaining_amount" placeholder="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ Actions ══ -->
+    <footer class="rdm-foot">
+      <button type="button" class="mk-tap mk-btn mk-btn--ghost" (click)="activeModal.close()">
+        Cancel
+      </button>
+      <button type="submit" class="mk-tap mk-btn mk-btn--primary rdm-save" [disabled]="isLoading || isSaving">
+        <ng-container *ngIf="!isSaving">
+          <i class="ri-check-line"></i> {{ editMode ? 'Update recovery' : 'Save recovery' }}
+        </ng-container>
+        <ng-container *ngIf="isSaving">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          {{ editMode ? 'Updating…' : 'Saving…' }}
+        </ng-container>
+      </button>
+    </footer>
+  </form>
+</div>

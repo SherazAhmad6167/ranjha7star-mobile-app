@@ -1,0 +1,179 @@
+<div class="modal-header border-0 pb-0">
+  <div>
+    <h5 class="modal-title fw-bold">
+      <i class="ri-router-line me-2 text-primary"></i>
+      {{ editMode ? 'Edit Router Record' : 'Add Router Record' }}
+    </h5>
+    <small class="text-muted">
+      Fill in the details below to {{ editMode ? 'update' : 'save' }} this router record
+    </small>
+  </div>
+  <button type="button" class="btn-close" (click)="activeModal.dismiss()" [disabled]="isSubmitting"></button>
+</div>
+
+<div class="modal-body px-4 pt-3 pb-2">
+  <form [formGroup]="routerForm" id="routerForm" (ngSubmit)="onSubmit()">
+    <div class="row g-4">
+
+      <!-- Date -->
+      <div class="col-md-6">
+        <label class="form-label field-label">
+          <i class="ri-calendar-event-line"></i> Date <span class="text-danger">*</span>
+        </label>
+        <input type="date" class="form-control form-control-lg" formControlName="date"
+          [ngClass]="{'is-invalid': isInvalid('date')}">
+        <div class="invalid-feedback">Date is required.</div>
+      </div>
+
+      <!-- Operator -->
+      <div class="col-md-6">
+        <label class="form-label field-label">
+          <i class="ri-user-settings-line"></i> Operator <span class="text-danger">*</span>
+        </label>
+        <select class="form-select form-select-lg" formControlName="operator"
+          [ngClass]="{'is-invalid': isInvalid('operator')}">
+          <option value="">-- Select Operator --</option>
+          <option *ngFor="let op of operators" [value]="op.operator_name">
+            {{ op.operator_name }}
+          </option>
+        </select>
+        <div class="invalid-feedback">Please select an operator.</div>
+      </div>
+
+      <!-- Status -->
+      <div class="col-md-6">
+        <label class="form-label field-label">
+          <i class="ri-checkbox-multiple-line"></i> Status <span class="text-danger">*</span>
+        </label>
+        <div class="status-btn-group">
+          <label class="status-btn" [class.active-available]="routerForm.get('status')?.value === 'Available'">
+            <input type="radio" formControlName="status" value="Available" hidden>
+            <i class="ri-checkbox-circle-line"></i> Available
+          </label>
+          <label class="status-btn" [class.active-installed]="routerForm.get('status')?.value === 'Installed'">
+            <input type="radio" formControlName="status" value="Installed" hidden>
+            <i class="ri-home-wifi-line"></i> Installed
+          </label>
+          <label class="status-btn" [class.active-returned]="routerForm.get('status')?.value === 'Returned'">
+            <input type="radio" formControlName="status" value="Returned" hidden>
+            <i class="ri-arrow-go-back-line"></i> Returned
+          </label>
+          <label class="status-btn" [class.active-faulty]="routerForm.get('status')?.value === 'Faulty'">
+            <input type="radio" formControlName="status" value="Faulty" hidden>
+            <i class="ri-error-warning-line"></i> Faulty
+          </label>
+        </div>
+        <div class="text-danger small mt-1" *ngIf="isInvalid('status')">Please select a status.</div>
+      </div>
+
+      <!-- Quantity -->
+      <div class="col-md-6">
+        <label class="form-label field-label">
+          <i class="ri-stack-line"></i> Quantity <span class="text-danger">*</span>
+        </label>
+        <input type="number" class="form-control form-control-lg" formControlName="quantity"
+          min="1" placeholder="1"
+          [ngClass]="{'is-invalid': isInvalid('quantity')}">
+        <div class="invalid-feedback">Enter a quantity of at least 1.</div>
+      </div>
+
+      <!-- Barcode -->
+      <div class="col-12">
+        <label class="form-label field-label">
+          <i class="ri-barcode-box-line"></i> Barcode / Serial No. <span class="text-danger">*</span>
+        </label>
+        <div class="barcode-input-row">
+          <input type="text" class="form-control form-control-lg font-mono"
+            formControlName="barcode"
+            placeholder="Scan with camera or enter manually"
+            [ngClass]="{'is-invalid': isInvalid('barcode')}"
+            (blur)="onBarcodeBlur()">
+          <button type="button" class="btn btn-outline-primary btn-lg scan-btn"
+            (click)="openCamera()" title="Scan barcode with camera">
+            <i class="ri-camera-line"></i>
+            <span class="ms-1">Scan</span>
+          </button>
+        </div>
+        <div class="text-danger small mt-1" *ngIf="isInvalid('barcode')">
+          Barcode / Serial No. is required.
+        </div>
+        <small class="text-muted d-block mt-1">
+          <i class="ri-information-line me-1"></i>
+          Click <strong>Scan</strong> to open camera and auto-read any barcode from a physical label.
+        </small>
+      </div>
+
+      <!-- Given By -->
+      <div class="col-md-6">
+        <label class="form-label field-label">
+          <i class="ri-account-pin-circle-line"></i> Given By <span class="text-danger">*</span>
+        </label>
+        <input type="text" class="form-control form-control-lg" formControlName="givenBy"
+          placeholder="Name of person who issued this router"
+          [ngClass]="{'is-invalid': isInvalid('givenBy')}">
+        <div class="invalid-feedback">This field is required.</div>
+      </div>
+
+      <!-- Notes -->
+      <div class="col-md-6">
+        <label class="form-label field-label">
+          <i class="ri-file-text-line"></i> Notes <span class="text-muted small">(optional)</span>
+        </label>
+        <textarea class="form-control" formControlName="notes" rows="2"
+          placeholder="Any additional info..."></textarea>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer border-0 px-4 pt-2 gap-2">
+  <button type="button" class="btn btn-outline-secondary btn-lg px-4"
+    (click)="activeModal.dismiss()" [disabled]="isSubmitting">
+    Cancel
+  </button>
+  <button type="submit" form="routerForm" class="btn btn-primary btn-lg px-4" [disabled]="isSubmitting">
+    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+    <i *ngIf="!isSubmitting" class="ri-save-3-line me-1"></i>
+    {{ editMode ? 'Update Record' : 'Save Record' }}
+  </button>
+</div>
+
+<!-- ── Camera Overlay ──────────────────────────────────────────────────────── -->
+<div class="camera-overlay" *ngIf="cameraActive" (click)="stopCamera()">
+  <div class="camera-box" (click)="$event.stopPropagation()">
+
+    <div class="camera-box-header">
+      <div class="d-flex align-items-center gap-2">
+        <span class="scan-dot"></span>
+        <span>Barcode Scanner</span>
+      </div>
+      <button class="btn btn-sm btn-outline-light" (click)="stopCamera()">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+
+    <div class="camera-viewfinder">
+      <video #videoEl autoplay playsinline muted class="camera-video"></video>
+      <div class="scan-overlay">
+        <div class="scan-frame">
+          <span class="corner tl"></span>
+          <span class="corner tr"></span>
+          <span class="corner bl"></span>
+          <span class="corner br"></span>
+        </div>
+        <div class="scan-line"></div>
+      </div>
+    </div>
+
+    <div class="camera-box-footer">
+      <p class="text-success mb-2">
+        <i class="ri-scan-2-line me-1"></i>Scanning automatically — point camera at barcode
+      </p>
+      <button class="btn btn-outline-light btn-sm w-100" (click)="stopCamera()">
+        <i class="ri-keyboard-line me-1"></i>Close &amp; Enter Manually
+      </button>
+    </div>
+
+  </div>
+</div>

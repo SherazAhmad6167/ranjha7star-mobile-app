@@ -1,0 +1,75 @@
+<div class="container-fluid lg-wrapper">
+
+  <!-- ── Page Header ── -->
+  <div class="lg-page-header mb-4">
+    <div class="lg-header-left">
+      <div class="lg-header-icon"><i class="ri-file-list-3-line"></i></div>
+      <div>
+        <h1 class="lg-title">Activity Logs</h1>
+        <p class="lg-sub">Track all system changes and user activity</p>
+      </div>
+    </div>
+    <span class="lg-stat-pill">
+      <i class="ri-history-line"></i>
+      5 Log Types
+    </span>
+  </div>
+
+  <!-- ── Main Card ── -->
+  <div class="lg-card">
+
+    <!-- Tabs Bar -->
+    <div class="lg-tabs-bar">
+      <div class="lg-tabs">
+
+        <button class="lg-tab" [class.active]="activeTab === 'user'" (click)="activeTab = 'user'">
+          <i class="ri-user-settings-line"></i> User Logs
+        </button>
+
+        <button class="lg-tab" [class.active]="activeTab === 'area'" (click)="activeTab = 'area'">
+          <i class="ri-map-pin-2-line"></i> Area Logs
+        </button>
+
+        <button class="lg-tab" [class.active]="activeTab === 'package'" (click)="activeTab = 'package'">
+          <i class="ri-box-3-line"></i> Package Logs
+        </button>
+
+        <button class="lg-tab" [class.active]="activeTab === 'recovery'" (click)="activeTab = 'recovery'">
+          <i class="ri-shield-user-line"></i> Recovery Officer
+        </button>
+
+        <button class="lg-tab" [class.active]="activeTab === 'bill'" (click)="activeTab = 'bill'">
+          <i class="ri-file-paper-2-line"></i> Bill Logs
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="lg-tab-content">
+
+      <div *ngIf="activeTab === 'user'">
+        <app-user-detail-log></app-user-detail-log>
+      </div>
+
+      <div *ngIf="activeTab === 'area'">
+        <app-area-log></app-area-log>
+      </div>
+
+      <div *ngIf="activeTab === 'package'">
+        <app-package-log></app-package-log>
+      </div>
+
+      <div *ngIf="activeTab === 'recovery'">
+        <app-recovery-officer-log></app-recovery-officer-log>
+      </div>
+
+      <div *ngIf="activeTab === 'bill'">
+        <app-bill-creator-log></app-bill-creator-log>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

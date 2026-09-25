@@ -1,0 +1,132 @@
+/* ── Sheet select: trigger only ──
+   Matches the compact filter selects on the mobile list screens. The sheet
+   itself is styled globally (mk-picker*) because ion-modal is teleported. */
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+// Class-based so it outranks the legacy global `button` rules in styles.scss.
+.ssh-trigger {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 30px;
+  margin: 0;
+  padding: 0 23px 0 8px;
+  border: 0;
+  border-radius: 8px;
+  outline: none;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 30px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+
+  &:hover,
+  &:focus {
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.96);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--mk-brand, #0d9488);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.96);
+  }
+
+  // A chosen value reads in the screen accent, so active filters stand out.
+  &.is-set,
+  &.is-set:hover,
+  &.is-set:focus {
+    color: var(--mk-brand, #0f172a);
+  }
+
+  > i {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    color: #64748b;
+    font-size: 0.76rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+}
+
+.ssh-value {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Form variant: matches the kit's .mk-input.
+.ssh-trigger.ssh-trigger--field {
+  height: auto;
+  min-height: 48px;
+  padding: 0 40px 0 14px;
+  border: 1.5px solid var(--mk-line, #e8edf4);
+  border-radius: 14px;
+  color: var(--mk-faint, #94a3b8);
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.3;
+  background: var(--mk-soft, #f4f7fb);
+  box-shadow: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover,
+  &:focus {
+    color: var(--mk-faint, #94a3b8);
+    background: var(--mk-soft, #f4f7fb);
+  }
+
+  &:active {
+    transform: none;
+  }
+
+  &:focus-visible {
+    border-color: var(--mk-brand, #0d9488);
+    background: #fff;
+    box-shadow: 0 0 0 4px var(--mk-brand-soft, #e6f6f4);
+  }
+
+  // Chosen value reads as input text, not as the filter accent.
+  &.is-set,
+  &.is-set:hover,
+  &.is-set:focus {
+    color: var(--mk-ink, #0f172a);
+  }
+
+  &.is-invalid {
+    border-color: #fb7185;
+    background: #fff5f6;
+  }
+
+  > i {
+    right: 14px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 350px) {
+  .ssh-trigger {
+    padding-left: 7px;
+    font-size: 0.65rem;
+  }
+}

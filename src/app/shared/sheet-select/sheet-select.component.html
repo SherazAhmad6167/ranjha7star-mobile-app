@@ -1,0 +1,63 @@
+<button type="button" class="ssh-trigger" [class.ssh-trigger--field]="variant === 'field'"
+  [class.is-set]="hasValue" [class.is-invalid]="isInvalid" [disabled]="disabled"
+  aria-haspopup="dialog" [attr.aria-expanded]="isOpen" [attr.aria-label]="ariaLabel" (click)="open()">
+  <span class="ssh-value">{{ displayValue || placeholder }}</span>
+  <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+</button>
+
+<ion-modal class="mk-sheet mk-picker-sheet" [class.mk-picker-sheet--long]="isLong" [isOpen]="isOpen"
+  [breakpoints]="[0, 1]" [initialBreakpoint]="1" (didDismiss)="onDismiss()">
+  <ng-template>
+    <div class="mk-sheet-wrap" [ngStyle]="theme">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon"><i [class]="icon"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">{{ title }}</span>
+          <span class="mk-sheet-sub" *ngIf="hasValue">Selected: <strong>{{ displayValue }}</strong></span>
+          <span class="mk-sheet-sub" *ngIf="!hasValue">{{ options.length | number }} to choose from</span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="close()" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <!-- Short lists fit on screen; search only earns its place on long ones. -->
+      <div class="mk-picker-search" *ngIf="isLong">
+        <ion-searchbar
+          class="mk-searchbar"
+          [placeholder]="'Search ' + (title | lowercase) + '...'"
+          inputmode="search"
+          enterkeyhint="search"
+          [value]="searchText"
+          [debounce]="0"
+          (ionInput)="onSearch($event)">
+        </ion-searchbar>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="mk-picker-list" role="listbox" [attr.aria-label]="title">
+          <button *ngIf="allowEmpty" type="button" class="mk-tap mk-picker-option" role="option"
+            [class.is-active]="!hasValue" [attr.aria-selected]="!hasValue" (click)="select(null)">
+            <span class="mk-picker-mark"><i class="ri-apps-2-line"></i></span>
+            <span class="mk-picker-label">{{ emptyLabel }}</span>
+            <i class="ri-check-line mk-picker-check" *ngIf="!hasValue"></i>
+          </button>
+
+          <button *ngFor="let opt of filteredOptions; trackBy: trackByValue" type="button"
+            class="mk-tap mk-picker-option" role="option"
+            [class.is-active]="isSelected(opt)" [attr.aria-selected]="isSelected(opt)" (click)="select(opt)">
+            <span class="mk-picker-mark">{{ initial(opt) }}</span>
+            <span class="mk-picker-label">{{ getDisplay(opt) }}</span>
+            <i class="ri-check-line mk-picker-check" *ngIf="isSelected(opt)"></i>
+          </button>
+
+          <div class="mk-picker-empty" *ngIf="!filteredOptions.length">
+            <i class="ri-search-eye-line"></i>
+            <span *ngIf="searchText">No match for "<strong>{{ searchText }}</strong>"</span>
+            <span *ngIf="!searchText">Nothing to choose from yet.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

@@ -1,0 +1,77 @@
+/* Background Gradient */
+.bg-gradient {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Card Style */
+.modern-404-card {
+  max-width: 480px;
+  width: 90%;
+  padding: 3rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Floating Circle Decorations */
+.circle-decor {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.15;
+}
+
+.circle1 {
+  width: 150px;
+  height: 150px;
+  background: #ff5f6d;
+  top: -40px;
+  left: -40px;
+}
+
+.circle2 {
+  width: 120px;
+  height: 120px;
+  background: #ffc371;
+  bottom: -30px;
+  right: -30px;
+}
+
+/* Responsive Text */
+h1.display-1 {
+  font-size: 6rem;
+  @media (max-width: 768px) {
+    font-size: 4.5rem;
+  }
+  @media (max-width: 576px) {
+    font-size: 3.5rem;
+  }
+}
+
+h3 {
+  font-size: 1.75rem;
+  @media (max-width: 576px) {
+    font-size: 1.4rem;
+  }
+}
+
+p {
+  font-size: 1rem;
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+  }
+}
+
+/* Button */
+.btn-lg {
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Optional Animate.css import for subtle animation */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');

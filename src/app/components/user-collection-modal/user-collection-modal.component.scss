@@ -1,0 +1,311 @@
+/* ═══════════════════════════════════════
+   USER COLLECTION MODAL - billing history, full-screen on phones
+   Opened through NgbModal with `windowClass: 'mk-sheet-window'`;
+   shared pieces come from src/styles/_mobile-kit.scss and
+   src/styles/_mobile-patterns.scss.
+   ═══════════════════════════════════════ */
+
+// Fill .modal-content so the body scrolls between a fixed top bar and footer.
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+
+  --mk-brand: #2563eb;
+  --mk-brand-soft: #eff6ff;
+  --mk-brand-grad: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #0ea5e9 100%);
+  --mk-brand-shadow: rgba(37, 99, 235, 0.8);
+}
+
+.ucm {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  max-height: 100dvh;
+  color: #0f172a;
+  background: #f2f5fa;
+}
+
+// ── Top bar ──────────────────────────────────────────────────────────────
+
+.ucm-top {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(10px + var(--safe-area-top)) calc(16px + var(--safe-area-right)) 10px calc(16px + var(--safe-area-left));
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 0 #e8edf4, 0 10px 20px -18px rgba(15, 23, 42, 0.4);
+
+  .mk-icon-btn {
+    --tap-bg: #f1f5f9;
+  }
+}
+
+.ucm-top-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.ucm-top-kicker {
+  color: var(--mk-brand);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ucm-top-title {
+  overflow: hidden;
+  font-size: 1.06rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ucm-top-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 1.25rem;
+  background: var(--mk-brand-grad);
+  box-shadow: 0 10px 18px -10px var(--mk-brand-shadow);
+}
+
+// ── Body ─────────────────────────────────────────────────────────────────
+
+.ucm-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 14px calc(14px + var(--safe-area-right)) 20px calc(14px + var(--safe-area-left));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ucm-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 0;
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 600;
+
+  .spinner-border {
+    color: var(--mk-brand);
+  }
+}
+
+.ucm-card {
+  margin-bottom: 14px;
+  padding: 16px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 16px 32px -28px rgba(15, 23, 42, 0.5), 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  .mk-info {
+    margin-top: 0;
+  }
+}
+
+.ucm-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.ucm-dot {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+
+  &.blue { color: #1d4ed8; background: #eff6ff; }
+  &.green { color: #15803d; background: #f0fdf4; }
+  &.indigo { color: #4338ca; background: #eef2ff; }
+}
+
+.ucm-badge {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 800;
+
+  &.green { color: #15803d; background: #f0fdf4; }
+}
+
+// Bill / advance entries
+.ucm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ucm-item {
+  --tone: #64748b;
+  --tone-soft: #f1f5f9;
+
+  position: relative;
+  overflow: hidden;
+  padding: 12px 12px 12px 16px;
+  border-radius: 18px;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 1px #eef2f7;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 14px;
+    left: 0;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: var(--tone);
+  }
+
+  &.is-paid { --tone: #16a34a; --tone-soft: #dcfce7; }
+  &.is-unpaid { --tone: #d97706; --tone-soft: #fef3c7; }
+  &.is-advance { --tone: #4f46e5; --tone-soft: #e0e7ff; }
+}
+
+.ucm-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ucm-item-period {
+  min-width: 0;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ucm-pill {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--tone);
+  font-size: 0.62rem;
+  font-weight: 800;
+  background: var(--tone-soft);
+}
+
+.ucm-item-amount {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: #0f172a;
+  font-size: 0.96rem;
+  font-weight: 900;
+  white-space: nowrap;
+
+  small {
+    margin-right: 2px;
+    color: #64748b;
+    font-size: 0.6rem;
+    font-weight: 700;
+  }
+}
+
+.ucm-item-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+
+  > div {
+    min-width: 0;
+  }
+
+  span {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    display: block;
+    overflow: hidden;
+    color: #334155;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.is-due {
+      color: #dc2626;
+    }
+  }
+
+  .ucm-span {
+    grid-column: 1 / -1;
+  }
+}
+
+// ── Footer ───────────────────────────────────────────────────────────────
+
+.ucm-foot {
+  flex-shrink: 0;
+  display: flex;
+  padding: 12px calc(14px + var(--safe-area-right)) calc(12px + var(--safe-area-bottom)) calc(14px + var(--safe-area-left));
+  background: #fff;
+  box-shadow: 0 -1px 0 #e8edf4, 0 -12px 24px -20px rgba(15, 23, 42, 0.35);
+
+  .mk-btn {
+    flex: 1;
+  }
+}
+
+// ── Motion / sizes ───────────────────────────────────────────────────────
+
+// Tablet and up: centered dialog, no status-bar padding.
+@media (min-width: 768px) {
+  .ucm {
+    max-height: calc(100dvh - 3.5rem);
+    border-radius: 28px;
+  }
+
+  .ucm-top {
+    padding-top: 14px;
+  }
+
+  .ucm-foot {
+    padding-bottom: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ucm-card {
+    animation: none;
+  }
+}

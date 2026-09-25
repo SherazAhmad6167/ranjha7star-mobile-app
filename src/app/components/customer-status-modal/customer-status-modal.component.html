@@ -1,0 +1,216 @@
+<div class="csm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="csm-header">
+    <div class="csm-header-left">
+      <div class="csm-header-icon">
+        <i class="ri-user-follow-line"></i>
+      </div>
+      <div>
+        <h4 class="csm-title">{{ editMode ? 'Update' : 'Add' }} Customer Status</h4>
+        <p class="csm-subtitle">{{ editMode ? 'Edit the status details below' : 'Fill in the status details below' }}</p>
+      </div>
+    </div>
+    <button type="button" class="csm-close-btn" aria-label="Close" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div *ngIf="isLoading" class="csm-loading">
+    <div class="spinner-border text-primary" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="csm-body">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
+      <!-- ══ Section 1 — Customer Information ══ -->
+      <div class="csm-section">
+        <div class="csm-section-head">
+          <div class="csm-section-icon si-blue"><i class="ri-user-3-line"></i></div>
+          <span class="csm-section-title">Customer Information</span>
+        </div>
+        <div class="csm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="csm-label">Customer Name <span class="req">*</span></label>
+              <input type="text" class="csm-input"
+                [class.csm-invalid]="userForm.get('user_name')?.invalid && userForm.get('user_name')?.touched"
+                formControlName="user_name" placeholder="Full name">
+              <span class="csm-err" *ngIf="userForm.get('user_name')?.hasError('required') && userForm.get('user_name')?.touched">
+                Name is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="csm-label">Internet ID <span class="req">*</span></label>
+              <input type="text" class="csm-input"
+                [class.csm-invalid]="userForm.get('internet_id')?.invalid && userForm.get('internet_id')?.touched"
+                formControlName="internet_id" placeholder="e.g. 0042">
+              <span class="csm-err" *ngIf="userForm.get('internet_id')?.hasError('required') && userForm.get('internet_id')?.touched">
+                Internet ID is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="csm-label">Area <span class="req">*</span></label>
+              <app-search-select
+                formControlName="sublocality"
+                [options]="internetAreas"
+                valueKey="sublocality"
+                displayKey="sublocality"
+                placeholder="Select area"
+                [allowEmpty]="false"
+                [isInvalid]="!!(userForm.get('sublocality')?.invalid && userForm.get('sublocality')?.touched)">
+              </app-search-select>
+              <span class="csm-err" *ngIf="userForm.get('sublocality')?.hasError('required') && userForm.get('sublocality')?.touched">
+                Area is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="csm-label">Package <span class="req">*</span></label>
+              <input type="text" class="csm-input"
+                [class.csm-invalid]="userForm.get('package_name')?.invalid && userForm.get('package_name')?.touched"
+                formControlName="package_name" placeholder="Package name">
+              <span class="csm-err" *ngIf="userForm.get('package_name')?.hasError('required') && userForm.get('package_name')?.touched">
+                Package is required
+              </span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="csm-label">Phone Number</label>
+              <input type="text" class="csm-input" formControlName="phone_number" placeholder="03XX-XXXXXXX">
+            </div>
+
+            <div class="col-md-4">
+              <label class="csm-label">Address <span class="req">*</span></label>
+              <input type="text" class="csm-input"
+                [class.csm-invalid]="userForm.get('address')?.invalid && userForm.get('address')?.touched"
+                formControlName="address" placeholder="Street, area, city">
+              <span class="csm-err" *ngIf="userForm.get('address')?.hasError('required') && userForm.get('address')?.touched">
+                Address is required
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Section 2 — Connection Status ══ -->
+      <div class="csm-section">
+        <div class="csm-section-head">
+          <div class="csm-section-icon si-amber"><i class="ri-signal-wifi-line"></i></div>
+          <span class="csm-section-title">Connection Status</span>
+          <span class="csm-status-badge" *ngIf="connectionStatus === 'close'" class="csm-badge-close">
+            <i class="ri-close-circle-line"></i> Closed
+          </span>
+          <span class="csm-status-badge csm-badge-open" *ngIf="connectionStatus === 'reopen'">
+            <i class="ri-checkbox-circle-line"></i> Reopened
+          </span>
+        </div>
+        <div class="csm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="csm-label">Status <span class="req">*</span></label>
+              <select class="csm-input csm-select"
+                [class.csm-invalid]="userForm.get('connection_status')?.invalid && userForm.get('connection_status')?.touched"
+                formControlName="connection_status">
+                <option value="" disabled>Select status</option>
+                <option value="close">Close</option>
+                <option value="reopen">Reopen</option>
+              </select>
+              <span class="csm-err" *ngIf="userForm.get('connection_status')?.hasError('required') && userForm.get('connection_status')?.touched">
+                Status is required
+              </span>
+            </div>
+
+            <!-- Close Fields -->
+            <ng-container *ngIf="connectionStatus === 'close'">
+              <div class="col-md-4">
+                <label class="csm-label">Close Date</label>
+                <input type="date" class="csm-input" formControlName="close_date">
+              </div>
+              <div class="col-md-4">
+                <label class="csm-label">Closed By</label>
+                <input type="text" class="csm-input" formControlName="closed_by" placeholder="Name">
+              </div>
+              <div class="col-md-4">
+                <label class="csm-label">Close Operator</label>
+                <select class="csm-input csm-select" formControlName="close_operator_name">
+                  <option value="" disabled selected>Select operator</option>
+                  <option value="Abu Bakar">Abu Bakar</option>
+                  <option value="Usman">Usman</option>
+                  <option value="Ali Raza">Ali Raza</option>
+                  <option value="Ali Hassan">Ali Hassan</option>
+                  <option value="Umar">Umar</option>
+                  <option value="Shahzad">Shahzad</option>
+                  <option value="Sami Khokhar">Sami Khokhar</option>
+                  <option value="Meni">Meni</option>
+                  <option value="Waseem">Waseem</option>
+                  <option value="Subhani">Subhani</option>
+                  <option value="Sami">Sami</option>
+                  <option value="Mithu">Mithu</option>
+                </select>
+              </div>
+            </ng-container>
+
+            <!-- Reopen Fields -->
+            <ng-container *ngIf="connectionStatus === 'reopen'">
+              <div class="col-md-4">
+                <label class="csm-label">Reopen Date</label>
+                <input type="date" class="csm-input" formControlName="reopen_date">
+              </div>
+              <div class="col-md-4">
+                <label class="csm-label">Reopened By</label>
+                <input type="text" class="csm-input" formControlName="reopened_by" placeholder="Name">
+              </div>
+              <div class="col-md-4">
+                <label class="csm-label">Reopen Operator</label>
+                <select class="csm-input csm-select" formControlName="reopen_operator_name">
+                  <option value="" disabled selected>Select operator</option>
+                  <option value="Abu Bakar">Abu Bakar</option>
+                  <option value="Usman">Usman</option>
+                  <option value="Ali Raza">Ali Raza</option>
+                  <option value="Ali Hassan">Ali Hassan</option>
+                  <option value="Umar">Umar</option>
+                  <option value="Shahzad">Shahzad</option>
+                  <option value="Sami Khokhar">Sami Khokhar</option>
+                  <option value="Meni">Meni</option>
+                  <option value="Waseem">Waseem</option>
+                  <option value="Subhani">Subhani</option>
+                  <option value="Sami">Sami</option>
+                  <option value="Mithu">Mithu</option>
+                </select>
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Footer ── -->
+      <div class="csm-footer">
+        <button type="button" class="csm-btn csm-btn-cancel" (click)="activeModal.close()">
+          <i class="ri-close-line me-1"></i> Cancel
+        </button>
+        <button type="submit" class="csm-btn csm-btn-save" [disabled]="isLoading || isSaving">
+          <ng-container *ngIf="!isSaving">
+            <i class="ri-save-line me-1"></i>
+            {{ editMode ? 'Update Status' : 'Save Status' }}
+          </ng-container>
+          <ng-container *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            {{ editMode ? 'Updating...' : 'Saving...' }}
+          </ng-container>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

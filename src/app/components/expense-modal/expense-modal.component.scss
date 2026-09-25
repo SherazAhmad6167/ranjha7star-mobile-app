@@ -1,0 +1,111 @@
+/* ══ EXM — Expense Modal (orange — matches expenses page) ══ */
+:host ::ng-deep .modal-content { border-radius: 16px !important; overflow: hidden !important; padding: 0 !important; }
+
+.exm-wrapper { display: flex; flex-direction: column; background: #fff; position: relative; }
+
+.exm-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #e85d04 0%, #c2410c 100%);
+  color: #fff; flex-shrink: 0;
+}
+.exm-header-left { display: flex; align-items: center; gap: 14px; }
+.exm-header-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.exm-title { font-size: 17px; font-weight: 700; margin: 0; line-height: 1.2; }
+.exm-subtitle { font-size: 12px; opacity: 0.8; margin: 0; margin-top: 2px; }
+.exm-close-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(255,255,255,0.18); border: none; color: #fff;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s; flex-shrink: 0;
+  &:hover { background: rgba(255,255,255,0.32); }
+}
+
+.exm-loading {
+  position: absolute; inset: 0; background: rgba(255,255,255,0.82); z-index: 20;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; font-size: 13px; color: #64748b; font-weight: 500;
+}
+
+.exm-body { padding: 20px; background: #f4f6fb; overflow-y: auto; max-height: calc(90vh - 90px); }
+
+.exm-section {
+  background: #fff; border-radius: 12px; margin-bottom: 14px;
+  border: 1px solid #f1f5f9; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  &:last-child { margin-bottom: 0; }
+}
+.exm-section-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+}
+.exm-section-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+  &.si-orange { background: #fff7ed; color: #e85d04; }
+  &.si-red    { background: #fef2f2; color: #dc2626; }
+}
+.exm-section-title { font-size: 13px; font-weight: 700; color: #334155; }
+.exm-section-body { padding: 18px 18px 20px; }
+.exm-section .row { margin-left: 0; margin-right: 0; }
+
+.exm-label {
+  display: block; font-size: 11px; font-weight: 700; color: #475569;
+  text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px;
+  .req { color: #ef4444; }
+}
+
+.exm-input {
+  width: 100%; padding: 9px 12px; font-size: 13px;
+  border: 1.5px solid #e2e8f0; border-radius: 8px;
+  background: #fff; color: #1e293b;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none; appearance: none; margin-bottom: 0;
+  &:focus { border-color: #e85d04; box-shadow: 0 0 0 3px rgba(232,93,4,0.12); }
+  &.exm-invalid { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+  &.exm-select {
+    padding-right: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%2394a3b8' d='M1.5 5l6.5 6 6.5-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; background-size: 12px; cursor: pointer;
+  }
+  &.exm-prefixed { border: none !important; border-radius: 0 !important; box-shadow: none !important; flex: 1; min-width: 0; &:focus { border: none !important; box-shadow: none !important; } }
+}
+
+.exm-prefix-wrap {
+  display: flex; align-items: stretch; border: 1.5px solid #e2e8f0;
+  border-radius: 8px; overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s;
+  &:focus-within { border-color: #e85d04; box-shadow: 0 0 0 3px rgba(232,93,4,0.12); }
+}
+.exm-prefix {
+  display: flex; align-items: center; padding: 0 10px;
+  background: #f1f5f9; border-right: 1.5px solid #e2e8f0;
+  font-size: 12px; font-weight: 700; color: #64748b; flex-shrink: 0;
+}
+
+.exm-err { display: block; font-size: 11px; color: #ef4444; font-weight: 500; margin-top: 3px; }
+
+.exm-footer {
+  display: flex; justify-content: flex-end; align-items: center;
+  gap: 10px; padding: 14px 20px; background: #fff; border-top: 1px solid #f1f5f9;
+}
+.exm-btn {
+  padding: 9px 20px; border-radius: 9px; font-size: 13px; font-weight: 600;
+  border: none; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.15s;
+  &.exm-btn-cancel {
+    background: #f1f5f9; color: #475569; border: 1.5px solid #e2e8f0;
+    &:hover { background: #e2e8f0; color: #1e293b; }
+  }
+  &.exm-btn-save {
+    background: linear-gradient(135deg, #e85d04, #c2410c); color: #fff;
+    min-width: 140px; justify-content: center;
+    &:hover:not(:disabled) { box-shadow: 0 4px 14px rgba(232,93,4,0.36); transform: translateY(-1px); }
+    &:disabled { opacity: 0.65; cursor: not-allowed; }
+  }
+}
+@media (max-width: 576px) { .exm-body { padding: 14px; } .exm-header { padding: 16px; } .exm-section-body { padding: 14px; } }

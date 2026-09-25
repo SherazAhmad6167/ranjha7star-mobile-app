@@ -1,0 +1,653 @@
+/* ═══════════════════════════════════════
+   PRINTER - Bluetooth thermal printer setup
+   Shared pieces (mk-*) live in src/styles/_mobile-kit.scss.
+   ═══════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+.pr {
+  --mk-brand: #2563eb;
+  --mk-brand-soft: #eff6ff;
+  --mk-brand-grad: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #0ea5e9 100%);
+  --mk-brand-shadow: rgba(37, 99, 235, 0.8);
+
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 10px 16px 8px;
+  color: #0f172a;
+}
+
+// ── Status hero ──────────────────────────────────────────────────────────
+
+.pr-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 16px;
+  border-radius: 24px;
+  color: #fff;
+  background: linear-gradient(140deg, #334155 0%, #1e3a8a 60%, #2563eb 100%);
+  box-shadow: 0 24px 40px -26px rgba(30, 58, 138, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: background 0.4s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1.3px);
+    background-size: 14px 14px;
+    -webkit-mask-image: linear-gradient(110deg, transparent 40%, #000);
+    mask-image: linear-gradient(110deg, transparent 40%, #000);
+  }
+
+  &.is-on {
+    background: linear-gradient(140deg, #065f46 0%, #059669 55%, #0ea5e9 110%);
+    box-shadow: 0 24px 40px -26px rgba(5, 150, 105, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+}
+
+.pr-hero-glow {
+  position: absolute;
+  z-index: -1;
+  top: -90px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(125, 211, 252, 0.45), transparent 65%);
+}
+
+.pr-hero-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pr-hero-art {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.pr-wave {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: 22px;
+  animation: prPulse 2.4s ease-out infinite;
+
+  &--2 {
+    animation-delay: 1.2s;
+  }
+}
+
+.pr-hero-icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  font-size: 1.9rem;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+
+  i {
+    line-height: 1;
+  }
+}
+
+.pr-hero-badge {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #1d4ed8;
+  font-size: 0.86rem;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
+
+  ion-spinner {
+    width: 16px;
+    height: 16px;
+    color: #1d4ed8;
+  }
+
+  .is-on & {
+    color: #059669;
+  }
+}
+
+.pr-hero-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pr-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pr-hero-title {
+  overflow: hidden;
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pr-hero-sub {
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pr-hero-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.pr-hero-btn {
+  height: 42px;
+  gap: 6px;
+  border-radius: 13px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  --tap-bg: rgba(255, 255, 255, 0.14);
+  --tap-fg: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+
+  i {
+    font-size: 1.05rem;
+  }
+
+  &--primary {
+    --tap-bg: #fff;
+    --tap-fg: #1d4ed8;
+    box-shadow: 0 10px 20px -12px rgba(15, 23, 42, 0.6);
+
+    .is-on & {
+      --tap-fg: #047857;
+    }
+  }
+}
+
+// ── Notice ───────────────────────────────────────────────────────────────
+
+.pr-note {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  color: #92400e;
+  background: #fffbeb;
+  box-shadow: inset 0 0 0 1px #fde68a;
+
+  strong {
+    display: block;
+    font-size: 0.86rem;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+}
+
+.pr-note-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  background: #fef3c7;
+}
+
+// ── Cards ────────────────────────────────────────────────────────────────
+
+.pr-card {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 16px 32px -28px rgba(15, 23, 42, 0.5), 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.pr-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.pr-dot {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+
+  &.blue { color: #1d4ed8; background: #eff6ff; }
+  &.teal { color: #0f766e; background: #f0fdfa; }
+  &.amber { color: #b45309; background: #fffbeb; }
+}
+
+// Scan button with a radar that pulses while searching.
+.pr-scan {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 12px 14px 12px 12px;
+  border-radius: 20px;
+  text-align: left;
+  --tap-bg: linear-gradient(135deg, #eff6ff, #e0f2fe);
+  --tap-fg: #0f172a;
+  box-shadow: inset 0 0 0 1.5px #bfdbfe;
+
+  ion-spinner {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    color: #2563eb;
+  }
+}
+
+.pr-radar {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 1.3rem;
+  background: var(--mk-brand-grad);
+  box-shadow: 0 10px 18px -10px var(--mk-brand-shadow);
+
+  i {
+    position: relative;
+    z-index: 1;
+    line-height: 1;
+  }
+}
+
+.pr-radar-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(37, 99, 235, 0.45);
+  border-radius: 50%;
+  opacity: 0;
+
+  .is-scanning & {
+    animation: prRadar 1.8s ease-out infinite;
+  }
+
+  &--2 {
+    animation-delay: 0.9s !important;
+  }
+}
+
+.pr-scan-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  strong {
+    font-size: 0.95rem;
+    font-weight: 800;
+  }
+
+  small {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+}
+
+.pr-scan-go {
+  flex-shrink: 0;
+  color: #2563eb;
+  font-size: 1.4rem;
+}
+
+// "Nearby" / "Paired" group headings.
+.pr-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 2px 8px;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  small {
+    padding: 2px 8px;
+    border-radius: 999px;
+    color: #1d4ed8;
+    font-size: 0.64rem;
+    letter-spacing: 0;
+    text-transform: none;
+    background: #eff6ff;
+  }
+}
+
+.pr-link {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  --tap-bg: transparent;
+  --tap-fg: #2563eb;
+}
+
+// Device list
+.pr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pr-device {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 10px 12px;
+  border-radius: 18px;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 1px #eef2f7;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+
+  &.is-current {
+    background: #ecfdf5;
+    box-shadow: inset 0 0 0 1.5px #86efac;
+  }
+}
+
+.pr-device-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  font-size: 1.2rem;
+  background: #e8edf4;
+
+  &.is-printer {
+    color: #1d4ed8;
+    background: #dbeafe;
+  }
+}
+
+.pr-device-copy {
+  flex: 1;
+  min-width: 0;
+
+  strong {
+    display: block;
+    overflow: hidden;
+    color: #0f172a;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1px;
+    color: #64748b;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+  }
+
+  em {
+    padding: 1px 6px;
+    border-radius: 999px;
+    color: #1d4ed8;
+    font-family: inherit;
+    font-size: 0.6rem;
+    font-style: normal;
+    font-weight: 800;
+    background: #dbeafe;
+
+    &.is-new {
+      color: #047857;
+      background: #d1fae5;
+    }
+  }
+}
+
+.pr-device-state {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #047857;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: #d1fae5;
+}
+
+.pr-connect {
+  flex-shrink: 0;
+  min-width: 86px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  --tap-bg: var(--mk-brand-grad);
+  --tap-fg: #fff;
+  box-shadow: 0 10px 18px -12px var(--mk-brand-shadow);
+
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+    color: #fff;
+  }
+}
+
+.pr-device--skel {
+  ion-skeleton-text {
+    margin: 0;
+    border-radius: 8px;
+    --background: #e9eef5;
+  }
+}
+
+ion-skeleton-text.pr-skel-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 13px;
+}
+
+.pr-skel-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pr-inline {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
+
+  > i {
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+
+  > span {
+    flex: 1;
+  }
+
+  &--error {
+    color: #be123c;
+    background: #fff1f2;
+    box-shadow: inset 0 0 0 1px #fecdd3;
+  }
+
+  &--info {
+    color: #1e40af;
+    background: #eff6ff;
+    box-shadow: inset 0 0 0 1px #bfdbfe;
+  }
+}
+
+.pr-inline-btn {
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  --tap-bg: #ffe4e6;
+  --tap-fg: #be123c;
+}
+
+.pr-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 12px 8px;
+  text-align: center;
+
+  strong {
+    font-size: 0.92rem;
+    font-weight: 800;
+  }
+
+  p {
+    max-width: 260px;
+    margin: 0;
+    color: #64748b;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+}
+
+.pr-empty-art {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 6px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  color: #1d4ed8;
+  font-size: 1.6rem;
+  background: #eff6ff;
+}
+
+// Steps
+.pr-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: 12px;
+  }
+
+  strong {
+    display: block;
+    font-size: 0.86rem;
+    font-weight: 800;
+  }
+
+  span:not(.pr-step-num) {
+    display: block;
+    margin-top: 1px;
+    color: #64748b;
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+}
+
+.pr-step-num {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #b45309;
+  font-size: 0.76rem;
+  font-weight: 900;
+  background: #fef3c7;
+}
+
+// ── Motion ───────────────────────────────────────────────────────────────
+
+@keyframes prPulse {
+  from { opacity: 0.9; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes prRadar {
+  from { opacity: 0.9; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-wave,
+  .pr-radar-ring {
+    animation: none !important;
+  }
+}

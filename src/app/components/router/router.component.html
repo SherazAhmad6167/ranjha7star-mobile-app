@@ -1,0 +1,277 @@
+<div class="container-fluid pt-3">
+
+  <!-- ── Page Header ──────────────────────────────────────────────────────── -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="m-0">
+        <i class="ri-router-line me-2 text-primary"></i>Router Management
+      </h2>
+      <small class="text-muted">Track router issuances with barcode scanning &amp; serial generation</small>
+    </div>
+    <button class="btn btn-primary d-flex align-items-center gap-2" (click)="openAddModal()">
+      <i class="ri-add-line"></i>Add Router Record
+    </button>
+  </div>
+
+  <!-- ── Stock Stats ─────────────────────────────────────────────────────── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl">
+      <div class="stat-card stat-total">
+        <div class="stat-icon"><i class="ri-router-line"></i></div>
+        <div class="stat-body">
+          <div class="stat-value">{{ totalRouters }}</div>
+          <div class="stat-label">Total Routers</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="stat-card stat-available">
+        <div class="stat-icon"><i class="ri-checkbox-circle-line"></i></div>
+        <div class="stat-body">
+          <div class="stat-value">{{ countByStatus('Available') }}</div>
+          <div class="stat-label">Available</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="stat-card stat-installed">
+        <div class="stat-icon"><i class="ri-home-wifi-line"></i></div>
+        <div class="stat-body">
+          <div class="stat-value">{{ countByStatus('Installed') }}</div>
+          <div class="stat-label">Installed</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-6 col-xl">
+      <div class="stat-card stat-returned">
+        <div class="stat-icon"><i class="ri-arrow-go-back-line"></i></div>
+        <div class="stat-body">
+          <div class="stat-value">{{ countByStatus('Returned') }}</div>
+          <div class="stat-label">Returned</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-6 col-xl">
+      <div class="stat-card stat-faulty">
+        <div class="stat-icon"><i class="ri-error-warning-line"></i></div>
+        <div class="stat-body">
+          <div class="stat-value">{{ countByStatus('Faulty') }}</div>
+          <div class="stat-label">Faulty</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- ── Records Table Card ────────────────────────────────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-body">
+
+      <!-- Controls row -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+        <div class="input-group" style="max-width: 280px">
+          <span class="input-group-text"><i class="ri-search-line"></i></span>
+          <input type="text" class="form-control" placeholder="Search records..."
+            [(ngModel)]="searchTerm" (input)="applyFilter()">
+          <button class="btn btn-outline-secondary" *ngIf="searchTerm"
+            (click)="searchTerm = ''; applyFilter()" title="Clear search">
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <label class="mb-0 small text-muted">Entries</label>
+          <select class="form-select form-select-sm" style="width: 80px"
+            [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!isLoading && filteredRecords.length === 0" class="empty-state text-center py-5">
+        <i class="ri-router-line"></i>
+        <h6 class="mt-3 text-muted">
+          {{ searchTerm ? 'No records match your search' : 'No router records yet' }}
+        </h6>
+        <p class="text-muted small mb-3">
+          {{ searchTerm ? 'Try different keywords' : 'Click "Add Router Record" to get started' }}
+        </p>
+        <button *ngIf="!searchTerm" class="btn btn-primary btn-sm" (click)="openAddModal()">
+          <i class="ri-add-line me-1"></i>Add First Record
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive" *ngIf="!isLoading && filteredRecords.length > 0">
+        <table class="table table-hover table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="width:50px">#</th>
+              <th>Date</th>
+              <th>Barcode / Serial No.</th>
+              <th class="text-center" style="width:110px">Status</th>
+              <th class="text-center" style="width:80px">Qty</th>
+              <th>Operator</th>
+              <th>Given By</th>
+              <th>Recorded At</th>
+              <th class="text-center" style="width:130px">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of pagedRecords; let i = index">
+              <td>{{ showingFrom + i }}</td>
+              <td>{{ r.date | date:'dd-MM-yyyy' }}</td>
+              <td>
+                <span class="barcode-badge">
+                  <i class="ri-barcode-line me-1"></i>{{ r.barcode }}
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="status-badge" [ngClass]="statusClass(r.status)">
+                  <i class="me-1" [ngClass]="statusIcon(r.status)"></i>{{ r.status || '—' }}
+                </span>
+              </td>
+              <td class="text-center fw-semibold">{{ r.quantity || '—' }}</td>
+              <td>{{ r.operator }}</td>
+              <td>{{ r.givenBy }}</td>
+              <td>
+                <small class="text-muted">
+                  {{ toDate(r.createdAt) | date:'dd MMM yyyy, h:mm a' }}
+                </small>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-info me-1" title="View Barcode"
+                  (click)="viewBarcode(r)">
+                  <i class="ri-barcode-line"></i>
+                </button>
+                <button class="btn btn-sm btn-primary me-1" title="Edit Record"
+                  (click)="openEditModal(r)">
+                  <i class="ri-pencil-line"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" title="Delete Record"
+                  (click)="openDeleteModal(r.id, deleteModal)">
+                  <i class="ri-delete-bin-7-line"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="!isLoading && filteredRecords.length > 0"
+        class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3">
+        <small class="text-muted mb-2 mb-md-0">
+          Showing {{ showingFrom }}–{{ showingTo }} of {{ filteredRecords.length }} entries
+        </small>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <button class="page-link" (click)="prevPage()">Previous</button>
+          </li>
+          <li *ngFor="let p of visiblePages" class="page-item" [class.active]="p === currentPage">
+            <button class="page-link" (click)="goToPage(p)">{{ p }}</button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <button class="page-link" (click)="nextPage()">Next</button>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Generate & Print Barcode Section ──────────────────────────────────── -->
+  <div class="card generate-section">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <h5 class="mb-0">
+        <i class="ri-qr-code-line me-2 text-primary"></i>Generate &amp; Print Barcode
+      </h5>
+      <span class="badge bg-primary-subtle text-primary">Serial Generator</span>
+    </div>
+    <div class="card-body">
+      <div class="row align-items-center g-3">
+
+        <!-- Description + Generate button -->
+        <div class="col-md-4">
+          <div class="generate-info">
+            <div class="generate-icon mb-3">
+              <i class="ri-magic-line"></i>
+            </div>
+            <h6 class="fw-bold mb-1">Auto-Generate Serial Number</h6>
+            <p class="text-muted small mb-3">
+              Creates a unique <code>RTR-YYYYMMDD-NNNNN</code> serial, renders
+              it as a scannable Code128 barcode, and lets you print a label.
+            </p>
+            <button class="btn btn-success w-100 mb-2" (click)="generateSerial()" [disabled]="isGenerating">
+              <span *ngIf="isGenerating" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!isGenerating" class="ri-magic-line me-1"></i>
+              {{ isGenerating ? 'Generating...' : 'Generate Serial &amp; Barcode' }}
+            </button>
+            <button *ngIf="generatedSerial" class="btn btn-outline-primary w-100" (click)="openAddModalWithSerial()">
+              <i class="ri-arrow-right-line me-1"></i>Use This Serial in Form
+            </button>
+          </div>
+        </div>
+
+        <!-- Barcode preview -->
+        <div class="col-md-8">
+          <div class="barcode-preview" [class.active]="showBarcode">
+
+            <div *ngIf="!showBarcode" class="barcode-placeholder">
+              <i class="ri-barcode-line"></i>
+              <p>Barcode will appear here after generating</p>
+            </div>
+
+            <div *ngIf="showBarcode" id="printSection" class="barcode-output">
+              <div class="barcode-meta mb-2">
+                <span class="badge bg-light text-dark border font-mono">{{ barcodeLabel }}</span>
+              </div>
+              <canvas #barcodeCanvas class="barcode-canvas"></canvas>
+              <div class="barcode-actions mt-3 d-flex gap-2 justify-content-center">
+                <button class="btn btn-primary btn-sm" (click)="printBarcode()">
+                  <i class="ri-printer-line me-1"></i>Print Label
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" (click)="showBarcode = false">
+                  <i class="ri-close-line me-1"></i>Clear
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Delete Confirmation Modal ──────────────────────────────────────────── -->
+<ng-template #deleteModal let-modal>
+  <div class="gdm-wrap">
+    <button class="gdm-close" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="gdm-icon"><i class="ri-delete-bin-6-line"></i></div>
+    <h5 class="gdm-title">Delete Router Record?</h5>
+    <p class="gdm-text">This action cannot be undone.</p>
+    <div class="gdm-actions">
+      <button class="gdm-btn gdm-cancel" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">Cancel</button>
+      <button class="gdm-btn gdm-confirm" type="button" (click)="confirmDelete(modal)" [disabled]="isDeleting">
+        <span *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</span>
+        <span *ngIf="isDeleting" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span> Deleting...
+        </span>
+      </button>
+    </div>
+  </div>
+</ng-template>

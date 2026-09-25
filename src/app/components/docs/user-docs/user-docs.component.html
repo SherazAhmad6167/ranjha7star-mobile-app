@@ -1,0 +1,362 @@
+<div class="ud-wrapper">
+
+  <div *ngIf="isLoading" class="ud-loading-overlay">
+    <div class="spinner-border" style="color:#0891b2" role="status"></div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="ud-page-header mb-4">
+    <div class="ud-header-left">
+      <div class="ud-header-icon"><i class="ri-file-upload-line"></i></div>
+      <div>
+        <h1 class="ud-title">Upload Documents</h1>
+        <p class="ud-sub">Import user data in bulk using a CSV file</p>
+      </div>
+    </div>
+    <button class="ud-download-btn" (click)="downloadSampleCsv()">
+      <i class="ri-download-line"></i> Download Sample CSV
+    </button>
+  </div>
+
+  <!-- ── Section 1: Column Reference ── -->
+  <div class="ud-card mb-4">
+    <div class="ud-card-head">
+      <div class="ud-icon-wrap info-wrap"><i class="ri-table-line"></i></div>
+      <div>
+        <div class="ud-card-title">CSV Column Reference</div>
+        <div class="ud-card-sub">Use these <strong>exact</strong> column names in the first row of your CSV</div>
+      </div>
+    </div>
+    <div class="ud-card-body">
+
+      <!-- Required Fields -->
+      <div class="ud-section-label req">
+        <i class="ri-error-warning-line"></i> Required Fields
+        <span class="ud-pill req-pill">Must include in every row</span>
+      </div>
+      <div class="ud-ref-table">
+        <div class="ud-ref-row ud-ref-head">
+          <span>Column Name</span><span>Type</span><span>Example Value</span><span>Notes</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Internet ID</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">INT-001</span>
+          <span class="note-val">Unique customer identifier</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>User Name</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">Ali Khan</span>
+          <span class="note-val">Full name of the customer</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Phone No</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">03001234567</span>
+          <span class="note-val">11-digit mobile number</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Sublocality</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">Gulberg</span>
+          <span class="note-val">Must match an existing area in the system</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Connection Type</code></span>
+          <span><span class="type-badge type-enum">Enum</span></span>
+          <span class="ex-val">internet</span>
+          <span class="note-val"><code>internet</code> · <code>tv_cable</code> · <code>both</code></span>
+        </div>
+      </div>
+
+      <!-- Optional Fields -->
+      <div class="ud-section-label opt mt-4">
+        <i class="ri-checkbox-circle-line"></i> Optional Fields
+        <span class="ud-pill opt-pill">Can be left blank</span>
+      </div>
+      <div class="ud-ref-table">
+        <div class="ud-ref-row ud-ref-head">
+          <span>Column Name</span><span>Type</span><span>Example Value</span><span>Notes</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Address</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">House 12, Street 5</span>
+          <span class="note-val">Full postal address</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Static IP</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">192.168.1.10</span>
+          <span class="note-val">Leave blank if dynamic IP</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Installation Date</code></span>
+          <span><span class="type-badge type-date">Date</span></span>
+          <span class="ex-val">2024-01-15</span>
+          <span class="note-val">Format: <strong>YYYY-MM-DD</strong></span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Connection Provider</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">PTCL</span>
+          <span class="note-val">ISP or provider name</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Select Internet Package</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">basic</span>
+          <span class="note-val">e.g. <code>N-10mbps</code>, <code>Fs-8mbps</code>, <code>Zong-6mbps</code></span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Internet Package Fee</code></span>
+          <span><span class="type-badge type-num">Number</span></span>
+          <span class="ex-val">2000</span>
+          <span class="note-val">Monthly internet fee (Rs.)</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Installation Amount</code></span>
+          <span><span class="type-badge type-num">Number</span></span>
+          <span class="ex-val">5000</span>
+          <span class="note-val">One-time installation charge</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Other Amount</code></span>
+          <span><span class="type-badge type-num">Number</span></span>
+          <span class="ex-val">500</span>
+          <span class="note-val">Additional charges, if any</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Discount</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">no_discount</span>
+          <span class="note-val">Discount label applied</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Select Cable Package</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">cable_basic</span>
+          <span class="note-val">Only when Connection Type = <code>tv_cable</code> / <code>both</code></span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Cable Package Fee</code></span>
+          <span><span class="type-badge type-num">Number</span></span>
+          <span class="ex-val">1000</span>
+          <span class="note-val">Monthly cable fee (Rs.)</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Sub Area</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">Block A</span>
+          <span class="note-val">Sub-area within the locality</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Wire</code></span>
+          <span><span class="type-badge type-text">Text</span></span>
+          <span class="ex-val">fiber</span>
+          <span class="note-val">Cable type (fiber / copper)</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Latitude</code></span>
+          <span><span class="type-badge type-num">Number</span></span>
+          <span class="ex-val">31.5204</span>
+          <span class="note-val">GPS latitude coordinate</span>
+        </div>
+        <div class="ud-ref-row">
+          <span><code>Longitude</code></span>
+          <span><span class="type-badge type-num">Number</span></span>
+          <span class="ex-val">74.3587</span>
+          <span class="note-val">GPS longitude coordinate</span>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="ud-tips-row">
+        <div class="ud-tip"><i class="ri-alert-line"></i> Column names must match <strong>exactly</strong> (case-sensitive)</div>
+        <div class="ud-tip"><i class="ri-calendar-line"></i> Dates must be in <strong>YYYY-MM-DD</strong> format</div>
+        <div class="ud-tip"><i class="ri-router-line"></i> Connection Type: <code>internet</code> | <code>tv_cable</code> | <code>both</code></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Section 2: Example Preview ── -->
+  <div class="ud-card mb-4">
+    <div class="ud-card-head">
+      <div class="ud-icon-wrap eye-wrap"><i class="ri-eye-line"></i></div>
+      <div>
+        <div class="ud-card-title">Example CSV Preview</div>
+        <div class="ud-card-sub">How your CSV file should look — 3 sample rows with all key columns</div>
+      </div>
+      <button class="ud-download-btn-sm ms-auto" (click)="downloadSampleCsv()">
+        <i class="ri-download-line"></i> Download
+      </button>
+    </div>
+    <div class="table-responsive">
+      <table class="ud-example-table">
+        <thead>
+          <tr>
+            <th class="col-req">Internet ID <span class="star">*</span></th>
+            <th class="col-req">User Name <span class="star">*</span></th>
+            <th class="col-req">Phone No <span class="star">*</span></th>
+            <th class="col-req">Sublocality <span class="star">*</span></th>
+            <th class="col-req">Connection Type <span class="star">*</span></th>
+            <th>Address</th>
+            <th>Installation Date</th>
+            <th>Connection Provider</th>
+            <th>Select Internet Package</th>
+            <th>Internet Package Fee</th>
+            <th>Installation Amount</th>
+            <th>Sub Area</th>
+            <th>Wire</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>INT-001</strong></td>
+            <td>Ali Khan</td>
+            <td>03001234567</td>
+            <td>Gulberg</td>
+            <td><span class="conn-badge internet">internet</span></td>
+            <td>House 12, Street 5</td>
+            <td>2024-01-15</td>
+            <td>PTCL</td>
+            <td>N-10mbps</td>
+            <td>2000</td>
+            <td>5000</td>
+            <td>Block A</td>
+            <td>fiber</td>
+            <td>31.5204</td>
+            <td>74.3587</td>
+          </tr>
+          <tr>
+            <td><strong>INT-002</strong></td>
+            <td>Sara Ahmed</td>
+            <td>03211234567</td>
+            <td>DHA Phase 5</td>
+            <td><span class="conn-badge both">both</span></td>
+            <td>Flat 3B, Sector 7</td>
+            <td>2024-02-20</td>
+            <td>Fiberlink</td>
+            <td>Fs-12mbps</td>
+            <td>3000</td>
+            <td>7000</td>
+            <td>Block C</td>
+            <td>fiber</td>
+            <td>31.5496</td>
+            <td>74.3436</td>
+          </tr>
+          <tr>
+            <td><strong>INT-003</strong></td>
+            <td>Bilal Raza</td>
+            <td>03451234567</td>
+            <td>Johar Town</td>
+            <td><span class="conn-badge internet">internet</span></td>
+            <td>Shop 5, Main Market</td>
+            <td>2024-03-10</td>
+            <td>Zong</td>
+            <td>Zong-8mbps</td>
+            <td>2500</td>
+            <td>6000</td>
+            <td></td>
+            <td>copper</td>
+            <td>31.4697</td>
+            <td>74.2728</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ud-legend">
+      <span class="ud-leg-item"><span class="ud-leg-dot req-dot"></span> Required column (marked *)</span>
+      <span class="ud-leg-item"><span class="ud-leg-dot opt-dot"></span> Optional column (can be blank)</span>
+    </div>
+  </div>
+
+  <!-- ── Section 3: Upload ── -->
+  <div class="ud-card">
+    <div class="ud-card-head">
+      <div class="ud-icon-wrap upload-wrap"><i class="ri-cloud-upload-line"></i></div>
+      <div>
+        <div class="ud-card-title">Upload CSV File</div>
+        <div class="ud-card-sub">Select your .csv file to preview and save to database</div>
+      </div>
+      <div *ngIf="csvData.length > 0" class="ud-ready-pill ms-auto">
+        <i class="ri-checkbox-circle-line"></i> <strong>{{ csvData.length }}</strong> records ready
+      </div>
+    </div>
+    <div class="ud-upload-body">
+
+      <label class="ud-drop-zone" [class.has-data]="csvData.length > 0">
+        <i class="ri-folder-open-line ud-drop-icon"></i>
+        <span class="ud-drop-text">{{ csvData.length > 0 ? 'Click to replace file' : 'Click to select CSV file' }}</span>
+        <span class="ud-drop-hint">.csv files only</span>
+        <input type="file" style="display:none" (change)="onFileChange($event)" accept=".csv">
+      </label>
+
+      <div *ngIf="fileError" class="ud-error-box">
+        <i class="ri-error-warning-line"></i> {{ fileError }}
+      </div>
+
+      <!-- Data Preview Table -->
+      <div *ngIf="csvData.length > 0" class="ud-preview-wrap">
+        <div class="ud-preview-head">
+          <span><i class="ri-eye-line"></i> Data Preview</span>
+          <span class="ud-preview-chip">{{ csvData.length }} records</span>
+        </div>
+        <div class="table-responsive" style="max-height: 360px; overflow: auto;">
+          <table class="ud-preview-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Internet ID</th>
+                <th>User Name</th>
+                <th>Phone</th>
+                <th>Sublocality</th>
+                <th>Conn. Type</th>
+                <th>Address</th>
+                <th>Package</th>
+                <th>Fee</th>
+                <th>Install Date</th>
+                <th>Provider</th>
+                <th>Sub Area</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of csvData; let i = index">
+                <td class="ud-row-num">{{ i + 1 }}</td>
+                <td><strong>{{ row.internet_id }}</strong></td>
+                <td>{{ row.user_name }}</td>
+                <td>{{ row.mobile_no }}</td>
+                <td>{{ row.sublocality }}</td>
+                <td><span class="conn-badge" [class.internet]="row.connection_type==='internet'" [class.both]="row.connection_type==='both'" [class.cable]="row.connection_type==='tv_cable'">{{ row.connection_type || '—' }}</span></td>
+                <td>{{ row.address || '—' }}</td>
+                <td>{{ row.select_package || '—' }}</td>
+                <td>{{ row.internet_package_fee || '—' }}</td>
+                <td>{{ row.installation_date || '—' }}</td>
+                <td>{{ row.connection_provider || '—' }}</td>
+                <td>{{ row.sub_area || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="ud-footer-actions">
+        <button class="ud-dl-btn" (click)="downloadSampleCsv()">
+          <i class="ri-download-line"></i> Download Sample CSV
+        </button>
+        <button class="ud-submit-btn" [disabled]="csvData.length === 0 || loading" (click)="uploadToFirestore()">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          <i *ngIf="!loading" class="ri-cloud-upload-line"></i>
+          {{ loading ? 'Uploading...' : 'Save to Database' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

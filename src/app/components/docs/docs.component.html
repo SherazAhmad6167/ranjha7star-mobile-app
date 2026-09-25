@@ -1,0 +1,23 @@
+<div class="container-fluid ud-wrapper">
+
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <!-- <div class="ud-page-header mb-4">
+    <div class="ud-header-left">
+      <div class="ud-header-icon"><i class="ri-upload-cloud-2-line"></i></div>
+      <div>
+        <h1 class="ud-title">Upload Documents</h1>
+        <p class="ud-sub">Import user data in bulk using CSV file upload</p>
+      </div>
+    </div>
+  </div> -->
+
+  <!-- Child Component -->
+  <app-user-docs></app-user-docs>
+
+</div>

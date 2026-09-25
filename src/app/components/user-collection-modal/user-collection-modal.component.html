@@ -1,0 +1,125 @@
+<div class="ucm">
+
+  <!-- ══ Top bar ══ -->
+  <header class="ucm-top">
+    <button type="button" class="mk-tap mk-icon-btn" aria-label="Close" (click)="activeModal.close()">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="ucm-top-titles">
+      <span class="ucm-top-kicker">Billing history</span>
+      <span class="ucm-top-title">{{ (user?.user_name | titlecase) || 'User details' }}</span>
+    </div>
+    <span class="ucm-top-icon"><i class="ri-history-line"></i></span>
+  </header>
+
+  <div class="ucm-body">
+
+    <!-- ══ Loading ══ -->
+    <div class="ucm-state" *ngIf="isLoading">
+      <span class="spinner-border" role="status"></span>
+      <span>Loading…</span>
+    </div>
+
+    <ng-container *ngIf="!isLoading && user">
+
+      <!-- ── Basic info ── -->
+      <div class="ucm-card">
+        <div class="ucm-section-title"><span class="ucm-dot blue"><i class="ri-user-line"></i></span> Basic info</div>
+
+        <div class="mk-info">
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-hashtag"></i></span>
+            <span class="mk-info-label">Internet ID</span>
+            <span class="mk-info-value mk-mono">{{ user.internet_id || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-user-3-line"></i></span>
+            <span class="mk-info-label">Name</span>
+            <span class="mk-info-value">{{ user.user_name || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-home-4-line"></i></span>
+            <span class="mk-info-label">Address</span>
+            <span class="mk-info-value">{{ user.address || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-map-pin-2-line"></i></span>
+            <span class="mk-info-label">Area</span>
+            <span class="mk-info-value">{{ user.sublocality || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-phone-line"></i></span>
+            <span class="mk-info-label">Phone</span>
+            <span class="mk-info-value mk-mono">{{ user.phone_no || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-links-line"></i></span>
+            <span class="mk-info-label">Type</span>
+            <span class="mk-info-value">{{ user.connection_type || '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Bills ── -->
+      <div class="ucm-card" *ngIf="user.bills?.length">
+        <div class="ucm-section-title">
+          <span class="ucm-dot green"><i class="ri-bill-line"></i></span> Bill info
+          <span class="ucm-badge green">{{ user.bills.length }}</span>
+        </div>
+
+        <div class="ucm-list">
+          <div class="ucm-item" *ngFor="let bill of user.bills"
+            [class.is-paid]="bill.status === 'paid'" [class.is-unpaid]="bill.status !== 'paid'">
+            <div class="ucm-item-head">
+              <span class="ucm-item-period">{{ bill.month | titlecase }} {{ bill.year }}</span>
+              <span class="ucm-pill">{{ bill.status | titlecase }}</span>
+              <strong class="ucm-item-amount"><small>Rs</small>{{ bill.amount }}</strong>
+            </div>
+
+            <div class="ucm-item-grid">
+              <div><span>Collected</span><strong>{{ bill.collected_amount || '-' }}</strong></div>
+              <div><span>Remaining</span><strong class="is-due">{{ bill.remaining_amount || '-' }}</strong></div>
+              <div><span>Method</span><strong>{{ bill.collected_method || '-' }}</strong></div>
+              <div><span>Collected by</span><strong>{{ bill.collected_by || '-' }}</strong></div>
+              <div class="ucm-span"><span>Collected date</span><strong>{{ (bill.collected_date?.toDate() | date: 'dd MMM yyyy, hh:mm a') || '-' }}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Advances ── -->
+      <div class="ucm-card" *ngIf="user.advancePayments?.length">
+        <div class="ucm-section-title"><span class="ucm-dot indigo"><i class="ri-arrow-up-circle-line"></i></span> Advance info</div>
+
+        <div class="ucm-list">
+          <ng-container *ngFor="let adv of user.advancePayments">
+            <div class="ucm-item is-advance" *ngIf="adv.isAdvance">
+              <div class="ucm-item-head">
+                <span class="ucm-item-period">{{ getAdvanceMonthsString(adv) }}</span>
+                <strong class="ucm-item-amount"><small>Rs</small>{{ adv.advance_amount }}</strong>
+              </div>
+
+              <div class="ucm-item-grid">
+                <div><span>Collected by</span><strong>{{ adv.collected_by || '-' }}</strong></div>
+                <div><span>Collected date</span><strong>{{ (adv.collected_date?.toDate() | date: 'dd MMM yyyy, hh:mm a') || '-' }}</strong></div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ══ Not found ══ -->
+    <div class="mk-empty" *ngIf="!isLoading && !user">
+      <div class="mk-empty-art"><i class="ri-user-search-line"></i></div>
+      <strong>User details not found</strong>
+      <p>This subscriber may have been removed.</p>
+    </div>
+  </div>
+
+  <!-- ══ Actions ══ -->
+  <footer class="ucm-foot">
+    <button type="button" class="mk-tap mk-btn mk-btn--ghost" (click)="activeModal.close()">Close</button>
+  </footer>
+</div>

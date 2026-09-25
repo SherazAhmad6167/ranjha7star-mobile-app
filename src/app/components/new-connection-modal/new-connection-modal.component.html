@@ -1,0 +1,861 @@
+<div class="nm">
+
+  <!-- ══ Top bar ══ -->
+  <header class="nm-top">
+    <button type="button" class="mk-tap mk-icon-btn" aria-label="Close" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="nm-top-titles">
+      <span class="nm-top-kicker">{{ editMode ? 'Update connection' : 'New connection' }}</span>
+      <span class="nm-top-title">{{ (userForm.get('user_name')?.value | titlecase) || (editMode ? 'Edit details' : 'Fill in the details') }}</span>
+    </div>
+    <span class="nm-top-icon">
+      <i [class]="editMode ? 'ri-router-line' : 'ri-user-add-line'"></i>
+    </span>
+  </header>
+
+  <!-- Section shortcuts -->
+  <div class="nm-jump">
+    <button type="button" class="mk-tap nm-jump-chip" (click)="secCustomer.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-user-3-line"></i> Customer
+    </button>
+    <button type="button" class="mk-tap nm-jump-chip" (click)="secLocation.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-map-pin-2-line"></i> Location
+    </button>
+    <button type="button" class="mk-tap nm-jump-chip" (click)="secService.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-wifi-line"></i> Service
+    </button>
+    <button type="button" class="mk-tap nm-jump-chip" *ngIf="isCable || isInternet || isBoth"
+      (click)="secPackages.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-box-3-line"></i> Packages
+    </button>
+    <button type="button" class="mk-tap nm-jump-chip" (click)="secPayment.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-money-dollar-circle-line"></i> Payment
+    </button>
+    <button type="button" class="mk-tap nm-jump-chip" (click)="secInstallation.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-tools-line"></i> Installation
+    </button>
+    <button type="button" class="mk-tap nm-jump-chip" *ngIf="!editMode"
+      (click)="secProvision.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-server-line"></i> Provisioning
+    </button>
+    <button type="button" class="mk-tap nm-jump-chip" (click)="secCnic.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-id-card-line"></i> CNIC
+    </button>
+  </div>
+
+  <!-- ══ Loading ══ -->
+  <div *ngIf="isLoading" class="nm-loading">
+    <div class="nm-loading-inner">
+      <span class="spinner-border" role="status"></span>
+      <span>Loading…</span>
+    </div>
+  </div>
+
+  <form class="nm-form" [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="nm-body">
+
+      <!-- ── Customer ── -->
+      <div class="nm-card" #secCustomer>
+        <div class="nm-section-title"><span class="nm-dot blue"><i class="ri-user-line"></i></span> Customer information</div>
+
+        <div class="nm-grid">
+          <div class="nm-field nm-span">
+            <label class="nm-label">Customer name <span class="req">*</span></label>
+            <input type="text" class="mk-input" formControlName="user_name" placeholder="Full name"
+              [class.is-invalid]="userForm.get('user_name')?.invalid && userForm.get('user_name')?.touched" />
+            <span class="nm-err" *ngIf="userForm.get('user_name')?.hasError('required') && userForm.get('user_name')?.touched">
+              Name is required
+            </span>
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Father / husband name</label>
+            <input type="text" class="mk-input" formControlName="father_name" placeholder="Father or husband name"
+              [class.is-invalid]="userForm.get('father_name')?.invalid && userForm.get('father_name')?.touched" />
+            <span class="nm-err" *ngIf="userForm.get('father_name')?.hasError('required') && userForm.get('father_name')?.touched">
+              Father name is required
+            </span>
+          </div>
+
+          <div class="nm-field">
+            <label class="nm-label">Internet ID <span class="req">*</span></label>
+            <input type="text" class="mk-input" formControlName="internet_id" placeholder="e.g. 0042"
+              [class.is-invalid]="userForm.get('internet_id')?.invalid && userForm.get('internet_id')?.touched" />
+            <span class="nm-err" *ngIf="userForm.get('internet_id')?.hasError('required') && userForm.get('internet_id')?.touched">
+              Internet ID is required
+            </span>
+          </div>
+
+          <div class="nm-field">
+            <label class="nm-label">Mobile no <span class="req">*</span></label>
+            <input type="tel" inputmode="tel" class="mk-input" formControlName="mobile_no" placeholder="03xx-xxxxxxx"
+              [class.is-invalid]="userForm.get('mobile_no')?.invalid && userForm.get('mobile_no')?.touched" />
+            <span class="nm-err" *ngIf="userForm.get('mobile_no')?.hasError('required') && userForm.get('mobile_no')?.touched">
+              Mobile no is required
+            </span>
+          </div>
+
+          <div class="nm-field">
+            <label class="nm-label">CNIC no</label>
+            <input type="text" inputmode="numeric" class="mk-input" formControlName="cnic" placeholder="xxxxx-xxxxxxx-x"
+              [class.is-invalid]="userForm.get('cnic')?.invalid && userForm.get('cnic')?.touched" />
+            <span class="nm-err" *ngIf="userForm.get('cnic')?.hasError('required') && userForm.get('cnic')?.touched">
+              CNIC is required
+            </span>
+          </div>
+
+          <div class="nm-field">
+            <label class="nm-label">Date of birth</label>
+            <div class="nm-affix">
+              <input type="text" class="mk-input nm-has-suffix" placeholder="dd/mm/yyyy"
+                formControlName="date_of_birth" ngbDatepicker #dobPicker="ngbDatepicker"
+                [minDate]="minDob" [maxDate]="maxDob" [startDate]="maxDob"
+                container="body" placement="bottom-start" />
+              <button type="button" class="mk-tap nm-suffix-btn" (click)="dobPicker.toggle()" aria-label="Open date picker">
+                <i class="ri-calendar-line"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Alternate mobile no</label>
+            <input type="tel" inputmode="tel" class="mk-input" formControlName="alter_mobile_no" placeholder="03xx-xxxxxxx (optional)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Location ── -->
+      <div class="nm-card" #secLocation>
+        <div class="nm-section-title"><span class="nm-dot green"><i class="ri-map-pin-2-line"></i></span> Location</div>
+
+        <div class="nm-grid">
+          <div class="nm-field nm-span">
+            <label class="nm-label">Area <span class="req">*</span></label>
+            <app-search-select
+              formControlName="sublocality"
+              [options]="areaOptions"
+              valueKey="sublocality"
+              displayKey="sublocality"
+              placeholder="Select area"
+              [allowEmpty]="false"
+              [isInvalid]="!!(userForm.get('sublocality')?.invalid && userForm.get('sublocality')?.touched)">
+            </app-search-select>
+            <span class="nm-err" *ngIf="userForm.get('sublocality')?.hasError('required') && userForm.get('sublocality')?.touched">
+              Select an area
+            </span>
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Sub area</label>
+            <app-search-select
+              formControlName="sub_area"
+              [options]="internetSubAreas"
+              valueKey="name"
+              displayKey="name"
+              placeholder="Select sub area (optional)"
+              emptyLabel="None (optional)"
+              [allowEmpty]="true">
+            </app-search-select>
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Address</label>
+            <input type="text" class="mk-input" formControlName="address" placeholder="Street, area, city" />
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">GPS location</label>
+            <div class="nm-gps">
+              <input type="text" class="mk-input" placeholder="Latitude, Longitude" [value]="locationText" readonly />
+              <button type="button" class="mk-tap nm-gps-btn" (click)="getCurrentLocation()">
+                <i class="ri-focus-3-line"></i> Locate
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Service ── -->
+      <div class="nm-card" #secService>
+        <div class="nm-section-title"><span class="nm-dot purple"><i class="ri-wifi-line"></i></span> Service</div>
+
+        <div class="nm-grid">
+          <div class="nm-field nm-span">
+            <label class="nm-label">Connection type <span class="req">*</span></label>
+            <ion-segment class="nm-segment" mode="ios" formControlName="connection_type"
+              [class.is-invalid]="userForm.get('connection_type')?.invalid && userForm.get('connection_type')?.touched">
+              <ion-segment-button value="both"><span class="nm-seg"><i class="ri-links-line"></i> Both</span></ion-segment-button>
+              <ion-segment-button value="internet"><span class="nm-seg"><i class="ri-wifi-line"></i> Internet</span></ion-segment-button>
+              <ion-segment-button value="tv_cable"><span class="nm-seg"><i class="ri-tv-2-line"></i> Cable</span></ion-segment-button>
+            </ion-segment>
+            <span class="nm-err" *ngIf="userForm.get('connection_type')?.hasError('required') && userForm.get('connection_type')?.touched">
+              Connection type is required
+            </span>
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Connection provider</label>
+            <select class="mk-input nm-select" formControlName="connection_provider">
+              <option value="" disabled>Select provider</option>
+              <option value="none">None</option>
+              <option *ngFor="let company of companies" [value]="company.company_name">
+                {{ company.company_name | titlecase }}
+              </option>
+            </select>
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Customer status <span class="req">*</span></label>
+            <select class="mk-input nm-select" formControlName="customer_status">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Packages (depend on the connection type) ── -->
+      <div #secPackages>
+        <div class="nm-card nm-card--tone amber" *ngIf="isCable || isBoth">
+          <div class="nm-section-title">
+            <span class="nm-dot amber"><i class="ri-tv-2-line"></i></span> Cable package
+            <span class="nm-badge amber">Cable</span>
+          </div>
+
+          <div class="nm-grid">
+            <div class="nm-field nm-span">
+              <label class="nm-label">Cable package <span class="req">*</span></label>
+              <select class="mk-input nm-select" formControlName="pkg_cable"
+                [class.is-invalid]="userForm.get('pkg_cable')?.invalid && userForm.get('pkg_cable')?.touched">
+                <option value="" disabled>Select cable package</option>
+                <option *ngFor="let cable of cablePackages" [value]="cable.package_name">
+                  {{ cable.package_name | titlecase }}
+                </option>
+              </select>
+              <span class="nm-err" *ngIf="userForm.get('pkg_cable')?.hasError('required') && userForm.get('pkg_cable')?.touched">
+                Select a cable package
+              </span>
+            </div>
+
+            <div class="nm-field">
+              <label class="nm-label">Discount <span class="req">*</span></label>
+              <select class="mk-input nm-select" formControlName="cable_discount">
+                <option value="no_discount">No Discount</option>
+                <option value="quarter">Quarter (25%)</option>
+                <option value="half">Half (50%)</option>
+                <option value="semi">Semi (75%)</option>
+                <option value="full_free">Full Free</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+
+            <div class="nm-field">
+              <label class="nm-label">Cable fee <span class="req">*</span></label>
+              <div class="nm-affix">
+                <span class="nm-prefix">Rs</span>
+                <input type="text" inputmode="numeric" class="mk-input nm-has-prefix"
+                  formControlName="cable_package_fee"
+                  [class.is-invalid]="userForm.get('cable_package_fee')?.invalid && userForm.get('cable_package_fee')?.touched"
+                  [readonly]="!cableFeeIsCustom"
+                  [placeholder]="cableFeeIsCustom ? 'Enter agreed amount' : '0'" />
+              </div>
+              <span class="nm-err" *ngIf="userForm.get('cable_package_fee')?.hasError('required') && userForm.get('cable_package_fee')?.touched">
+                Fee is required
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="nm-card nm-card--tone blue" *ngIf="isInternet || isBoth">
+          <div class="nm-section-title">
+            <span class="nm-dot blue"><i class="ri-router-line"></i></span> Internet package
+            <span class="nm-badge blue">Internet</span>
+          </div>
+
+          <div class="nm-grid">
+            <div class="nm-field nm-span">
+              <label class="nm-label">Internet package <span class="req">*</span></label>
+              <select class="mk-input nm-select" formControlName="select_package"
+                [class.is-invalid]="userForm.get('select_package')?.invalid && userForm.get('select_package')?.touched">
+                <option value="" disabled>Select internet package</option>
+                <option *ngFor="let pkg of internetPackages" [value]="pkg.package_name">
+                  {{ pkg.package_name | titlecase }}
+                </option>
+              </select>
+              <span class="nm-err" *ngIf="userForm.get('select_package')?.hasError('required') && userForm.get('select_package')?.touched">
+                Select a package
+              </span>
+            </div>
+
+            <div class="nm-field">
+              <label class="nm-label">Discount <span class="req">*</span></label>
+              <select class="mk-input nm-select" formControlName="internet_discount">
+                <option value="no_discount">No Discount</option>
+                <option value="quarter">Quarter (25%)</option>
+                <option value="half">Half (50%)</option>
+                <option value="semi">Semi (75%)</option>
+                <option value="full_free">Full Free</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+
+            <div class="nm-field">
+              <label class="nm-label">Internet fee <span class="req">*</span></label>
+              <div class="nm-affix">
+                <span class="nm-prefix">Rs</span>
+                <input type="text" inputmode="numeric" class="mk-input nm-has-prefix"
+                  formControlName="internet_package_fee"
+                  [class.is-invalid]="userForm.get('internet_package_fee')?.invalid && userForm.get('internet_package_fee')?.touched"
+                  [readonly]="!internetFeeIsCustom"
+                  [placeholder]="internetFeeIsCustom ? 'Enter agreed amount' : '0'" />
+              </div>
+              <span class="nm-err" *ngIf="userForm.get('internet_package_fee')?.hasError('required') && userForm.get('internet_package_fee')?.touched">
+                Fee is required
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Payment ── -->
+      <div class="nm-card" #secPayment>
+        <div class="nm-section-title"><span class="nm-dot teal"><i class="ri-money-dollar-circle-line"></i></span> Payment</div>
+
+        <div class="nm-grid">
+          <div class="nm-field">
+            <label class="nm-label">Connection payment</label>
+            <select class="mk-input nm-select" formControlName="connection_payment">
+              <option value="" disabled>Select status</option>
+              <option value="Free">Free</option>
+              <option value="Fully Paid">Fully Paid</option>
+              <option value="Balance">Balance</option>
+              <option value="Offer">Offer</option>
+            </select>
+          </div>
+
+          <div class="nm-field">
+            <label class="nm-label">Payment method</label>
+            <select class="mk-input nm-select" formControlName="payment_method">
+              <option value="" disabled>Select method</option>
+              <option value="Cash">Cash</option>
+              <option value="JazzCash">JazzCash</option>
+              <option value="EasyPaisa">EasyPaisa</option>
+              <option value="Bank">Bank Transfer</option>
+            </select>
+          </div>
+
+          <div class="nm-field nm-span" *ngIf="userForm.get('payment_method')?.value === 'Bank'">
+            <label class="nm-label">Bank name</label>
+            <input type="text" class="mk-input" formControlName="bank_name" placeholder="Enter bank name" />
+          </div>
+
+          <div class="nm-field">
+            <label class="nm-label">Monthly fee</label>
+            <div class="nm-affix">
+              <span class="nm-prefix">Rs</span>
+              <input type="text" inputmode="numeric" class="mk-input nm-has-prefix" formControlName="monthly_fee" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="nm-field">
+            <label class="nm-label">Installation amount</label>
+            <div class="nm-affix">
+              <span class="nm-prefix">Rs</span>
+              <input type="text" inputmode="numeric" class="mk-input nm-has-prefix" formControlName="installation_amount" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="nm-field">
+            <label class="nm-label">Advance paid</label>
+            <div class="nm-affix">
+              <span class="nm-prefix">Rs</span>
+              <input type="text" inputmode="numeric" class="mk-input nm-has-prefix" formControlName="advance_paid" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="nm-field">
+            <label class="nm-label">Balance</label>
+            <div class="nm-affix">
+              <span class="nm-prefix">Rs</span>
+              <input type="text" inputmode="numeric" class="mk-input nm-has-prefix" formControlName="balance" placeholder="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Installation ── -->
+      <div class="nm-card" #secInstallation>
+        <div class="nm-section-title"><span class="nm-dot amber"><i class="ri-tools-line"></i></span> Installation</div>
+
+        <div class="nm-grid">
+          <div class="nm-field nm-span">
+            <label class="nm-label">Installation date</label>
+            <input type="date" class="mk-input" formControlName="installation_date" />
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Operator</label>
+            <select class="mk-input nm-select" formControlName="operator_name">
+              <option value="" disabled>Select operator</option>
+              <option *ngFor="let op of operatorOptions" [value]="op.operator_name">
+                {{ op.operator_name | titlecase }}
+              </option>
+            </select>
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Received by</label>
+            <select class="mk-input nm-select" formControlName="recieved_by">
+              <option value="">Select received by</option>
+              <option *ngFor="let name of recievedByList" [value]="name">{{ name }}</option>
+            </select>
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Received date</label>
+            <input type="date" class="mk-input" formControlName="recieved_date" />
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-toggle" for="isRecievedSwitch">
+              <span class="nm-toggle-copy">
+                <strong>Amount received</strong>
+                <span>Switch on once the installation amount is collected</span>
+              </span>
+              <input class="nm-switch" type="checkbox" formControlName="isRecieved" id="isRecievedSwitch" />
+            </label>
+          </div>
+
+          <div class="nm-field nm-span" *ngIf="userForm.get('isRecieved')?.value">
+            <label class="nm-label">Received amount</label>
+            <div class="nm-affix">
+              <span class="nm-prefix">Rs</span>
+              <input type="text" inputmode="numeric" class="mk-input nm-has-prefix" formControlName="recieved_amount" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="nm-field nm-span">
+            <label class="nm-label">Remarks</label>
+            <textarea class="mk-input nm-textarea" formControlName="remarks" rows="3" placeholder="Any notes or remarks..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Provisioning (new connections only) ── -->
+      <div #secProvision>
+        <div class="nm-card" *ngIf="!editMode" formGroupName="provisioning">
+          <div class="nm-section-title">
+            <span class="nm-dot indigo"><i class="ri-server-line"></i></span> Router &amp; panel
+            <span class="nm-badge slate">Optional</span>
+          </div>
+
+          <p class="nm-note">
+            The customer is always saved locally. Switch these on to also create the
+            same user on the MikroTik router and in the ZalUltra panel, using
+            <strong>{{ userForm.get('internet_id')?.value || 'the Internet ID' }}</strong> as the username.
+          </p>
+
+          <!-- MikroTik -->
+          <div class="nm-prov" [class.is-on]="provisionMikrotik">
+            <label class="nm-prov-head">
+              <span class="nm-prov-icon mt"><i class="ri-router-line"></i></span>
+              <span class="nm-toggle-copy">
+                <strong>MikroTik router</strong>
+                <span>Creates a PPPoE secret on the selected router</span>
+              </span>
+              <input class="nm-switch" type="checkbox" formControlName="mikrotik_enabled" />
+            </label>
+
+            <div class="nm-prov-body" *ngIf="provisionMikrotik">
+              <div class="nm-grid">
+                <div class="nm-field nm-span">
+                  <label class="nm-label">Router / IP <span class="req">*</span></label>
+                  <app-search-select
+                    formControlName="mikrotik_server"
+                    [options]="mikrotikServerOptions"
+                    valueKey="id"
+                    displayKey="name"
+                    placeholder="Select router"
+                    [allowEmpty]="false"
+                    [titleCase]="false">
+                  </app-search-select>
+                </div>
+
+                <div class="nm-field nm-span">
+                  <label class="nm-label">PPP profile <span class="req">*</span></label>
+                  <app-search-select
+                    formControlName="mikrotik_profile"
+                    [options]="mtProfiles"
+                    [placeholder]="mtProfilesLoading ? 'Loading profiles…' : 'Select profile'"
+                    [allowEmpty]="false"
+                    [titleCase]="false"
+                    [isInvalid]="!!(provisioning.get('mikrotik_profile')?.invalid && provisioning.get('mikrotik_profile')?.touched)">
+                  </app-search-select>
+                  <span class="nm-err nm-prov-error" *ngIf="mtProfilesError">
+                    <i class="ri-error-warning-line"></i> {{ mtProfilesError }}
+                    <button type="button" class="mk-tap nm-retry" (click)="loadRouterProfiles()">Retry</button>
+                  </span>
+                </div>
+
+                <div class="nm-field nm-span">
+                  <label class="nm-label">PPPoE password <span class="req">*</span></label>
+                  <input type="text" class="mk-input" formControlName="mikrotik_password" placeholder="Connection password"
+                    [class.is-invalid]="provisioning.get('mikrotik_password')?.invalid && provisioning.get('mikrotik_password')?.touched" />
+                </div>
+
+                <div class="nm-field nm-span">
+                  <label class="nm-toggle" for="mtStatusToggle">
+                    <span class="nm-toggle-copy">
+                      <strong>
+                        Status
+                        <span class="nm-state" [class.is-off]="provisioning.get('mikrotik_disabled')?.value">
+                          {{ provisioning.get('mikrotik_disabled')?.value ? 'Disabled' : 'Active' }}
+                        </span>
+                      </strong>
+                      <span>Toggle to create this PPP secret enabled or disabled</span>
+                    </span>
+                    <input class="nm-switch nm-switch--danger" type="checkbox" role="switch" id="mtStatusToggle"
+                      formControlName="mikrotik_disabled" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ZalUltra -->
+          <div class="nm-prov" [class.is-on]="provisionZal">
+            <label class="nm-prov-head">
+              <span class="nm-prov-icon zal"><i class="ri-server-line"></i></span>
+              <span class="nm-toggle-copy">
+                <strong>ZalUltra panel</strong>
+                <span>Creates a subscriber with billing &amp; package</span>
+              </span>
+              <input class="nm-switch" type="checkbox" formControlName="zal_enabled" />
+            </label>
+
+            <div class="nm-prov-body" *ngIf="provisionZal">
+              <div class="nm-grid">
+                <div class="nm-field nm-span">
+                  <label class="nm-label">Package <span class="req">*</span></label>
+                  <app-search-select
+                    formControlName="zal_package_id"
+                    [options]="zalPackages"
+                    valueKey="id"
+                    displayKey="name"
+                    [placeholder]="zalLookupsLoading ? 'Loading…' : 'Select package'"
+                    [allowEmpty]="false"
+                    [titleCase]="false"
+                    [isInvalid]="!!(provisioning.get('zal_package_id')?.invalid && provisioning.get('zal_package_id')?.touched)">
+                  </app-search-select>
+                </div>
+
+                <div class="nm-field nm-span">
+                  <label class="nm-label">Salesperson <span class="req">*</span></label>
+                  <app-search-select
+                    formControlName="zal_salesperson_id"
+                    [options]="zalSalespersonOptions"
+                    valueKey="id"
+                    displayKey="name"
+                    placeholder="Select salesperson"
+                    [allowEmpty]="false"
+                    [titleCase]="false"
+                    [isInvalid]="!!(provisioning.get('zal_salesperson_id')?.invalid && provisioning.get('zal_salesperson_id')?.touched)">
+                  </app-search-select>
+                </div>
+
+                <div class="nm-field nm-span">
+                  <label class="nm-label">Panel area</label>
+                  <app-search-select
+                    formControlName="zal_area"
+                    [options]="zalAreaOptions"
+                    valueKey="id"
+                    displayKey="name"
+                    placeholder="Select area"
+                    [allowEmpty]="true"
+                    emptyLabel="No area">
+                  </app-search-select>
+                </div>
+
+                <div class="nm-field nm-span">
+                  <label class="nm-label">NAS / router</label>
+                  <app-search-select
+                    formControlName="zal_nas_id"
+                    [options]="zalNasOptions"
+                    valueKey="id"
+                    displayKey="name"
+                    placeholder="Select NAS"
+                    [allowEmpty]="true"
+                    emptyLabel="No NAS"
+                    [titleCase]="false">
+                  </app-search-select>
+                </div>
+
+                <div class="nm-field nm-span">
+                  <label class="nm-label">Portal password <span class="req">*</span></label>
+                  <input type="text" class="mk-input" formControlName="zal_password" placeholder="Panel login password"
+                    [class.is-invalid]="provisioning.get('zal_password')?.invalid && provisioning.get('zal_password')?.touched" />
+                </div>
+
+                <div class="nm-field nm-span">
+                  <label class="nm-label">Expiry</label>
+                  <input type="datetime-local" class="mk-input" formControlName="zal_expiry" />
+                </div>
+
+                <div class="nm-field nm-span">
+                  <label class="nm-label">Connection password</label>
+                  <input type="text" class="mk-input" formControlName="zal_connection_password"
+                    placeholder="Defaults to the PPPoE password" />
+                </div>
+
+                <p class="nm-note nm-span">
+                  Name, phone, CNIC and address are taken from Customer information above.
+                  CNIC becomes required because the panel rejects a subscriber without it.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CNIC photos ── -->
+      <div class="nm-card" #secCnic>
+        <div class="nm-section-title">
+          <span class="nm-dot purple"><i class="ri-id-card-line"></i></span> CNIC photos
+          <span class="nm-badge green"><i class="ri-sparkling-2-line"></i> Auto-fill</span>
+        </div>
+
+        <div class="nm-cnic">
+
+          <!-- Front side -->
+          <div class="nm-cnic-col">
+            <span class="nm-cnic-tag front"><i class="ri-id-card-fill"></i> Front side</span>
+
+            <div class="nm-cnic-card" [class.has-img]="cnicFrontPreview">
+              <div class="nm-cnic-empty" *ngIf="!cnicFrontPreview">
+                <span class="nm-cnic-ring"><i class="ri-bank-card-line"></i></span>
+                <p>Capture or upload CNIC front</p>
+                <div class="nm-cnic-btns">
+                  <button type="button" class="mk-tap nm-cnic-btn nm-cnic-btn--primary" (click)="openCamera('front')">
+                    <i class="ri-camera-fill"></i> Camera
+                  </button>
+                  <label class="mk-tap nm-cnic-btn">
+                    <i class="ri-upload-2-line"></i> Upload
+                    <input type="file" hidden accept="image/*" (change)="onImageSelect($event, 'front')" />
+                  </label>
+                </div>
+              </div>
+
+              <div class="nm-cnic-preview" *ngIf="cnicFrontPreview">
+                <img [src]="cnicFrontPreview" alt="CNIC front" (click)="openImageModal('front')" />
+                <div class="nm-cnic-tools">
+                  <button type="button" class="mk-tap nm-cnic-tool" title="Crop" aria-label="Crop" (click)="openCrop(cnicFrontPreview!, 'front')">
+                    <i class="ri-crop-line"></i>
+                  </button>
+                  <button type="button" class="mk-tap nm-cnic-tool" title="Retake" aria-label="Retake" (click)="openCamera('front')">
+                    <i class="ri-camera-fill"></i>
+                  </button>
+                  <button type="button" class="mk-tap nm-cnic-tool nm-cnic-tool--danger" title="Remove" aria-label="Remove" (click)="clearCnic('front')">
+                    <i class="ri-delete-bin-fill"></i>
+                  </button>
+                </div>
+                <span class="nm-cnic-scanned" *ngIf="extractionDone">
+                  <i class="ri-checkbox-circle-fill"></i> Scanned
+                </span>
+              </div>
+            </div>
+
+            <div class="nm-cnic-foot">
+              <button type="button" class="mk-tap nm-extract-btn" *ngIf="cnicFrontPreview && !isExtracting" (click)="extractCnicData()">
+                <i class="ri-magic-line"></i>
+                {{ extractionDone ? 'Re-extract data' : 'Extract & auto-fill' }}
+              </button>
+              <div class="nm-scanning" *ngIf="isExtracting">
+                <span class="nm-scan-beam"></span>
+                <span class="nm-scan-label">
+                  <span class="nm-scan-dots"><span></span><span></span><span></span></span>
+                  Scanning CNIC...
+                </span>
+              </div>
+              <div class="nm-cnic-hint" *ngIf="!cnicFrontPreview">
+                Capture front side to enable auto-fill
+              </div>
+            </div>
+          </div>
+
+          <!-- Back side -->
+          <div class="nm-cnic-col">
+            <span class="nm-cnic-tag back"><i class="ri-bank-card-2-line"></i> Back side</span>
+
+            <div class="nm-cnic-card" [class.has-img]="cnicBackPreview">
+              <div class="nm-cnic-empty" *ngIf="!cnicBackPreview">
+                <span class="nm-cnic-ring back"><i class="ri-home-2-line"></i></span>
+                <p>Capture or upload CNIC back</p>
+                <div class="nm-cnic-btns">
+                  <button type="button" class="mk-tap nm-cnic-btn nm-cnic-btn--primary" (click)="openCamera('back')">
+                    <i class="ri-camera-fill"></i> Camera
+                  </button>
+                  <label class="mk-tap nm-cnic-btn">
+                    <i class="ri-upload-2-line"></i> Upload
+                    <input type="file" hidden accept="image/*" (change)="onImageSelect($event, 'back')" />
+                  </label>
+                </div>
+              </div>
+
+              <div class="nm-cnic-preview" *ngIf="cnicBackPreview">
+                <img [src]="cnicBackPreview" alt="CNIC back" (click)="openImageModal('back')" />
+                <div class="nm-cnic-tools">
+                  <button type="button" class="mk-tap nm-cnic-tool" title="Crop" aria-label="Crop" (click)="openCrop(cnicBackPreview!, 'back')">
+                    <i class="ri-crop-line"></i>
+                  </button>
+                  <button type="button" class="mk-tap nm-cnic-tool" title="Retake" aria-label="Retake" (click)="openCamera('back')">
+                    <i class="ri-camera-fill"></i>
+                  </button>
+                  <button type="button" class="mk-tap nm-cnic-tool nm-cnic-tool--danger" title="Remove" aria-label="Remove" (click)="clearCnic('back')">
+                    <i class="ri-delete-bin-fill"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="nm-cnic-foot">
+              <div class="nm-cnic-hint" *ngIf="!cnicBackPreview">
+                Capture back side to store address photo
+              </div>
+              <div class="nm-cnic-ok" *ngIf="cnicBackPreview">
+                <i class="ri-checkbox-circle-line"></i> Back side captured
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="nm-extracted" *ngIf="extractionDone">
+          <i class="ri-checkbox-circle-fill"></i>
+          <span>Fields auto-filled from CNIC. Please <strong>verify and correct</strong> if needed.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ Actions ══ -->
+    <footer class="nm-foot">
+      <button type="button" class="mk-tap mk-btn mk-btn--ghost" (click)="activeModal.close()">
+        Cancel
+      </button>
+      <button type="submit" class="mk-tap mk-btn mk-btn--primary nm-save" [disabled]="isLoading || isSaving">
+        <ng-container *ngIf="!isSaving">
+          <i class="ri-check-line"></i> {{ editMode ? 'Update connection' : 'Save connection' }}
+        </ng-container>
+        <ng-container *ngIf="isSaving">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          {{ editMode ? 'Updating…' : 'Saving…' }}
+        </ng-container>
+      </button>
+    </footer>
+  </form>
+</div>
+
+
+<!-- ── Photo viewer ── -->
+<div class="nm-viewer" *ngIf="showImageModal" (click)="closeImageModal()">
+  <button type="button" class="mk-tap nm-viewer-close" (click)="closeImageModal()" aria-label="Close photo">
+    <i class="ri-close-line"></i>
+  </button>
+  <img [src]="selectedImage" class="nm-viewer-img" alt="CNIC photo" (click)="$event.stopPropagation()" />
+</div>
+
+<!-- ── Crop overlay ── -->
+<div class="crop-overlay" *ngIf="showCropOverlay"
+  (mousemove)="onCropMouseMove($event)"
+  (mouseup)="onCropPointerUp()"
+  (mouseleave)="onCropPointerUp()"
+  (touchmove)="onCropTouchMove($event)"
+  (touchend)="onCropPointerUp()">
+
+  <div class="crop-header">
+    <div class="crop-title">
+      <i class="ri-crop-line"></i>
+      Crop CNIC {{ cropTarget === 'front' ? 'front' : 'back' }}
+    </div>
+    <button type="button" class="mk-tap nm-dark-icon" (click)="cancelCrop()" aria-label="Close crop">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <div class="crop-workspace">
+    <div class="crop-image-container" #cropImageContainer>
+      <img [src]="cropSourceImage" class="crop-source-img" (dragstart)="$event.preventDefault()" />
+      <div class="crop-mask" [ngStyle]="cropMaskTop"></div>
+      <div class="crop-mask" [ngStyle]="cropMaskBottom"></div>
+      <div class="crop-mask" [ngStyle]="cropMaskLeft"></div>
+      <div class="crop-mask" [ngStyle]="cropMaskRight"></div>
+      <div class="crop-selection" [ngStyle]="cropSelectionStyle"
+        (mousedown)="onCropBoxMouseDown($event)"
+        (touchstart)="onCropBoxTouchStart($event)">
+        <div class="crop-handle crop-tl" (mousedown)="onHandleMouseDown($event,'tl')" (touchstart)="onHandleTouchStart($event,'tl')"></div>
+        <div class="crop-handle crop-tr" (mousedown)="onHandleMouseDown($event,'tr')" (touchstart)="onHandleTouchStart($event,'tr')"></div>
+        <div class="crop-handle crop-bl" (mousedown)="onHandleMouseDown($event,'bl')" (touchstart)="onHandleTouchStart($event,'bl')"></div>
+        <div class="crop-handle crop-br" (mousedown)="onHandleMouseDown($event,'br')" (touchstart)="onHandleTouchStart($event,'br')"></div>
+        <div class="crop-thirds-h"></div>
+        <div class="crop-thirds-v"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="crop-footer">
+    <button type="button" class="mk-tap nm-dark-btn" (click)="resetCrop()">
+      <i class="ri-refresh-line"></i> Reset
+    </button>
+    <span class="crop-hint">Drag corners to resize · Drag to move</span>
+    <button type="button" class="mk-tap nm-dark-btn nm-dark-btn--primary" (click)="applyCrop()">
+      <i class="ri-crop-line"></i> Crop &amp; use
+    </button>
+  </div>
+
+</div>
+
+<!-- ── Camera overlay ── -->
+<div class="cam-overlay" *ngIf="showCamera">
+  <div class="cam-header">
+    <div class="cam-title">
+      <i class="ri-camera-fill"></i>
+      CNIC {{ cameraTarget === 'front' ? 'front' : 'back' }} side
+    </div>
+    <button type="button" class="mk-tap nm-dark-icon" (click)="closeCamera()" aria-label="Close camera">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+  <div class="cam-viewfinder">
+    <video #cameraVideo autoplay playsinline muted
+      [style.display]="capturedPhoto ? 'none' : 'block'"
+      class="cam-video"></video>
+    <img *ngIf="capturedPhoto" [src]="capturedPhoto" class="cam-snapshot" />
+    <div class="cnic-guide" *ngIf="!capturedPhoto && !cameraError">
+      <span class="gc tl"></span><span class="gc tr"></span>
+      <span class="gc bl"></span><span class="gc br"></span>
+      <span class="guide-hint">Align CNIC within the frame</span>
+    </div>
+    <div class="cam-error-box" *ngIf="cameraError">
+      <i class="ri-error-warning-fill"></i>
+      <p>{{ cameraError }}</p>
+    </div>
+  </div>
+  <div class="cam-controls">
+    <ng-container *ngIf="!capturedPhoto">
+      <button type="button" class="mk-tap nm-dark-btn" (click)="closeCamera()">Cancel</button>
+      <button type="button" class="cam-shutter" [disabled]="!!cameraError" (click)="capturePhoto()" aria-label="Capture photo">
+        <span class="shutter-ring"></span>
+      </button>
+      <div class="cam-spacer"></div>
+    </ng-container>
+    <ng-container *ngIf="capturedPhoto">
+      <button type="button" class="mk-tap nm-dark-btn" (click)="retakePhoto()">
+        <i class="ri-arrow-go-back-line"></i> Retake
+      </button>
+      <button type="button" class="mk-tap nm-dark-btn nm-dark-btn--primary" (click)="usePhoto()">
+        <i class="ri-check-line"></i> Use photo
+      </button>
+    </ng-container>
+  </div>
+</div>

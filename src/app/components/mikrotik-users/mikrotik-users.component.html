@@ -1,0 +1,451 @@
+<div class="container-fluid pt-3 pb-5">
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-0">MikroTik PPP Secrets</h4>
+      <small class="text-muted">Manage PPPoE/PPP users directly on the router</small>
+    </div>
+    <button class="btn btn-primary d-flex align-items-center gap-2" (click)="openAddModal()">
+      <i class="ri-add-line"></i> Add User
+    </button>
+  </div>
+
+  <!-- Server Tabs -->
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item" *ngFor="let srv of servers">
+      <button
+        class="nav-link d-flex align-items-center gap-2"
+        [class.active]="activeServer === srv.id"
+        (click)="switchServer(srv.id)"
+      >
+        <i class="ri-router-line"></i>
+        <span class="fw-semibold">{{ srv.label }}</span>
+        <small class="text-muted fw-normal d-none d-sm-inline">({{ srv.ip }})</small>
+      </button>
+    </li>
+  </ul>
+
+  <!-- Proxy not running notice -->
+  <div class="alert alert-warning d-flex align-items-start gap-2 mb-4" *ngIf="!isLoading && proxyError">
+    <i class="ri-error-warning-line fs-5 mt-1 flex-shrink-0"></i>
+    <div>
+      <strong>Cannot reach MikroTik proxy</strong>
+      <p class="mb-1 mt-1">{{ proxyError }}</p>
+      <code class="small" *ngIf="proxyIsCors">cd backend &amp;&amp; npm start</code>
+      <div class="mt-2">
+        <button class="btn btn-sm btn-warning" (click)="loadUsers()">
+          <i class="ri-refresh-line me-1"></i>Retry
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row g-3 mb-4" *ngIf="!proxyError">
+    <div class="col-12 col-sm-4">
+      <div class="card border-0 shadow-sm stat-card">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="stat-icon bg-primary-soft">
+            <i class="ri-group-line text-primary fs-4"></i>
+          </div>
+          <div>
+            <div class="fw-bold fs-3 lh-1 mb-1">
+              <span *ngIf="isLoading" class="placeholder col-4 rounded"></span>
+              <span *ngIf="!isLoading">{{ totalCount }}</span>
+            </div>
+            <div class="text-muted small">Total Secrets</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card border-0 shadow-sm stat-card">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="stat-icon bg-success-soft">
+            <i class="ri-wifi-line text-success fs-4"></i>
+          </div>
+          <div>
+            <div class="fw-bold fs-3 lh-1 mb-1 text-success">
+              <span *ngIf="isLoading" class="placeholder col-4 rounded"></span>
+              <span *ngIf="!isLoading">{{ activeCount }}</span>
+            </div>
+            <div class="text-muted small">Active</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card border-0 shadow-sm stat-card">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="stat-icon bg-danger-soft">
+            <i class="ri-wifi-off-line text-danger fs-4"></i>
+          </div>
+          <div>
+            <div class="fw-bold fs-3 lh-1 mb-1 text-danger">
+              <span *ngIf="isLoading" class="placeholder col-4 rounded"></span>
+              <span *ngIf="!isLoading">{{ disabledCount }}</span>
+            </div>
+            <div class="text-muted small">Disabled</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card shadow-sm border-0" *ngIf="!proxyError">
+
+    <!-- Card Header: Search + Controls -->
+    <div class="card-header bg-white py-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-auto d-flex align-items-center gap-2">
+          <label class="text-muted small mb-0">Show</label>
+          <select class="form-select form-select-sm w-auto" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+          <span class="text-muted small">entries</span>
+        </div>
+        <div class="col d-flex justify-content-end gap-2 flex-wrap">
+          <button class="btn btn-sm btn-outline-success" (click)="openBulkModal('enable')"
+            [disabled]="isBulkUpdating || isLoading || !users.length" title="Enable all users on this server">
+            <i class="ri-wifi-line me-1"></i>Enable All
+          </button>
+          <button class="btn btn-sm btn-outline-danger" (click)="openBulkModal('disable')"
+            [disabled]="isBulkUpdating || isLoading || !users.length" title="Disable all users on this server">
+            <i class="ri-wifi-off-line me-1"></i>Disable All
+          </button>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            style="max-width: 220px"
+            placeholder="Search username, profile..."
+            [(ngModel)]="searchTerm"
+            (input)="applyFilter()"
+          />
+          <button class="btn btn-outline-secondary btn-sm px-3" (click)="loadUsers()" [disabled]="isLoading" title="Refresh">
+            <i class="ri-refresh-line" [class.spin]="isLoading"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary mb-3" role="status"></div>
+      <p class="text-muted mb-0">Loading PPP secrets from router {{ activeServerTab.label }}...</p>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive" *ngIf="!isLoading">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3" style="width: 50px">#</th>
+            <th>Username</th>
+            <th>Profile</th>
+            <th>Service</th>
+            <th>Status</th>
+            <th>Comment</th>
+            <th style="width: 100px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of pagedUsers; let i = index">
+            <td class="ps-3 text-muted small">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td>
+              <span class="fw-medium">{{ user.name }}</span>
+            </td>
+            <td>
+              <span class="badge bg-info-subtle text-info-emphasis fw-normal">
+                {{ user.profile || 'default' }}
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-secondary-subtle text-secondary-emphasis fw-normal text-uppercase small">
+                {{ user.service || '-' }}
+              </span>
+            </td>
+            <td>
+              <span class="badge rounded-pill" [ngClass]="user.disabled === 'true' ? 'bg-danger' : 'bg-success'">
+                <i class="ri-circle-fill me-1" style="font-size: 0.4rem; vertical-align: middle;"></i>
+                {{ user.disabled === 'true' ? 'Disabled' : 'Active' }}
+              </span>
+            </td>
+            <td class="text-muted small">{{ user.comment || '—' }}</td>
+            <td>
+              <div class="d-flex gap-1">
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  (click)="openEditModal(user)"
+                  title="Edit"
+                >
+                  <i class="ri-pencil-line"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="openDeleteModal(user)"
+                  title="Delete"
+                >
+                  <i class="ri-delete-bin-line"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty state -->
+          <tr *ngIf="filteredUsers.length === 0">
+            <td colspan="7" class="text-center py-5">
+              <i class="ri-user-search-line fs-1 text-muted d-block mb-2"></i>
+              <span class="text-muted">
+                {{ searchTerm ? 'No secrets match your search' : 'No PPP secrets found on this router' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer: Info + Pagination -->
+    <div class="card-footer bg-white py-3" *ngIf="!isLoading && filteredUsers.length > 0">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <span class="text-muted small">
+          Showing
+          {{ Math.min((currentPage - 1) * pageSize + 1, filteredUsers.length) }}–{{ Math.min(currentPage * pageSize, filteredUsers.length) }}
+          of {{ filteredUsers.length }} entries
+          <span *ngIf="searchTerm" class="text-primary">(filtered from {{ totalCount }})</span>
+        </span>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <button class="page-link" (click)="prevPage()">Prev</button>
+          </li>
+          <li
+            class="page-item"
+            *ngFor="let p of visiblePages"
+            [class.active]="currentPage === p"
+          >
+            <button class="page-link" (click)="goToPage(p)">{{ p }}</button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <button class="page-link" (click)="nextPage()">Next</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add / Edit Modal ───────────────────────────────────────────────────── -->
+<ng-template #userModal let-modal>
+  <div class="modal-header border-bottom-0 pb-0">
+    <h5 class="modal-title fw-semibold">
+      <i class="ri-router-line me-2 text-primary"></i>
+      {{ editMode ? 'Edit PPP Secret' : 'Add PPP Secret' }}
+      <small class="text-muted fw-normal fs-6 ms-1">— {{ activeServerTab.label }}</small>
+    </h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()" [disabled]="isSaving"></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="form">
+
+      <!-- Username -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          Username <span class="text-danger">*</span>
+        </label>
+        <input
+          type="text"
+          class="form-control"
+          formControlName="name"
+          placeholder="e.g. customer001"
+          [attr.readonly]="editMode ? true : null"
+          [class.bg-light]="editMode"
+        />
+        <div class="text-danger small mt-1"
+          *ngIf="form.get('name')?.touched && form.get('name')?.invalid">
+          Username is required (min 2 characters)
+        </div>
+        <small class="text-muted" *ngIf="editMode">Username cannot be changed</small>
+      </div>
+
+      <!-- Password -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          Password
+          <span class="text-danger" *ngIf="!editMode">*</span>
+          <span class="text-muted fw-normal small" *ngIf="editMode"> — leave blank to keep current</span>
+        </label>
+        <input
+          type="password"
+          class="form-control"
+          formControlName="password"
+          placeholder="{{ editMode ? 'Leave blank to keep current password' : 'Enter password' }}"
+          autocomplete="new-password"
+        />
+        <div class="text-danger small mt-1"
+          *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+          Password is required (min 4 characters)
+        </div>
+      </div>
+
+      <!-- Profile (Package) + Service side by side -->
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label fw-semibold">Profile / Package <span class="text-danger">*</span></label>
+          <app-search-select
+            formControlName="profile"
+            [options]="routerProfiles"
+            [placeholder]="profilesLoading ? 'Loading profiles...' : '— Select profile —'"
+            [allowEmpty]="false"
+            [titleCase]="false"
+            [isInvalid]="!!(form.get('profile')?.touched && form.get('profile')?.invalid)">
+          </app-search-select>
+          <div class="invalid-feedback">Profile is required</div>
+          <small class="text-muted">Profiles loaded directly from the router</small>
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-semibold">Service <span class="text-danger">*</span></label>
+          <select class="form-select" formControlName="service">
+            <option value="pppoe">PPPoE</option>
+            <!-- <option value="pptp">PPTP</option> -->
+            <!-- <option value="l2tp">L2TP</option> -->
+            <!-- <option value="sstp">SSTP</option> -->
+            <!-- <option value="any">Any</option> -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Status toggle -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold d-block">Status</label>
+        <div class="d-flex align-items-center gap-3">
+          <div class="form-check form-switch mb-0">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="statusToggle"
+              formControlName="disabled"
+              style="width: 2.5rem; height: 1.25rem; cursor: pointer;"
+            />
+          </div>
+          <span class="badge rounded-pill fs-6 px-3 py-2"
+            [ngClass]="form.get('disabled')?.value ? 'bg-danger' : 'bg-success'">
+            <i class="ri-circle-fill me-1" style="font-size: 0.45rem; vertical-align: middle;"></i>
+            {{ form.get('disabled')?.value ? 'Disabled' : 'Active' }}
+          </span>
+        </div>
+        <small class="text-muted">Toggle to enable or disable this PPP secret on the router</small>
+      </div>
+
+      <!-- Comment -->
+      <div class="mb-1">
+        <label class="form-label fw-semibold">Comment <span class="text-muted fw-normal small">(optional)</span></label>
+        <input
+          type="text"
+          class="form-control"
+          formControlName="comment"
+          placeholder="e.g. customer name or area"
+        />
+      </div>
+
+    </form>
+  </div>
+
+  <div class="modal-footer border-top-0 pt-0">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()" [disabled]="isSaving">
+      Cancel
+    </button>
+    <button type="button" class="btn btn-primary" (click)="saveUser()" [disabled]="isSaving">
+      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+      {{ isSaving ? 'Saving...' : (editMode ? 'Update' : 'Create User') }}
+    </button>
+  </div>
+</ng-template>
+
+<!-- ── Delete Confirm Modal ───────────────────────────────────────────────── -->
+<ng-template #deleteModal let-modal>
+  <div class="gdm-wrap">
+    <button class="gdm-close" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="gdm-icon"><i class="ri-delete-bin-6-line"></i></div>
+    <h5 class="gdm-title">Delete PPP Secret?</h5>
+    <p class="gdm-text">
+      <strong>{{ userToDelete?.name }}</strong> will be permanently removed from MikroTik
+      <strong>{{ activeServerTab.label }}</strong>. Any active PPPoE session will be dropped.
+    </p>
+    <div class="gdm-actions">
+      <button class="gdm-btn gdm-cancel" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">Cancel</button>
+      <button class="gdm-btn gdm-confirm" type="button" (click)="confirmDelete(modal)" [disabled]="isDeleting">
+        <span *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</span>
+        <span *ngIf="isDeleting" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span> Deleting...
+        </span>
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<!-- ── Bulk Enable / Disable Modal ───────────────────────────────────────── -->
+<ng-template #bulkModal let-modal>
+  <div class="modal-header border-0 pb-0">
+    <h5 class="modal-title fw-semibold"
+        [ngClass]="bulkPendingAction === 'enable' ? 'text-success' : 'text-danger'">
+      <i class="me-2"
+         [ngClass]="bulkPendingAction === 'enable' ? 'ri-wifi-line' : 'ri-wifi-off-line'"></i>
+      {{ bulkPendingAction === 'enable' ? 'Enable' : 'Disable' }} All Users
+    </h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()" [disabled]="isBulkUpdating"></button>
+  </div>
+
+  <div class="modal-body">
+
+    <!-- Confirmation state -->
+    <ng-container *ngIf="!isBulkUpdating">
+      <p class="mb-1">
+        This will
+        <strong [ngClass]="bulkPendingAction === 'enable' ? 'text-success' : 'text-danger'">
+          {{ bulkPendingAction === 'enable' ? 'enable' : 'disable' }}
+        </strong>
+        all <strong>{{ users.length }}</strong> PPP secrets on server
+        <strong>{{ activeServerTab.label }}</strong>.
+      </p>
+      <p class="text-muted small mb-0">
+        <ng-container *ngIf="bulkPendingAction === 'disable'">
+          Active PPPoE sessions will be dropped immediately.
+        </ng-container>
+        <ng-container *ngIf="bulkPendingAction === 'enable'">
+          Only currently disabled users will be updated.
+        </ng-container>
+      </p>
+    </ng-container>
+
+    <!-- Processing state -->
+    <ng-container *ngIf="isBulkUpdating">
+      <p class="fw-semibold mb-2">
+        <span class="spinner-border spinner-border-sm me-2"
+              [ngClass]="bulkPendingAction === 'enable' ? 'text-success' : 'text-danger'"></span>
+        {{ bulkPendingAction === 'enable' ? 'Enabling' : 'Disabling' }} all users on
+        {{ activeServerTab.label }}…
+      </p>
+      <p class="text-muted small mb-0">Please wait, do not close this window.</p>
+    </ng-container>
+
+  </div>
+
+  <div class="modal-footer border-0 pt-0" *ngIf="!isBulkUpdating">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button"
+            [ngClass]="bulkPendingAction === 'enable' ? 'btn btn-success' : 'btn btn-danger'"
+            (click)="confirmBulkAction(modal)">
+      <i class="me-1"
+         [ngClass]="bulkPendingAction === 'enable' ? 'ri-wifi-line' : 'ri-wifi-off-line'"></i>
+      {{ bulkPendingAction === 'enable' ? 'Enable All' : 'Disable All' }}
+    </button>
+  </div>
+</ng-template>

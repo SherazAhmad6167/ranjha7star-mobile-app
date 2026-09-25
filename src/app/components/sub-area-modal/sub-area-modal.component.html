@@ -1,0 +1,70 @@
+<div class="sam-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="sam-header">
+    <div class="sam-header-left">
+      <div class="sam-header-icon"><i class="ri-map-2-line"></i></div>
+      <div>
+        <h4 class="sam-title">{{ editMode ? 'Update' : 'Add' }} Sub Area</h4>
+        <p class="sam-subtitle">{{ editMode ? 'Edit sub area details below' : 'Fill in the sub area details below' }}</p>
+      </div>
+    </div>
+    <button class="sam-close-btn" type="button" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading overlay ── -->
+  <div *ngIf="isLoading" class="sam-loading">
+    <div class="spinner-border" style="color:#a21caf" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="sam-body">
+
+      <!-- Section: Sub Area Details -->
+      <div class="sam-section">
+        <div class="sam-section-head">
+          <div class="sam-section-icon si-fuchsia"><i class="ri-map-2-line"></i></div>
+          <span class="sam-section-title">Sub Area Details</span>
+        </div>
+        <div class="sam-section-body">
+          <div class="row g-3">
+
+            <div class="col-12">
+              <label class="sam-label">Sub Area <span class="req">*</span></label>
+              <input type="text" class="sam-input"
+                [class.sam-invalid]="userForm.get('sub_area')?.invalid && userForm.get('sub_area')?.touched"
+                formControlName="sub_area" placeholder="Enter Sub Area">
+              <span class="sam-err"
+                *ngIf="userForm.get('sub_area')?.hasError('required') && userForm.get('sub_area')?.touched">
+                Sub Area is required
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="sam-footer">
+      <button type="button" class="sam-btn sam-btn-cancel" (click)="activeModal.close()">
+        Cancel
+      </button>
+      <button type="submit" class="sam-btn sam-btn-save" [disabled]="isLoading || isSaving">
+        <span *ngIf="!isSaving">
+          <i class="ri-save-line me-1"></i>{{ editMode ? 'Update' : 'Save' }}
+        </span>
+        <span *ngIf="isSaving" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          {{ editMode ? 'Updating...' : 'Saving...' }}
+        </span>
+      </button>
+    </div>
+  </form>
+
+</div>

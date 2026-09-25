@@ -1,0 +1,359 @@
+/* ═══════════════════════════════════════
+   RECOVERY DETAIL MODAL - full-screen mobile form
+   Mirrors the User modal. Opened through NgbModal with
+   `windowClass: 'mk-sheet-window'`; inputs and buttons come from
+   src/styles/_mobile-kit.scss.
+   ═══════════════════════════════════════ */
+
+// Fill .modal-content so the body scrolls between a fixed top bar and footer.
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+
+  --mk-brand: #2563eb;
+  --mk-brand-soft: #eff6ff;
+  --mk-brand-grad: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #0ea5e9 100%);
+  --mk-brand-shadow: rgba(37, 99, 235, 0.8);
+}
+
+.rdm {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  max-height: 100dvh;
+  color: #0f172a;
+  background: #f2f5fa;
+}
+
+// ── Top bar ──────────────────────────────────────────────────────────────
+
+.rdm-top {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(10px + var(--safe-area-top)) calc(16px + var(--safe-area-right)) 10px calc(16px + var(--safe-area-left));
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 0 #e8edf4;
+
+  .mk-icon-btn {
+    --tap-bg: #f1f5f9;
+  }
+}
+
+.rdm-top-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.rdm-top-kicker {
+  color: var(--mk-brand);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rdm-top-title {
+  overflow: hidden;
+  font-size: 1.06rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rdm-top-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 1.25rem;
+  background: var(--mk-brand-grad);
+  box-shadow: 0 10px 18px -10px var(--mk-brand-shadow);
+}
+
+.rdm-jump {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  padding: 10px calc(16px + var(--safe-area-right)) 10px calc(16px + var(--safe-area-left));
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 20px -18px rgba(15, 23, 42, 0.4);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.rdm-jump-chip {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  --tap-bg: #f1f5f9;
+  --tap-fg: #334155;
+
+  i {
+    color: var(--mk-brand);
+    font-size: 0.95rem;
+  }
+}
+
+// ── Loading ──────────────────────────────────────────────────────────────
+
+.rdm-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgba(242, 245, 250, 0.8);
+  backdrop-filter: blur(2px);
+}
+
+.rdm-loading-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 30px;
+  border-radius: 22px;
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 600;
+  background: #fff;
+  box-shadow: 0 20px 40px -24px rgba(15, 23, 42, 0.45);
+
+  .spinner-border {
+    color: var(--mk-brand);
+  }
+}
+
+// ── Body ─────────────────────────────────────────────────────────────────
+
+.rdm-form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.rdm-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 14px calc(14px + var(--safe-area-right)) 20px calc(14px + var(--safe-area-left));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rdm-card {
+  margin-bottom: 14px;
+  padding: 16px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 16px 32px -28px rgba(15, 23, 42, 0.5), 0 1px 2px rgba(15, 23, 42, 0.04);
+  // Section shortcuts land below the top of the scroll area.
+  scroll-margin-top: 12px;
+}
+
+.rdm-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.rdm-dot {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+
+  &.green { color: #15803d; background: #f0fdf4; }
+  &.teal { color: #0f766e; background: #f0fdfa; }
+}
+
+.rdm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 10px;
+}
+
+.rdm-span {
+  grid-column: 1 / -1;
+}
+
+.rdm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rdm-label {
+  margin: 0;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  .req {
+    color: #f43f5e;
+  }
+}
+
+.rdm-err {
+  color: #e11d48;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+// Invalid + read-only states on kit inputs.
+.mk-input.mk-input {
+  &.is-invalid {
+    border-color: #fb7185;
+    background: #fff5f6;
+  }
+
+  &[readonly] {
+    color: #64748b;
+    background: #f1f5f9;
+    cursor: not-allowed;
+  }
+}
+
+.rdm-select.rdm-select {
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+// Rs prefix inside the field.
+.rdm-affix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.rdm-prefix {
+  position: absolute;
+  left: 6px;
+  z-index: 1;
+  height: 36px;
+  min-width: 34px;
+  padding: 0 8px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: #e8edf4;
+  pointer-events: none;
+}
+
+.mk-input.rdm-has-prefix {
+  padding-left: 50px;
+}
+
+// Area picker - match the kit inputs.
+app-search-select ::ng-deep {
+  .ss-trigger {
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1.5px solid #e8edf4;
+    border-radius: 14px;
+    background: #f4f7fb;
+  }
+
+  .ss-trigger.ss-invalid {
+    border-color: #fb7185;
+    background: #fff5f6;
+    box-shadow: none;
+  }
+
+  .ss-value {
+    font-size: 0.92rem;
+  }
+}
+
+// ── Footer ───────────────────────────────────────────────────────────────
+
+.rdm-foot {
+  flex-shrink: 0;
+  display: flex;
+  gap: 10px;
+  padding: 12px calc(14px + var(--safe-area-right)) calc(12px + var(--safe-area-bottom)) calc(14px + var(--safe-area-left));
+  background: #fff;
+  box-shadow: 0 -1px 0 #e8edf4, 0 -12px 24px -20px rgba(15, 23, 42, 0.35);
+
+  .mk-btn--ghost {
+    flex: 0 0 auto;
+    min-width: 96px;
+  }
+
+  .rdm-save {
+    flex: 1;
+
+    .spinner-border {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// ── Motion / sizes ───────────────────────────────────────────────────────
+
+// Tablet and up: centered dialog, no status-bar padding.
+@media (min-width: 768px) {
+  .rdm {
+    max-height: calc(100dvh - 3.5rem);
+    border-radius: 28px;
+  }
+
+  .rdm-top {
+    padding-top: 14px;
+  }
+
+  .rdm-foot {
+    padding-bottom: 14px;
+  }
+}
+
+@media (max-width: 340px) {
+  .rdm-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rdm-card {
+    animation: none;
+  }
+}

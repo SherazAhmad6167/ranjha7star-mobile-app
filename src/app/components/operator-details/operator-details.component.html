@@ -1,0 +1,144 @@
+<div class="container-fluid op-wrapper">
+
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="lo-box">
+      <div class="spinner-border op-spinner" role="status"></div>
+      <span class="lo-text">Loading operators...</span>
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="op-page-header mb-4">
+    <div class="op-header-left">
+      <div class="op-header-icon"><i class="ri-user-settings-line"></i></div>
+      <div>
+        <h1 class="op-title">Operator Details</h1>
+        <p class="op-sub">Manage internet service operators and providers</p>
+      </div>
+    </div>
+    <div class="op-header-right">
+      <span class="op-stat-pill">
+        <i class="ri-user-settings-line"></i>
+        <strong>{{ filteredUsers.length }}</strong> Operators
+      </span>
+      <button class="btn-op-add" (click)="openUserModal()">
+        <i class="ri-add-line"></i> Add Operator
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Filter Bar ── -->
+  <div class="op-filter-bar mb-4">
+    <div class="op-search-group">
+      <label class="op-filter-label"><i class="ri-search-2-line"></i> Search</label>
+      <div class="op-search-wrap">
+        <i class="ri-search-line op-search-icon"></i>
+        <input type="text" class="op-search-input" placeholder="Search operators..."
+          [(ngModel)]="searchTerm" (input)="onSearch()">
+      </div>
+    </div>
+    <div class="op-entries-group">
+      <label class="op-filter-label"><i class="ri-list-settings-line"></i> Per Page</label>
+      <select class="op-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+        <option [value]="10">10</option>
+        <option [value]="30">30</option>
+        <option [value]="50">50</option>
+        <option [value]="100">100</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ── Card Grid ── -->
+  <div class="op-grid" *ngIf="pagedUsers.length > 0">
+    <div class="op-card" *ngFor="let user of pagedUsers; let i = index">
+
+      <!-- Avatar -->
+      <div class="op-card-avatar">
+        {{ user.operator_name?.charAt(0)?.toUpperCase() }}
+      </div>
+
+      <!-- Info -->
+      <div class="op-card-info">
+        <div class="op-card-name">{{ user.operator_name | titlecase }}</div>
+        <div class="op-card-meta">
+          <span class="op-meta-tag"><i class="ri-user-settings-line"></i> Operator</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="op-card-actions">
+        <button class="op-action-btn edit-btn" title="Edit" (click)="editUser(user)">
+          <i class="ri-pencil-line"></i>
+        </button>
+        <button class="op-action-btn del-btn" title="Delete" (click)="openDeleteModal(user.id, deleteModal)">
+          <i class="ri-delete-bin-7-line"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Empty State ── -->
+  <div class="op-empty-state" *ngIf="pagedUsers.length === 0 && !isLoading">
+    <div class="op-empty-icon"><i class="ri-user-settings-line"></i></div>
+    <div class="op-empty-title">No operators found</div>
+    <div class="op-empty-sub">Add your first operator to get started</div>
+    <button class="btn-op-add mt-3" (click)="openUserModal()">
+      <i class="ri-add-line"></i> Add Operator
+    </button>
+  </div>
+
+  <!-- Delete Modal -->
+  <ng-template #deleteModal let-modal>
+    <div class="op-dm-wrap">
+
+      <!-- Close -->
+      <button class="op-dm-close" (click)="modal.dismiss()" [disabled]="isDeleting">
+        <i class="ri-close-line"></i>
+      </button>
+
+      <!-- Icon -->
+      <div class="op-dm-icon-wrap">
+        <div class="op-dm-icon-ring"></div>
+        <div class="op-dm-icon"><i class="ri-delete-bin-6-line"></i></div>
+      </div>
+
+      <!-- Text -->
+      <h4 class="op-dm-title">Delete Operator?</h4>
+      <p class="op-dm-msg">This action <strong>cannot be undone</strong>. The operator will be permanently removed from the system.</p>
+
+      <!-- Actions -->
+      <div class="op-dm-actions">
+        <button class="op-dm-btn cancel" (click)="modal.dismiss()" [disabled]="isDeleting">
+          <i class="ri-arrow-left-line"></i> Cancel
+        </button>
+        <button class="op-dm-btn confirm" (click)="confirmDelete(modal)" [disabled]="isDeleting">
+          <span *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</span>
+          <span *ngIf="isDeleting">
+            <span class="spinner-border spinner-border-sm me-1" role="status"></span> Deleting...
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </ng-template>
+
+  <!-- ── Footer / Pagination ── -->
+  <div class="op-footer" *ngIf="filteredUsers.length > 0">
+    <div class="op-footer-info">
+      Showing <strong>{{ pagedUsers.length }}</strong> of <strong>{{ filteredUsers.length }}</strong> operators
+    </div>
+    <ul class="pagination mb-0">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <button class="page-link" (click)="prevPage()">Previous</button>
+      </li>
+      <li class="page-item" *ngFor="let page of visiblePages" [class.active]="currentPage === page">
+        <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <button class="page-link" (click)="nextPage()">Next</button>
+      </li>
+    </ul>
+  </div>
+
+</div>

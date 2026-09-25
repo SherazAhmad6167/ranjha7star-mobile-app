@@ -1,0 +1,906 @@
+// Shell --------------------------------------------------------------------
+
+.mobile-shell {
+  // Floating dock offset: hugs the system nav bar / home indicator, never the raw edge.
+  --dock-bottom: max(12px, calc(var(--safe-area-bottom) + 8px));
+  --shell-bg: #f2f5fa;
+
+  position: relative;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--shell-bg);
+  color: #0f172a;
+}
+
+.shell-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.amb {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.amb-1 {
+  width: 340px;
+  height: 340px;
+  top: -140px;
+  left: -120px;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.3), transparent 68%);
+}
+
+.amb-2 {
+  width: 320px;
+  height: 320px;
+  top: 30%;
+  right: -170px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.26), transparent 68%);
+}
+
+.amb-3 {
+  width: 380px;
+  height: 380px;
+  bottom: -160px;
+  left: -60px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.2), transparent 68%);
+}
+
+// Top bar ------------------------------------------------------------------
+
+.app-topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 950;
+  height: var(--app-header-h);
+  // The bar paints under the status bar; its content starts below the inset.
+  padding: var(--safe-area-top) calc(16px + var(--safe-area-right)) 0 calc(16px + var(--safe-area-left));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(242, 245, 250, 0.74);
+  border-bottom: 1px solid transparent;
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &.is-scrolled {
+    background: rgba(255, 255, 255, 0.86);
+    border-bottom-color: rgba(226, 232, 240, 0.9);
+    box-shadow: 0 12px 30px -16px rgba(15, 23, 42, 0.22);
+  }
+}
+
+.tb-left,
+.tb-right {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.tb-left {
+  flex: 1;
+  gap: 12px;
+}
+
+.tb-right {
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.tb-brand {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 17px;
+    border: 1.5px solid rgba(13, 148, 136, 0.22);
+  }
+
+  &:active {
+    transform: scale(0.93);
+  }
+}
+
+.tb-logo {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  box-shadow: 0 10px 20px -8px rgba(15, 118, 110, 0.6);
+}
+
+.tb-page-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.tb-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #0d9488;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  i {
+    font-size: 0.8rem;
+    line-height: 1;
+  }
+}
+
+.tb-page-title {
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tb-user {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 2px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: conic-gradient(from 210deg, #14b8a6, #0ea5e9, #6366f1, #14b8a6);
+  box-shadow: 0 8px 18px -8px rgba(14, 165, 233, 0.6);
+}
+
+.tb-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0f766e, #0369a1);
+}
+
+.tb-status {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #22c55e;
+  animation: statusPing 2.6s ease-out infinite;
+}
+
+.tb-user.is-offline {
+  background: conic-gradient(from 210deg, #cbd5e1, #94a3b8, #cbd5e1);
+  box-shadow: none;
+
+  .tb-avatar {
+    background: linear-gradient(135deg, #64748b, #475569);
+  }
+
+  .tb-status {
+    background: #94a3b8;
+    animation: none;
+  }
+}
+
+// Bluetooth printer shortcut: grey dot = not connected, blue = connected.
+.tb-print-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #334155;
+  font-size: 1.18rem;
+  text-decoration: none;
+  background: linear-gradient(180deg, #ffffff, #f1f5f9);
+  box-shadow: 0 8px 16px -10px rgba(15, 23, 42, 0.35);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover,
+  &:focus {
+    color: #334155;
+    text-decoration: none;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  > i {
+    line-height: 1;
+  }
+
+  &.is-active {
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+    background: linear-gradient(180deg, #ffffff, #eff6ff);
+  }
+
+  &.is-connected {
+    color: #1d4ed8;
+  }
+}
+
+.tb-print-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.5rem;
+  background: #94a3b8;
+
+  i {
+    line-height: 1;
+  }
+
+  .is-connected & {
+    background: #2563eb;
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5);
+    animation: printPing 2.6s ease-out infinite;
+  }
+}
+
+@keyframes printPing {
+  0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
+  70%, 100% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); }
+}
+
+@keyframes statusPing {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+  70%, 100% { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
+}
+
+// Reloads the open screen's data; the icon spins while it loads.
+.tb-refresh-btn {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  border: 1px solid #ccfbf1;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #0d9488;
+  font-size: 1.18rem;
+  background: linear-gradient(180deg, #ffffff, #f0fdfa);
+  box-shadow: 0 8px 16px -10px rgba(13, 148, 136, 0.45);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+
+  &:hover,
+  &:focus {
+    color: #0d9488;
+    background: linear-gradient(180deg, #ffffff, #f0fdfa);
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  &:disabled {
+    opacity: 1;
+  }
+
+  i {
+    line-height: 1;
+  }
+
+  &.is-spinning i {
+    animation: refreshSpin 0.8s linear infinite;
+  }
+}
+
+@keyframes refreshSpin {
+  to { transform: rotate(360deg); }
+}
+
+.tb-logout-btn {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(254, 205, 211, 0.95);
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #e11d48;
+  font-size: 1.18rem;
+  background: linear-gradient(180deg, #ffffff, #fff1f2);
+  box-shadow: 0 8px 16px -10px rgba(225, 29, 72, 0.5);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+
+  &:hover,
+  &:focus {
+    color: #e11d48;
+    background: linear-gradient(180deg, #ffffff, #fff1f2);
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  i {
+    line-height: 1;
+  }
+}
+
+// Scroll area --------------------------------------------------------------
+
+.main-content {
+  position: relative;
+  z-index: 1;
+  height: 100dvh;
+  min-height: 0;
+  box-sizing: border-box;
+  padding-top: var(--app-header-h);
+  padding-right: var(--safe-area-right);
+  padding-left: var(--safe-area-left);
+  // Clear the dock, the raised Home orb and the bottom inset.
+  padding-bottom: calc(var(--footer-h) + var(--dock-bottom) + 36px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+// Dock ---------------------------------------------------------------------
+
+// Fades content out under the dock and keeps the system nav bar area calm.
+.dock-scrim {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 940;
+  height: calc(var(--footer-h) + var(--dock-bottom) + 40px);
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(242, 245, 250, 0.96) 0,
+    rgba(242, 245, 250, 0.88) var(--safe-area-bottom),
+    rgba(242, 245, 250, 0) 100%
+  );
+  transition: opacity 0.25s ease;
+
+  &.is-hidden {
+    opacity: 0;
+  }
+}
+
+.app-dock {
+  --dock-pad: 6px;
+
+  position: fixed;
+  left: calc(12px + var(--safe-area-left));
+  right: calc(12px + var(--safe-area-right));
+  bottom: var(--dock-bottom);
+  z-index: 960;
+  max-width: 520px;
+  margin: 0 auto;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease;
+
+  &.is-hidden {
+    transform: translateY(calc(100% + var(--dock-bottom) + 32px));
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.dock-surface {
+  position: relative;
+  height: var(--footer-h);
+  padding: 0 var(--dock-pad);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+  box-shadow:
+    0 26px 46px -20px rgba(15, 23, 42, 0.34),
+    0 8px 16px -8px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 #ffffff,
+    inset 0 -1px 0 rgba(15, 23, 42, 0.04);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+
+  // Accent hairline that takes the active tab's colour.
+  &::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 14%;
+    right: 14%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--dock-accent), transparent);
+    opacity: 0.45;
+    transition: background 0.35s ease;
+  }
+}
+
+// Sliding highlight that follows the active tab.
+.dock-glider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--dock-pad);
+  width: calc((100% - var(--dock-pad) * 2) / 5);
+  pointer-events: none;
+  transform: translateX(calc(var(--dock-slot, 2) * 100%));
+  transition: transform 0.5s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.3s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 7px 3px;
+    border-radius: 19px;
+    background-color: color-mix(in srgb, var(--dock-accent) 11%, transparent);
+    transition: background-color 0.35s ease;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    width: 26px;
+    height: 3px;
+    margin-left: -13px;
+    border-radius: 0 0 6px 6px;
+    background-color: var(--dock-accent);
+    box-shadow: 0 2px 12px 1px var(--dock-accent);
+    transition: background-color 0.35s ease, box-shadow 0.35s ease;
+  }
+
+  &.is-idle {
+    opacity: 0;
+  }
+}
+
+.dock-tab,
+.dock-home {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #64748b;
+  text-decoration: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+// Home uses the same column as the other tabs (icon slot + label), so every
+// label sits on one baseline; its orb rises out of the slot below.
+.dock-tab,
+.dock-home {
+  justify-content: center;
+  gap: 3px;
+}
+
+.dock-icon {
+  width: 36px;
+  height: 30px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+
+  i {
+    line-height: 1;
+  }
+}
+
+.dock-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  // overflow:hidden would otherwise let flexbox squash the label.
+  flex-shrink: 0;
+  transition: color 0.25s ease;
+}
+
+.dock-tab.active {
+  .dock-icon {
+    color: #fff;
+    background: linear-gradient(135deg, var(--tab-accent), var(--tab-accent-2));
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 16px -6px color-mix(in srgb, var(--tab-accent) 75%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .dock-label {
+    color: var(--tab-accent);
+    font-weight: 800;
+  }
+}
+
+.dock-tab:active .dock-icon {
+  transform: scale(0.86);
+}
+
+// Raised centre Home orb: the slot is icon-sized, the orb grows upward from it.
+.dock-orb {
+  --orb-size: 54px;
+
+  position: relative;
+  width: 36px;
+  height: 30px;
+  flex-shrink: 0;
+  transform: translateY(-4px);
+  // Scale around the orb's own centre, not the slot's.
+  transform-origin: 50% calc(30px - var(--orb-size) / 2);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.orb-halo {
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: calc(var(--orb-size) + 10px);
+  height: calc(var(--orb-size) + 10px);
+  margin-left: calc((var(--orb-size) + 10px) / -2);
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #34d399, #38bdf8, #818cf8, #f472b6, #34d399);
+  opacity: 0;
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+  animation: orbSpin 5s linear infinite paused;
+  transition: opacity 0.3s ease;
+}
+
+.orb-core {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: var(--orb-size);
+  height: var(--orb-size);
+  margin-left: calc(var(--orb-size) / -2);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+  color: #fff;
+  font-size: 1.45rem;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.38), transparent 46%),
+    linear-gradient(145deg, #14b8a6 0%, #0d9488 42%, #0369a1 100%);
+  box-shadow:
+    0 12px 22px -8px rgba(13, 148, 136, 0.7),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.3s ease;
+
+  i {
+    line-height: 1;
+  }
+}
+
+.dock-home.active {
+  .orb-halo {
+    opacity: 1;
+    animation-play-state: running;
+  }
+
+  .orb-core {
+    box-shadow:
+      0 14px 26px -8px rgba(13, 148, 136, 0.8),
+      0 0 24px rgba(56, 189, 248, 0.35);
+  }
+
+  .dock-label {
+    color: #0d9488;
+    font-weight: 800;
+  }
+}
+
+.dock-home:active .dock-orb {
+  transform: translateY(-2px) scale(0.9);
+}
+
+@keyframes orbSpin {
+  to { transform: rotate(360deg); }
+}
+
+// Four buttons on a narrow phone: shrink them so the page title keeps room.
+@media (max-width: 400px) {
+  .tb-right {
+    gap: 6px;
+  }
+
+  .tb-refresh-btn,
+  .tb-print-btn,
+  .tb-user,
+  .tb-logout-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
+
+  .tb-user {
+    border-radius: 50%;
+  }
+}
+
+@media (max-width: 350px) {
+  .dock-label {
+    font-size: 0.58rem;
+  }
+
+  .dock-icon {
+    width: 32px;
+  }
+
+  .dock-orb {
+    --orb-size: 50px;
+  }
+
+  .tb-page-title {
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-dock,
+  .dock-glider,
+  .dock-icon,
+  .dock-orb {
+    transition: none;
+  }
+
+  .orb-halo,
+  .tb-status {
+    animation: none;
+  }
+}
+
+// Logout sheet --------------------------------------------------------------
+// Rendered inside NgbModal `windowClass: 'mk-bottom-window'` (_mobile-kit.scss).
+
+.lo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 26px 20px 18px;
+  text-align: center;
+  color: #0f172a;
+}
+
+.lo-handle {
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  width: 44px;
+  height: 5px;
+  margin-left: -22px;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.lo-art {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  margin: 8px 0 16px;
+  display: grid;
+  place-items: center;
+}
+
+.lo-ring {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid rgba(225, 29, 72, 0.3);
+  border-radius: 26px;
+  opacity: 0;
+  // Start pulsing once the sheet has landed, not during the slide.
+  animation: loPulse 2.4s ease-out 0.45s infinite;
+
+  &--2 {
+    animation-delay: 1.65s;
+  }
+}
+
+.lo-icon {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 26px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 2rem;
+  background: var(--mk-danger-grad);
+  box-shadow: 0 16px 28px -14px rgba(225, 29, 72, 0.75);
+
+  i {
+    line-height: 1;
+  }
+}
+
+.lo-title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.lo-text {
+  max-width: 280px;
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+// Who is being signed out.
+.lo-account {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 10px 14px 10px 10px;
+  border-radius: 18px;
+  text-align: left;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 1px #eef2f7;
+
+  > i {
+    flex-shrink: 0;
+    color: #94a3b8;
+    font-size: 1.2rem;
+  }
+}
+
+.lo-avatar {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #14b8a6, #0369a1);
+  box-shadow: 0 8px 16px -10px rgba(13, 148, 136, 0.8);
+}
+
+.lo-dot {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 13px;
+  height: 13px;
+  border: 2.5px solid #f8fafc;
+  border-radius: 50%;
+  background: #22c55e;
+
+  &.is-offline {
+    background: #94a3b8;
+  }
+}
+
+.lo-account-copy {
+  flex: 1;
+  min-width: 0;
+
+  strong {
+    display: block;
+    overflow: hidden;
+    color: #0f172a;
+    font-size: 0.92rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    display: block;
+    margin-top: 1px;
+    color: #64748b;
+    font-size: 0.74rem;
+    font-weight: 600;
+  }
+}
+
+.lo-warn {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  color: #92400e;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  background: #fffbeb;
+  box-shadow: inset 0 0 0 1px #fde68a;
+
+  i {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 1rem;
+  }
+}
+
+.lo-actions {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+
+  .mk-btn--ghost {
+    flex: 0 0 auto;
+    min-width: 104px;
+  }
+
+  .mk-btn--danger {
+    flex: 1;
+  }
+}
+
+@keyframes loPulse {
+  from { opacity: 0.9; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.45); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lo-ring {
+    animation: none;
+  }
+}

@@ -1,0 +1,210 @@
+<div class="rom-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="rom-header">
+    <div class="rom-header-left">
+      <div class="rom-header-icon"><i class="ri-user-settings-line"></i></div>
+      <div>
+        <h4 class="rom-title">{{ editMode ? 'Update' : 'Add' }} Recovery Officer</h4>
+        <p class="rom-subtitle">{{ editMode ? 'Edit officer details below' : 'Fill in the officer details below' }}</p>
+      </div>
+    </div>
+    <button type="button" class="rom-close-btn" aria-label="Close" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div *ngIf="isLoading" class="rom-loading">
+    <div class="spinner-border" style="color:#059669" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="rom-body">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
+      <!-- ══ Section 1 — Personal Info ══ -->
+      <div class="rom-section">
+        <div class="rom-section-head">
+          <div class="rom-section-icon si-purple"><i class="ri-user-3-line"></i></div>
+          <span class="rom-section-title">Personal Information</span>
+        </div>
+        <div class="rom-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <label class="rom-label">Full Name <span class="req">*</span></label>
+              <input type="text" class="rom-input"
+                [class.rom-invalid]="userForm.get('name')?.invalid && userForm.get('name')?.touched"
+                formControlName="name" placeholder="Full name">
+              <span class="rom-err" *ngIf="userForm.get('name')?.hasError('required') && userForm.get('name')?.touched">Name is required</span>
+            </div>
+
+            <div class="col-md-6">
+              <label class="rom-label">CNIC</label>
+              <input type="text" class="rom-input" formControlName="cnic" placeholder="XXXXX-XXXXXXX-X">
+            </div>
+
+            <div class="col-md-6">
+              <label class="rom-label">Phone No</label>
+              <input type="text" class="rom-input" formControlName="phone" placeholder="03XX-XXXXXXX">
+            </div>
+
+            <div class="col-md-6">
+              <label class="rom-label">Address</label>
+              <input type="text" class="rom-input" formControlName="address" placeholder="Street, area, city">
+            </div>
+
+            <div class="col-md-6">
+              <label class="rom-label">Joining Date</label>
+              <input type="date" class="rom-input" formControlName="join_date">
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Section 2 — Salary ══ -->
+      <div class="rom-section">
+        <div class="rom-section-head">
+          <div class="rom-section-icon si-green"><i class="ri-money-dollar-circle-line"></i></div>
+          <span class="rom-section-title">Salary Details</span>
+        </div>
+        <div class="rom-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="rom-label">Salary</label>
+              <div class="rom-prefix-wrap">
+                <span class="rom-prefix">Rs</span>
+                <input type="text" class="rom-input rom-prefixed" formControlName="salary" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="rom-label">Advance Salary</label>
+              <div class="rom-prefix-wrap">
+                <span class="rom-prefix">Rs</span>
+                <input type="text" class="rom-input rom-prefixed" formControlName="advance_salary" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="rom-label">Pending Salary</label>
+              <div class="rom-prefix-wrap">
+                <span class="rom-prefix">Rs</span>
+                <input type="text" class="rom-input rom-prefixed" formControlName="pending_salary" placeholder="0">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Section 3 — Account & Access ══ -->
+      <div class="rom-section">
+        <div class="rom-section-head">
+          <div class="rom-section-icon si-blue"><i class="ri-shield-keyhole-line"></i></div>
+          <span class="rom-section-title">Account &amp; Access</span>
+        </div>
+        <div class="rom-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <label class="rom-label">Username</label>
+              <input type="text" class="rom-input" formControlName="user_name" placeholder="Login username">
+            </div>
+
+            <div class="col-md-6">
+              <label class="rom-label">Password</label>
+              <input type="text" class="rom-input" formControlName="password" placeholder="Password">
+            </div>
+
+            <div class="col-md-6">
+              <label class="rom-label">Role</label>
+              <select class="rom-input rom-select"
+                [class.rom-invalid]="userForm.get('role')?.invalid && userForm.get('role')?.touched"
+                formControlName="role">
+                <option value="" disabled>Select role</option>
+                <option value="admin">Admin</option>
+                <option value="operator">Operator</option>
+              </select>
+              <span class="rom-err" *ngIf="userForm.get('role')?.hasError('required') && userForm.get('role')?.touched">Role is required</span>
+            </div>
+
+            <div class="col-md-6">
+              <label class="rom-label">Status</label>
+              <select class="rom-input rom-select"
+                [class.rom-invalid]="userForm.get('status')?.invalid && userForm.get('status')?.touched"
+                formControlName="status">
+                <option value="" disabled>Select status</option>
+                <option value="activated">Activated</option>
+                <option value="deactivated">Deactivated</option>
+              </select>
+              <span class="rom-err" *ngIf="userForm.get('status')?.hasError('required') && userForm.get('status')?.touched">Status is required</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Section 4 — Assigned Areas ══ -->
+      <div class="rom-section">
+        <div class="rom-section-head">
+          <div class="rom-section-icon si-amber"><i class="ri-map-pin-2-line"></i></div>
+          <span class="rom-section-title">Assigned Areas</span>
+        </div>
+        <div class="rom-section-body">
+
+          <label class="rom-label">Sublocality</label>
+          <select class="rom-input rom-select" (change)="addSublocality($event)">
+            <option value="" disabled selected>Select sublocalities</option>
+            <option value="all">All</option>
+            <option *ngFor="let area of internetAreas" [value]="area.sublocality">
+              {{ area.sublocality | titlecase }}
+            </option>
+          </select>
+
+          <div class="rom-tag-row" *ngIf="userForm.get('sublocality')?.value?.length">
+            <span class="rom-tag"
+              *ngIf="userForm.get('sublocality')?.value?.length === internetAreas.length">
+              All selected
+            </span>
+            <ng-container *ngIf="userForm.get('sublocality')?.value?.length !== internetAreas.length">
+              <span class="rom-tag" *ngFor="let sub of userForm.get('sublocality')?.value">
+                {{ sub }}
+                <button type="button" class="rom-tag-remove" (click)="removeSublocality(sub)">
+                  <i class="ri-close-line"></i>
+                </button>
+              </span>
+            </ng-container>
+          </div>
+          <span class="rom-err" *ngIf="userForm.get('sublocality')?.hasError('required') && userForm.get('sublocality')?.touched">
+            Select at least one area
+          </span>
+
+        </div>
+      </div>
+
+      <!-- ── Footer ── -->
+      <div class="rom-footer">
+        <button type="button" class="rom-btn rom-btn-cancel" (click)="activeModal.close()">
+          <i class="ri-close-line me-1"></i> Cancel
+        </button>
+        <button type="submit" class="rom-btn rom-btn-save" [disabled]="isLoading || isSaving">
+          <ng-container *ngIf="!isSaving">
+            <i class="ri-save-line me-1"></i>
+            {{ editMode ? 'Update Officer' : 'Save Officer' }}
+          </ng-container>
+          <ng-container *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            {{ editMode ? 'Updating...' : 'Saving...' }}
+          </ng-container>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

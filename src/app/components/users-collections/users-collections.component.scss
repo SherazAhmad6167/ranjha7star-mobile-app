@@ -1,0 +1,1263 @@
+/* ═══════════════════════════════════════
+   BILL COLLECTIONS - mobile
+   Mirrors the User Details screen. Shared pieces (mk-*) live in
+   src/styles/_mobile-kit.scss and src/styles/_mobile-patterns.scss.
+   ═══════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+// Same accent as the Users screen; also set on each ion-modal, whose
+// content is teleported out of this host.
+.uc-theme {
+  --mk-brand: #2563eb;
+  --mk-brand-soft: #eff6ff;
+  --mk-brand-grad: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #0ea5e9 100%);
+  --mk-brand-shadow: rgba(37, 99, 235, 0.8);
+  --tone: #64748b;
+  --tone-2: #94a3b8;
+  --tone-soft: #f1f5f9;
+}
+
+// Record tone follows the bill status.
+.st-paid {
+  --tone: #16a34a;
+  --tone-2: #0ea5e9;
+  --tone-soft: #f0fdf4;
+}
+
+.st-partial {
+  --tone: #d97706;
+  --tone-2: #f59e0b;
+  --tone-soft: #fffbeb;
+}
+
+.st-unpaid {
+  --tone: #e11d48;
+  --tone-2: #fb7185;
+  --tone-soft: #fff1f2;
+}
+
+.st-advance {
+  --tone: #4f46e5;
+  --tone-2: #8b5cf6;
+  --tone-soft: #eef2ff;
+}
+
+.uc {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 10px 16px 8px;
+}
+
+// ── Hero ─────────────────────────────────────────────────────────────────
+
+.uc-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 9px 10px;
+  border-radius: 17px;
+  color: #fff;
+  background: linear-gradient(140deg, #1e3a8a 0%, #2563eb 52%, #0ea5e9 100%);
+  box-shadow:
+    0 24px 40px -26px rgba(37, 99, 235, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1.3px);
+    background-size: 14px 14px;
+    -webkit-mask-image: linear-gradient(110deg, transparent 40%, #000);
+    mask-image: linear-gradient(110deg, transparent 40%, #000);
+  }
+}
+
+.uc-hero-glow {
+  position: absolute;
+  z-index: -1;
+  top: -100px;
+  right: -64px;
+  width: 205px;
+  height: 205px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(125, 211, 252, 0.55), transparent 65%);
+}
+
+.uc-hero-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'copy actions'
+    'stats stats';
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 6px;
+}
+
+.uc-hero-copy {
+  grid-area: copy;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.uc-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.uc-hero-count {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: 0;
+
+  .num {
+    font-size: 1.22rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .unit {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.6rem;
+    font-weight: 600;
+  }
+}
+
+.uc-hero-actions {
+  grid-area: actions;
+  display: flex;
+  gap: 4px;
+}
+
+.uc-hero-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  --tap-bg: rgba(255, 255, 255, 0.16);
+  --tap-fg: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.uc-hero-add {
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 9px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  --tap-bg: #fff;
+  --tap-fg: #1d4ed8;
+  box-shadow: 0 12px 22px -12px rgba(15, 23, 42, 0.6);
+
+  i {
+    font-size: 0.86rem;
+  }
+}
+
+.is-spinning {
+  animation: ucSpin 0.9s linear infinite;
+}
+
+// Three totals on the first row, advance + partial on the second.
+.uc-hero-stats {
+  grid-area: stats;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 0;
+}
+
+.uc-stat {
+  min-width: 0;
+  min-height: 27px;
+  padding: 4px 7px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+
+  &--third { grid-column: span 2; }
+  &--half { grid-column: span 3; }
+}
+
+.uc-stat-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.46rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.uc-stat-value {
+  display: block;
+  flex-shrink: 0;
+  max-width: 68%;
+  margin-top: 0;
+  overflow: hidden;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  small {
+    margin-right: 2px;
+    font-size: 0.46rem;
+    font-weight: 700;
+    opacity: 0.8;
+  }
+}
+
+.uc-stat--paid .uc-stat-value { color: #bbf7d0; }
+.uc-stat--unpaid .uc-stat-value { color: #fecdd3; }
+.uc-stat--advance .uc-stat-value { color: #c7d2fe; }
+.uc-stat--partial .uc-stat-value { color: #fde68a; }
+
+// ── Inline filters ───────────────────────────────────────────────────────
+
+.uc-filter-area {
+  position: relative;
+  margin: 7px 0 10px;
+}
+
+ion-searchbar.uc-searchbar {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.uc-inline-filters {
+  margin-top: 0;
+  padding: 8px;
+  overflow: hidden;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 48%, #0284c7 100%);
+  box-shadow:
+    0 16px 30px -24px rgba(2, 132, 199, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.uc-filter-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+
+  i {
+    font-size: 0.78rem;
+  }
+}
+
+.uc-filter-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+
+  small {
+    padding-left: 7px;
+    border-left: 1px solid rgba(255, 255, 255, 0.26);
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.55rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+}
+
+.uc-filter-reset {
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 7px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  --tap-bg: rgba(255, 255, 255, 0.16);
+  --tap-fg: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+// Five statuses: scroll sideways when they do not fit.
+.uc-status-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  padding: 3px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.uc-status-tab {
+  flex: 1 0 auto;
+  height: 26px;
+  gap: 4px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  white-space: nowrap;
+  --tap-bg: transparent;
+  --tap-fg: rgba(255, 255, 255, 0.85);
+
+  i {
+    font-size: 0.74rem;
+  }
+
+  b {
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+    font-size: 0.5rem;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  &.is-active {
+    --tap-bg: rgba(255, 255, 255, 0.96);
+    --tap-fg: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+
+    b {
+      background: rgba(15, 23, 42, 0.07);
+    }
+  }
+
+  &--paid.is-active { --tap-fg: #15803d; }
+  &--unpaid.is-active { --tap-fg: #be123c; }
+  &--advance.is-active { --tap-fg: #4338ca; }
+  &--partial.is-active { --tap-fg: #b45309; }
+}
+
+.uc-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 82px;
+  gap: 5px;
+
+  &--more {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 6px;
+  }
+
+  // Admins also get the officer filter: officer, month, customer status.
+  &--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.uc-filter-field {
+  display: block;
+  min-width: 0;
+  margin: 0;
+}
+
+.uc-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  margin: 0 1px 3px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.49rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  i {
+    flex-shrink: 0;
+    font-size: 0.6rem;
+  }
+}
+
+.uc-select-wrap {
+  position: relative;
+  display: block;
+  min-width: 0;
+
+  select {
+    width: 100%;
+    height: 30px;
+    margin: 0;
+    padding: 0 23px 0 8px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 8px;
+    outline: none;
+    color: #0f172a;
+    font: inherit;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 30px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  > i {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    color: #64748b;
+    font-size: 0.76rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+}
+
+.uc-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 10px;
+  color: #475569;
+  font-weight: 700;
+  background: #f1f5f9;
+  box-shadow: inset 0 0 0 1px #e2e8f0;
+}
+
+// ── List ─────────────────────────────────────────────────────────────────
+
+.uc-list {
+  display: grid;
+  gap: 12px;
+}
+
+.uc-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow:
+    0 16px 32px -26px rgba(15, 23, 42, 0.5),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease;
+  animation: ucIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(min(var(--i, 0), 8) * 40ms);
+
+  // Status accent strip.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 18px;
+    bottom: 18px;
+    left: 0;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: linear-gradient(var(--tone), var(--tone-2));
+  }
+
+  &.is-selected {
+    box-shadow:
+      inset 0 0 0 2px var(--mk-brand),
+      0 16px 32px -24px rgba(37, 99, 235, 0.55);
+  }
+}
+
+.uc-card-main {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 12px 16px;
+  cursor: pointer;
+  outline: none;
+}
+
+.uc-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.uc-card-name {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.96rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.uc-card-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: #64748b;
+  font-size: 0.74rem;
+
+  i {
+    flex-shrink: 0;
+    color: #94a3b8;
+    font-size: 0.85rem;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.uc-card-fee {
+  flex-shrink: 0;
+  max-width: 34%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  text-align: right;
+
+  strong {
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 900;
+    white-space: nowrap;
+
+    small {
+      margin-right: 2px;
+      color: #64748b;
+      font-size: 0.62rem;
+      font-weight: 700;
+    }
+  }
+
+  span {
+    max-width: 100%;
+    padding: 2px 7px;
+    overflow: hidden;
+    border-radius: 7px;
+    color: #15803d;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: #f0fdf4;
+  }
+}
+
+// Selection tick shown in bulk mode.
+.uc-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: transparent;
+  font-size: 0.9rem;
+  background: #fff;
+  box-shadow: inset 0 0 0 2px #cbd5e1;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+
+  &.is-on {
+    color: #fff;
+    background: var(--mk-brand);
+    box-shadow: 0 6px 12px -6px var(--mk-brand-shadow);
+  }
+}
+
+// Collected / remaining / collector strip.
+.uc-money {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 12px 2px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 1px #eef2f7;
+
+  &--sheet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 12px 0 0;
+    border-radius: 20px;
+  }
+}
+
+.uc-money-cell {
+  min-width: 0;
+  padding: 7px 10px;
+
+  & + & {
+    border-left: 1px solid #eef2f7;
+  }
+
+  span {
+    display: block;
+    overflow: hidden;
+    color: #94a3b8;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  strong {
+    display: block;
+    margin-top: 2px;
+    overflow: hidden;
+    color: #0f172a;
+    font-size: 0.8rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    small {
+      margin-right: 2px;
+      color: #64748b;
+      font-size: 0.55rem;
+      font-weight: 700;
+    }
+  }
+
+  &--collected strong { color: #15803d; }
+  &.is-due strong { color: #dc2626; }
+
+  .uc-money-date {
+    color: #475569;
+    font-weight: 800;
+  }
+
+  .uc-money--sheet & {
+    padding: 10px 14px;
+
+    strong {
+      font-size: 0.98rem;
+    }
+  }
+}
+
+// Bulk mode: received amount for a selected bill.
+.uc-bulk-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 12px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: var(--mk-brand-soft);
+}
+
+.uc-bulk-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.uc-bulk-label {
+  flex-shrink: 0;
+  color: #1d4ed8;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.uc-bulk-affix {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.uc-bulk-prefix {
+  position: absolute;
+  left: 10px;
+  z-index: 1;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.mk-input.uc-bulk-input.uc-bulk-input {
+  min-height: 38px;
+  padding-left: 32px;
+  border-radius: 11px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  background: #fff;
+}
+
+.uc-bulk-hint {
+  flex-shrink: 0;
+  max-width: 40%;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: right;
+
+  .left { color: #dc2626; }
+  .extra { color: #15803d; }
+}
+
+.uc-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 42px;
+  gap: 6px;
+  margin: 0 12px;
+  padding: 10px 0 12px;
+  border-top: 1px dashed #e8edf4;
+
+  &--bulk {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .uc-money + &,
+  .uc-bulk-row + & {
+    margin-top: 10px;
+  }
+}
+
+.uc-act {
+  height: 38px;
+  min-width: 0;
+  gap: 5px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+
+  i {
+    font-size: 1rem;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--collect { --tap-bg: #eff6ff; --tap-fg: #1d4ed8; }
+  &--cash    { --tap-bg: #fffbeb; --tap-fg: #b45309; }
+  &--receipt { --tap-bg: #f0fdfa; --tap-fg: #0f766e; }
+  &--history { --tap-bg: #f5f3ff; --tap-fg: #6d28d9; }
+  &--revert  { --tap-bg: #fff1f2; --tap-fg: #e11d48; }
+  &--msg     { --tap-bg: #ecfdf5; --tap-fg: #15803d; }
+  &--more    { --tap-bg: #f1f5f9; --tap-fg: #475569; }
+  &--update  { --tap-bg: #f5f3ff; --tap-fg: #6d28d9; }
+
+  &--select {
+    --tap-bg: #f1f5f9;
+    --tap-fg: #475569;
+
+    &.is-on {
+      --tap-bg: var(--mk-brand-grad);
+      --tap-fg: #fff;
+    }
+  }
+}
+
+// ── Bulk collect bar ─────────────────────────────────────────────────────
+// Sticks above the floating dock while the list scrolls.
+
+.uc-bulk-bar {
+  position: sticky;
+  bottom: calc(var(--footer-h) + var(--dock-bottom, 12px) + 16px);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 18px;
+  color: #fff;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  box-shadow: 0 20px 36px -18px rgba(15, 23, 42, 0.7);
+  animation: ucIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.uc-bulk-bar-copy {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.2;
+
+  strong {
+    display: block;
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  span {
+    display: block;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.uc-bulk-cancel,
+.uc-bulk-done {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.uc-bulk-cancel {
+  --tap-bg: rgba(255, 255, 255, 0.12);
+  --tap-fg: #fff;
+}
+
+.uc-bulk-done {
+  min-width: 84px;
+  --tap-bg: #fff;
+  --tap-fg: #1d4ed8;
+
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+    color: #1d4ed8;
+  }
+}
+
+// ── Sheets ───────────────────────────────────────────────────────────────
+
+.mk-sheet-icon {
+  &--green { background: linear-gradient(135deg, #22c55e, #15803d); box-shadow: none; }
+  &--indigo { background: linear-gradient(135deg, #818cf8, #4338ca); box-shadow: none; }
+  &--amber { background: linear-gradient(135deg, #fbbf24, #d97706); box-shadow: none; }
+}
+
+.mk-g-amber { --g: #b45309; --g-soft: #fef3c7; }
+.mk-g-indigo { --g: #4338ca; --g-soft: #e0e7ff; }
+.mk-g-slate { --g: #475569; --g-soft: #f1f5f9; }
+
+.mk-grid-btn:disabled .mk-grid-icon {
+  filter: grayscale(1);
+}
+
+// Bill / collected / pending tile at the top of the collection sheet.
+.uc-due {
+  display: flex;
+  overflow: hidden;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #16a34a, #0ea5e9);
+  box-shadow: 0 16px 28px -18px rgba(22, 163, 74, 0.8);
+}
+
+.uc-due-cell {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+
+  & + & {
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  span {
+    display: block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.82;
+  }
+
+  strong {
+    display: block;
+    overflow: hidden;
+    font-size: 1.2rem;
+    font-weight: 900;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    small {
+      margin-right: 2px;
+      font-size: 0.66rem;
+      opacity: 0.85;
+    }
+  }
+
+  &--pending strong { color: #fde68a; }
+}
+
+.uc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.uc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+}
+
+.uc-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  .req {
+    color: #f43f5e;
+  }
+
+  small {
+    margin-left: auto;
+    color: var(--mk-brand);
+    font-size: 0.66rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
+.uc-err {
+  color: #e11d48;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.uc-hint {
+  color: #94a3b8;
+  font-size: 0.72rem;
+}
+
+.mk-input.mk-input.is-invalid {
+  border-color: #fb7185;
+  background: #fff5f6;
+}
+
+.uc-select.uc-select {
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+.uc-affix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.uc-prefix {
+  position: absolute;
+  left: 6px;
+  z-index: 1;
+  height: 36px;
+  min-width: 34px;
+  padding: 0 8px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: #e8edf4;
+  pointer-events: none;
+}
+
+.mk-input.uc-has-prefix {
+  padding-left: 50px;
+}
+
+// Payment method chips.
+.uc-methods {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.uc-method {
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  height: 58px;
+  padding: 0 4px;
+  border-radius: 14px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  --tap-bg: #f4f7fb;
+  --tap-fg: #475569;
+  box-shadow: inset 0 0 0 1.5px #e8edf4;
+
+  i {
+    font-size: 1.15rem;
+  }
+
+  span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &.is-active {
+    --tap-bg: var(--mk-brand-soft);
+    --tap-fg: var(--mk-brand);
+    box-shadow: inset 0 0 0 2px var(--mk-brand);
+  }
+}
+
+// Advance month picker.
+.uc-months {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.uc-month {
+  flex-direction: column;
+  gap: 0;
+  height: 48px;
+  border-radius: 13px;
+  --tap-bg: #f4f7fb;
+  --tap-fg: #334155;
+  box-shadow: inset 0 0 0 1.5px #e8edf4;
+
+  strong {
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  span {
+    font-size: 0.6rem;
+    font-weight: 700;
+    opacity: 0.7;
+  }
+
+  &.is-active {
+    --tap-bg: var(--mk-brand-grad);
+    --tap-fg: #fff;
+    box-shadow: 0 8px 16px -10px var(--mk-brand-shadow);
+  }
+}
+
+// Update-bill preview.
+.uc-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  color: #92400e;
+  background: #fffbeb;
+  box-shadow: inset 0 0 0 1px #fde68a;
+
+  strong {
+    color: #b45309;
+    font-size: 1.15rem;
+    font-weight: 900;
+  }
+}
+
+.uc-preview-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.uc-preview-calc {
+  font-size: 0.74rem;
+}
+
+// Receipt extras (captured with html2canvas: plain colours only).
+.uc-receipt-tag {
+  margin-top: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.mk-receipt-row strong {
+  &.uc-r-total { color: #1d4ed8; }
+  &.uc-r-paid { color: #15803d; }
+  &.uc-r-due { color: #dc2626; }
+}
+
+.uc-receipt-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.uc-receipt-btn {
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  height: 54px;
+  border-radius: 14px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  --tap-bg: #f4f7fb;
+  --tap-fg: #334155;
+  box-shadow: inset 0 0 0 1px #e8edf4;
+
+  i {
+    font-size: 1.15rem;
+  }
+
+  &--wa {
+    --tap-bg: #ecfdf5;
+    --tap-fg: #15803d;
+    box-shadow: inset 0 0 0 1px #bbf7d0;
+  }
+
+  &--primary {
+    --tap-bg: var(--mk-brand-grad);
+    --tap-fg: #fff;
+    box-shadow: 0 10px 18px -12px var(--mk-brand-shadow);
+  }
+}
+
+ion-spinner {
+  width: 18px;
+  height: 18px;
+}
+
+.mk-btn--primary ion-spinner {
+  color: #fff;
+}
+
+// ── Motion & sizes ───────────────────────────────────────────────────────
+
+@keyframes ucIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes ucSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (min-width: 700px) {
+  .uc-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mk-empty {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 350px) {
+  .uc-inline-filters {
+    padding-inline: 8px;
+  }
+
+  .uc-filter-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 70px;
+    gap: 5px;
+
+    &--more {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &--three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .uc-select-wrap select {
+    padding-left: 7px;
+    font-size: 0.65rem;
+  }
+
+  .uc-act span {
+    display: none;
+  }
+
+  .uc-card-actions--bulk .uc-act span {
+    display: inline;
+  }
+
+  .uc-months {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uc-card,
+  .uc-bulk-bar,
+  .is-spinning {
+    animation: none;
+  }
+}

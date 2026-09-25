@@ -1,0 +1,139 @@
+<div class="container-fluid du-wrapper">
+
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="lo-box">
+      <div class="spinner-border text-danger" role="status"></div>
+      <span class="lo-text">Loading defaulters...</span>
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="du-page-header mb-4">
+    <div class="du-header-left">
+      <div class="du-header-icon"><i class="ri-error-warning-line"></i></div>
+      <div>
+        <h1 class="du-title">Defaulter Users</h1>
+        <p class="du-sub">Users with overdue unpaid bills</p>
+      </div>
+    </div>
+    <div class="du-header-right">
+      <span class="du-stat-pill">
+        <i class="ri-group-line"></i> <strong>{{ filteredUsers.length }}</strong> Defaulters
+      </span>
+    </div>
+  </div>
+
+  <!-- ── Main Card ── -->
+  <div class="du-card">
+
+    <!-- Filter Bar -->
+    <div class="du-filter-bar">
+      <div class="du-filter-group">
+        <label class="du-filter-label"><i class="ri-map-pin-line"></i> Area</label>
+        <app-search-select
+          [(ngModel)]="sublocality"
+          (selectionChange)="onFilterChange()"
+          [options]="internetAreas"
+          valueKey="sublocality"
+          displayKey="sublocality"
+          placeholder="All Areas"
+          emptyLabel="All Areas"
+          [allowEmpty]="true">
+        </app-search-select>
+      </div>
+      <div class="du-filter-group du-search-group">
+        <label class="du-filter-label"><i class="ri-search-line"></i> Search</label>
+        <div class="du-search-wrap">
+          <i class="ri-search-line du-search-icon"></i>
+          <input type="text" class="du-search-input" placeholder="Name, ID, area..."
+            [(ngModel)]="searchTerm" (input)="onFilterChange()" />
+        </div>
+      </div>
+      <div class="du-filter-group du-entries-group">
+        <label class="du-filter-label"><i class="ri-list-ordered"></i> Entries</label>
+        <select class="du-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option [value]="10">10</option>
+          <option [value]="30">30</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="du-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>User</th>
+            <th>Contact</th>
+            <th>Area</th>
+            <th>Package</th>
+            <th>Connection</th>
+            <th>Unpaid Months</th>
+            <th>Install Date</th>
+            <th>Static IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!pagedUsers.length">
+            <td colspan="9" class="du-empty">
+              <i class="ri-checkbox-circle-line"></i>
+              <div class="du-empty-title">No defaulters found</div>
+              <div class="du-empty-sub">All users are up to date</div>
+            </td>
+          </tr>
+          <tr *ngFor="let user of pagedUsers; let i = index">
+            <td class="du-row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td>
+              <div class="du-user-cell">
+                <div class="du-avatar">{{ user.user_name?.charAt(0)?.toUpperCase() }}</div>
+                <div>
+                  <div class="du-user-name">{{ user.user_name | titlecase }}</div>
+                  <div class="du-user-id">{{ user.internet_id }}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="du-phone">{{ user.phone_no }}</span></td>
+            <td><span class="du-area-tag">{{ user.sublocality | titlecase }}</span></td>
+            <td><span class="du-pkg">{{ user.select_package?.replace('_', '-').replace('mbps', 'Mbps').toUpperCase() || user.pkg_cable }}</span></td>
+            <td>
+              <span class="du-conn-badge" [ngClass]="{
+                'conn-internet': user.connection_type === 'internet',
+                'conn-cable': user.connection_type === 'cable',
+                'conn-both': user.connection_type === 'both'
+              }">{{ user.connection_type | titlecase }}</span>
+            </td>
+            <td>
+              <span class="du-unpaid-badge">{{ getUnpaidMonths(user) }}</span>
+            </td>
+            <td><span class="du-date">{{ user.installation_date }}</span></td>
+            <td>{{ user.static_ip || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="du-table-footer">
+      <div class="du-footer-info">
+        Showing <strong>{{ pagedUsers.length }}</strong> of <strong>{{ filteredUsers.length }}</strong> entries
+      </div>
+      <ul class="pagination mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="prevPage()"><i class="ri-arrow-left-s-line"></i></button>
+        </li>
+        <li class="page-item" *ngFor="let page of visiblePages" [class.active]="currentPage === page">
+          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()"><i class="ri-arrow-right-s-line"></i></button>
+        </li>
+      </ul>
+    </div>
+
+  </div><!-- /du-card -->
+
+</div>

@@ -1,0 +1,151 @@
+<div class="mobile-shell">
+  <div class="shell-ambient" aria-hidden="true">
+    <span class="amb amb-1"></span>
+    <span class="amb amb-2"></span>
+    <span class="amb amb-3"></span>
+  </div>
+
+  <header class="app-topbar" #topbar>
+    <div class="tb-left">
+      <a class="tb-brand" routerLink="/home" aria-label="Go to mobile home">
+        <img class="tb-logo" src="assets/ranjha-mobile-logo.svg" alt="Ranjha7star app logo" />
+      </a>
+      <div class="tb-page-text">
+        <span class="tb-crumb"><i [class]="currentPage.icon"></i>{{ currentPage.section }}</span>
+        <span class="tb-page-title">{{ currentPage.title }}</span>
+      </div>
+    </div>
+
+    <div class="tb-right">
+      <button
+        class="tb-refresh-btn"
+        type="button"
+        [class.is-spinning]="refreshing"
+        [disabled]="refreshing"
+        (click)="refreshPage()"
+        title="Refresh"
+        aria-label="Refresh data"
+      >
+        <i class="ri-refresh-line"></i>
+      </button>
+
+      <a
+        class="tb-print-btn"
+        routerLink="/printer"
+        [class.is-active]="currentPath === '/printer'"
+        [class.is-connected]="printer.isConnected$ | async"
+        [attr.aria-label]="(printer.isConnected$ | async) ? 'Printer connected' : 'Connect printer'"
+        [attr.title]="(printer.isConnected$ | async) ? 'Printer: ' + printer.deviceName : 'Connect printer'"
+      >
+        <i class="ri-printer-line"></i>
+        <span class="tb-print-dot" aria-hidden="true"><i class="ri-bluetooth-fill"></i></span>
+      </a>
+
+      <div
+        class="tb-user"
+        *ngIf="userName"
+        [class.is-offline]="!isOnline"
+        [attr.title]="userName + (isOnline ? ' - online' : ' - offline')"
+      >
+        <span class="tb-avatar">{{ userInitial }}</span>
+        <span class="tb-status" aria-hidden="true"></span>
+      </div>
+
+      <button class="tb-logout-btn" (click)="openLogoutModal()" title="Sign out" aria-label="Sign out">
+        <i class="ri-logout-circle-r-line"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content" #scrollArea>
+    <router-outlet *ngIf="showOutlet"></router-outlet>
+  </main>
+
+  <div class="dock-scrim" [class.is-hidden]="keyboardOpen" aria-hidden="true"></div>
+
+  <footer
+    class="app-dock"
+    [class.is-hidden]="keyboardOpen"
+    [style.--dock-slot]="gliderSlot"
+    [style.--dock-accent]="activeAccent"
+    aria-label="Main navigation"
+  >
+    <div class="dock-surface">
+      <span class="dock-glider" [class.is-idle]="activeSlot < 0 || activeSlot === homeSlot" aria-hidden="true"></span>
+
+      <ng-container *ngFor="let item of dockItems; let i = index">
+        <a
+          *ngIf="i !== homeSlot"
+          class="dock-tab"
+          [routerLink]="item.path"
+          [class.active]="i === activeSlot"
+          [style.--tab-accent]="item.accent"
+          [style.--tab-accent-2]="item.accentAlt"
+          [attr.aria-current]="i === activeSlot ? 'page' : null"
+        >
+          <span class="dock-icon" aria-hidden="true">
+            <i [class]="i === activeSlot ? item.activeIcon : item.icon"></i>
+          </span>
+          <span class="dock-label">{{ item.label }}</span>
+        </a>
+
+        <a
+          *ngIf="i === homeSlot"
+          class="dock-home"
+          [routerLink]="item.path"
+          [class.active]="i === activeSlot"
+          [attr.aria-current]="i === activeSlot ? 'page' : null"
+        >
+          <span class="dock-orb" aria-hidden="true">
+            <span class="orb-halo"></span>
+            <span class="orb-core">
+              <i [class]="i === activeSlot ? item.activeIcon : item.icon"></i>
+            </span>
+          </span>
+          <span class="dock-label">{{ item.label }}</span>
+        </a>
+      </ng-container>
+    </div>
+  </footer>
+</div>
+
+<ng-template #logoutModal let-modal>
+  <div class="lo">
+    <span class="lo-handle" aria-hidden="true"></span>
+
+    <div class="lo-art" aria-hidden="true">
+      <span class="lo-ring lo-ring--1"></span>
+      <span class="lo-ring lo-ring--2"></span>
+      <span class="lo-icon"><i class="ri-logout-circle-r-line"></i></span>
+    </div>
+
+    <h4 class="lo-title">Sign out?</h4>
+    <p class="lo-text">You'll need your username and password to sign back in.</p>
+
+    <div class="lo-account">
+      <span class="lo-avatar">
+        {{ userInitial }}
+        <span class="lo-dot" [class.is-offline]="!isOnline" aria-hidden="true"></span>
+      </span>
+      <div class="lo-account-copy">
+        <strong>{{ userName || 'Signed in' }}</strong>
+        <span>{{ (role | titlecase) || 'Staff' }} · {{ isOnline ? 'Online' : 'Offline' }}</span>
+      </div>
+      <i class="ri-shield-user-line" aria-hidden="true"></i>
+    </div>
+
+    <div class="lo-warn" *ngIf="!isOnline" role="note">
+      <i class="ri-wifi-off-line" aria-hidden="true"></i>
+      <span>You're offline. Signing back in may need a connection.</span>
+    </div>
+
+    <div class="lo-actions">
+      <button type="button" class="mk-tap mk-btn mk-btn--ghost" (click)="modal.dismiss()">
+        Stay
+      </button>
+      <button type="button" class="mk-tap mk-btn mk-btn--danger" (click)="logout(modal)">
+        <i class="ri-logout-box-r-line"></i> Sign out
+      </button>
+    </div>
+  </div>
+</ng-template>

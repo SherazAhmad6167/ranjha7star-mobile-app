@@ -1,0 +1,205 @@
+// ── Status Selector ───────────────────────────────────────────────────────────
+.status-btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+
+  .status-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 44px;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #6b7280;
+    background: #f9fafb;
+    transition: all 0.15s;
+    user-select: none;
+
+    i { font-size: 1rem; }
+
+    &:hover { border-color: #9ca3af; background: #f3f4f6; }
+
+    &.active-available { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
+    &.active-installed { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+    &.active-returned  { border-color: #d97706; background: #fffbeb; color: #b45309; }
+    &.active-faulty    { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
+  }
+}
+
+// ── Field Labels ─────────────────────────────────────────────────────────────
+.field-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 0.4rem;
+
+  i {
+    color: var(--bs-primary);
+    margin-right: 4px;
+  }
+}
+
+// ── Form Controls ─────────────────────────────────────────────────────────────
+.form-control-lg,
+.form-select-lg {
+  height: 52px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  border-color: #d1d5db;
+  padding: 0.6rem 1rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+  }
+
+  &.is-invalid {
+    border-color: #dc3545;
+    &:focus { box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12); }
+  }
+}
+
+.font-mono {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.5px;
+}
+
+// ── Barcode Row ───────────────────────────────────────────────────────────────
+.barcode-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+
+  .form-control {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .scan-btn {
+    height: 52px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-radius: 8px;
+    padding: 0 1.1rem;
+    font-weight: 500;
+  }
+}
+
+// ── Camera Overlay ────────────────────────────────────────────────────────────
+.camera-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 1070;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+
+  .camera-box {
+    width: min(92vw, 460px);
+    background: #0f1729;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .camera-box-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .scan-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+    animation: dotPulse 1.4s ease-in-out infinite;
+  }
+
+  .camera-viewfinder {
+    position: relative;
+    background: #000;
+    line-height: 0;
+
+    .camera-video {
+      width: 100%;
+      display: block;
+      max-height: 300px;
+      object-fit: cover;
+    }
+
+    .scan-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .scan-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 230px;
+      height: 130px;
+
+      .corner {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        border-color: #22c55e;
+        border-style: solid;
+
+        &.tl { top: 0;    left: 0;  border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+        &.tr { top: 0;    right: 0; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+        &.bl { bottom: 0; left: 0;  border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+        &.br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+      }
+    }
+
+    .scan-line {
+      position: absolute;
+      left: calc(50% - 115px);
+      width: 230px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #22c55e, transparent);
+      animation: scanLine 2s ease-in-out infinite;
+      top: 50%;
+    }
+  }
+
+  .camera-box-footer {
+    padding: 0.85rem 1.1rem;
+    color: #94a3b8;
+    font-size: 0.82rem;
+    background: rgba(255, 255, 255, 0.02);
+
+    p { margin: 0; }
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+  50%       { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+}
+
+@keyframes scanLine {
+  0%   { top: calc(50% - 52px); opacity: 0.8; }
+  50%  { top: calc(50% + 50px); opacity: 1;   }
+  100% { top: calc(50% - 52px); opacity: 0.8; }
+}

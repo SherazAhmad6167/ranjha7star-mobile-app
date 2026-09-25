@@ -1,0 +1,190 @@
+<div class="container-fluid co-wrapper">
+
+  <!-- Loading overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="lo-box">
+      <div class="spinner-border co-spinner" role="status"></div>
+      <span class="lo-text">Loading details...</span>
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="co-page-header mb-4">
+    <div class="co-header-left">
+      <div class="co-header-icon"><i class="ri-building-2-line"></i></div>
+      <div>
+        <h1 class="co-title">Company Details</h1>
+        <p class="co-sub">Manage your ISP business profile and contact information</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Form ── -->
+  <form [formGroup]="companyForm" (ngSubmit)="saveCompanyDetails()">
+    <div class="co-layout">
+
+      <!-- ── Sidebar: Logo + ID ── -->
+      <div class="co-sidebar">
+
+        <!-- Logo Card -->
+        <div class="co-card co-logo-card">
+          <div class="co-section-header">
+            <i class="ri-image-line"></i> Company Logo
+          </div>
+          <div class="co-logo-body">
+            <div class="co-logo-preview">
+              <img *ngIf="logoPreview" [src]="logoPreview" class="co-logo-img" alt="Company Logo">
+              <div *ngIf="!logoPreview" class="co-logo-placeholder">
+                <i class="ri-building-2-line"></i>
+                <span>No logo uploaded</span>
+              </div>
+            </div>
+            <label class="co-upload-btn">
+              <i class="ri-upload-2-line"></i> Change Logo
+              <input type="file" class="co-file-input" (change)="onFileSelected($event)" accept="image/*">
+            </label>
+            <p class="co-upload-hint">JPG, PNG · Max 2 MB · Auto-compressed</p>
+          </div>
+        </div>
+
+        <!-- Company ID Card -->
+        <div class="co-card mt-3">
+          <div class="co-section-header">
+            <i class="ri-fingerprint-line"></i> System ID
+          </div>
+          <div class="co-field-body">
+            <div class="co-field-group">
+              <label class="co-label">Unique Identifier</label>
+              <div class="co-input-wrap">
+                <i class="ri-key-2-line co-input-icon"></i>
+                <input type="text" class="co-input co-input-icon-pad" formControlName="id" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Main: Detail Sections ── -->
+      <div class="co-main">
+
+        <!-- General Information -->
+        <div class="co-card mb-3">
+          <div class="co-section-header">
+            <i class="ri-store-2-line"></i> General Information
+          </div>
+          <div class="co-field-body">
+
+            <div class="co-field-group co-col-full">
+              <label class="co-label">Company Name <span class="co-req">*</span></label>
+              <div class="co-input-wrap">
+                <i class="ri-building-4-line co-input-icon"></i>
+                <input type="text" class="co-input co-input-icon-pad" formControlName="companyName"
+                  placeholder="e.g. Ranjha7star Internet">
+              </div>
+            </div>
+
+            <div class="co-field-group co-col-full">
+              <label class="co-label">Address <span class="co-req">*</span></label>
+              <div class="co-input-wrap">
+                <i class="ri-map-pin-line co-input-icon"></i>
+                <input type="text" class="co-input co-input-icon-pad" formControlName="address"
+                  placeholder="Street, City, Province">
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="co-card mb-3">
+          <div class="co-section-header">
+            <i class="ri-contacts-book-2-line"></i> Contact Information
+          </div>
+          <div class="co-field-body">
+
+            <div class="co-field-group">
+              <label class="co-label">Phone 1 <span class="co-req">*</span></label>
+              <div class="co-input-wrap">
+                <i class="ri-phone-line co-input-icon"></i>
+                <input type="text" class="co-input co-input-icon-pad" formControlName="phone1"
+                  placeholder="03XX-XXXXXXX">
+              </div>
+            </div>
+
+            <div class="co-field-group">
+              <label class="co-label">Phone 2</label>
+              <div class="co-input-wrap">
+                <i class="ri-phone-line co-input-icon"></i>
+                <input type="text" class="co-input co-input-icon-pad" formControlName="phone2"
+                  placeholder="03XX-XXXXXXX">
+              </div>
+            </div>
+
+            <div class="co-field-group co-col-full">
+              <label class="co-label">Email</label>
+              <div class="co-input-wrap">
+                <i class="ri-mail-line co-input-icon"></i>
+                <input type="email" class="co-input co-input-icon-pad" formControlName="email"
+                  placeholder="info@company.com">
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Complaint Numbers -->
+        <div class="co-card mb-3">
+          <div class="co-section-header">
+            <i class="ri-customer-service-2-line"></i> Complaint Numbers
+          </div>
+          <div class="co-field-body">
+
+            <div class="co-field-group">
+              <label class="co-label">Complaint No 1</label>
+              <div class="co-input-wrap">
+                <i class="ri-customer-service-line co-input-icon"></i>
+                <input type="text" class="co-input co-input-icon-pad" formControlName="complain_no1"
+                  placeholder="Helpline number">
+              </div>
+            </div>
+
+            <div class="co-field-group">
+              <label class="co-label">Complaint No 2</label>
+              <div class="co-input-wrap">
+                <i class="ri-customer-service-line co-input-icon"></i>
+                <input type="text" class="co-input co-input-icon-pad" formControlName="complain_no2"
+                  placeholder="Helpline number">
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="co-card mb-4">
+          <div class="co-section-header">
+            <i class="ri-file-text-line"></i> Description
+          </div>
+          <div class="co-field-body">
+            <div class="co-field-group co-col-full">
+              <label class="co-label">Description / Complaint Notes</label>
+              <textarea class="co-input co-textarea" rows="4" formControlName="description"
+                placeholder="Additional notes or complaint instructions..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="co-submit-row">
+          <button type="submit" class="co-submit-btn" [disabled]="isLoading || companyForm.invalid">
+            <i [class]="isLoading ? 'ri-loader-4-line' : 'ri-save-line'"></i>
+            {{ isLoading ? 'Saving...' : 'Save Company Details' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+</div>

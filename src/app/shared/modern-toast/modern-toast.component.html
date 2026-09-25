@@ -1,0 +1,44 @@
+<div
+  class="mk-toast-card"
+  [class.mk-toast-card--success]="kind === 'success'"
+  [class.mk-toast-card--error]="kind === 'error'"
+  [class.mk-toast-card--warning]="kind === 'warning'"
+  [class.mk-toast-card--info]="kind === 'info'"
+  [class.is-dragging]="dragging"
+  [style.transform]="dragTransform"
+  [style.opacity]="dragOpacity"
+  [attr.role]="kind === 'error' || kind === 'warning' ? 'alert' : 'status'"
+  [attr.aria-live]="kind === 'error' || kind === 'warning' ? 'assertive' : 'polite'">
+
+  <span class="mk-toast-icon" aria-hidden="true"><i [class]="icon"></i></span>
+
+  <div class="mk-toast-copy">
+    <strong class="mk-toast-title" *ngIf="title">{{ title }}</strong>
+    <span
+      *ngIf="message && options.enableHtml"
+      class="mk-toast-message"
+      [class.is-lead]="!title"
+      [innerHTML]="message"></span>
+    <span
+      *ngIf="message && !options.enableHtml"
+      class="mk-toast-message"
+      [class.is-lead]="!title">{{ message }}</span>
+  </div>
+
+  <span class="mk-toast-count" *ngIf="duplicatesCount">×{{ duplicatesCount + 1 }}</span>
+
+  <button
+    *ngIf="options.closeButton"
+    type="button"
+    class="mk-toast-close"
+    aria-label="Dismiss"
+    (click)="close($event)">
+    <i class="ri-close-line"></i>
+  </button>
+
+  <span
+    *ngIf="options.progressBar && width() >= 0"
+    class="mk-toast-progress"
+    [style.width.%]="width()"
+    aria-hidden="true"></span>
+</div>

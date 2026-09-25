@@ -1,0 +1,153 @@
+<div class="px-2 px-md-3 mb-4">
+    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+        <i class="ri-server-line zd-accent-text"></i> ZalUltra ISP Panel
+    </h5>
+
+    <div class="zd-panel">
+
+        <!-- Banner -->
+        <div class="zd-banner">
+            <div class="zd-banner-left">
+                <div class="zd-banner-icon"><i class="ri-server-line"></i></div>
+                <div>
+                    <div class="zd-banner-title">Ranjha 7 Star Internet</div>
+                    <div class="zd-banner-sub">7Star &middot; Bhagowal</div>
+                </div>
+            </div>
+            <div class="zd-banner-right">
+                <span class="zd-live" *ngIf="!zal.loading && !zal.error">
+                    <span class="zd-live-dot"></span> Live
+                </span>
+                <span class="zd-live down" *ngIf="!zal.loading && zal.error">
+                    <i class="ri-wifi-off-line"></i> Offline
+                </span>
+                <span class="zd-live loading" *ngIf="zal.loading">
+                    <span class="spinner-border spinner-border-sm"></span> Loading
+                </span>
+                <a routerLink="/zal-subscribers" class="zd-manage-btn">
+                    <i class="ri-settings-4-line"></i> Manage
+                </a>
+            </div>
+        </div>
+
+        <div class="zd-body">
+
+            <!-- Error -->
+            <div class="zd-error" *ngIf="zal.error">
+                <i class="ri-error-warning-line"></i>
+                <span>{{ zal.error }}</span>
+                <button class="zd-retry" (click)="loadZalStats()">Retry</button>
+            </div>
+
+            <!-- Skeleton -->
+            <div class="placeholder-glow" *ngIf="zal.loading">
+                <div class="zd-kpi-row">
+                    <span class="placeholder rounded-3 zd-skeleton" *ngFor="let n of [1,2,3,4]"></span>
+                </div>
+            </div>
+
+            <ng-container *ngIf="!zal.loading && !zal.error">
+            <ng-container *ngIf="zal.stats as st">
+
+                <!-- KPI tiles -->
+                <div class="zd-kpi-row">
+                    <div class="zd-kpi indigo">
+                        <div class="zd-kpi-top">
+                            <span class="zd-kpi-icon"><i class="ri-group-line"></i></span>
+                            <span class="zd-kpi-chip">Total</span>
+                        </div>
+                        <div class="zd-kpi-value">{{ zalNum(st.total) | number }}</div>
+                        <div class="zd-kpi-label">Subscribers</div>
+                    </div>
+
+                    <div class="zd-kpi green">
+                        <div class="zd-kpi-top">
+                            <span class="zd-kpi-icon"><i class="ri-shield-check-line"></i></span>
+                            <span class="zd-kpi-chip">{{ zalPercent(st.active) }}%</span>
+                        </div>
+                        <div class="zd-kpi-value">{{ zalNum(st.active) | number }}</div>
+                        <div class="zd-kpi-label">Active</div>
+                    </div>
+
+                    <div class="zd-kpi blue">
+                        <div class="zd-kpi-top">
+                            <span class="zd-kpi-icon"><i class="ri-wifi-line"></i></span>
+                            <span class="zd-kpi-chip">{{ zalPercent(st.online) }}%</span>
+                        </div>
+                        <div class="zd-kpi-value">{{ zalNum(st.online) | number }}</div>
+                        <div class="zd-kpi-label">Online now</div>
+                    </div>
+
+                    <div class="zd-kpi red">
+                        <div class="zd-kpi-top">
+                            <span class="zd-kpi-icon"><i class="ri-forbid-line"></i></span>
+                            <span class="zd-kpi-chip">{{ zalPercent(st.disable) }}%</span>
+                        </div>
+                        <div class="zd-kpi-value">{{ zalNum(st.disable) | number }}</div>
+                        <div class="zd-kpi-label">Disabled</div>
+                    </div>
+                </div>
+
+                <!-- Connection health -->
+                <div class="zd-health">
+                    <div class="zd-health-head">
+                        <span class="zd-health-title">Connection health</span>
+                        <span class="zd-health-note">
+                            {{ zalNum(st.online) | number }} of {{ zalNum(st.total) | number }} online
+                        </span>
+                    </div>
+                    <div class="zd-bar">
+                        <div class="zd-bar-seg online" [style.width.%]="zalPercent(st.online)"></div>
+                        <div class="zd-bar-seg offline" [style.width.%]="zalPercent(st.offline)"></div>
+                    </div>
+                    <div class="zd-legend">
+                        <span class="zd-legend-item"><i class="zd-dot online"></i>Online {{ zalPercent(st.online) }}%</span>
+                        <span class="zd-legend-item"><i class="zd-dot offline"></i>Offline {{ zalPercent(st.offline) }}%</span>
+                    </div>
+                </div>
+
+                <!-- Secondary metrics -->
+                <div class="zd-chip-row">
+                    <div class="zd-chip">
+                        <span class="zd-chip-icon violet"><i class="ri-links-line"></i></span>
+                        <span class="zd-chip-body">
+                            <span class="zd-chip-value">{{ zalNum(st['pppoe']) | number }}</span>
+                            <span class="zd-chip-label">PPPoE</span>
+                        </span>
+                    </div>
+                    <div class="zd-chip">
+                        <span class="zd-chip-icon cyan"><i class="ri-wifi-line"></i></span>
+                        <span class="zd-chip-body">
+                            <span class="zd-chip-value">{{ zalNum(st['hotspot']) | number }}</span>
+                            <span class="zd-chip-label">Hotspot</span>
+                        </span>
+                    </div>
+                    <div class="zd-chip">
+                        <span class="zd-chip-icon amber"><i class="ri-time-line"></i></span>
+                        <span class="zd-chip-body">
+                            <span class="zd-chip-value">{{ zalNum(st.totalExpired) | number }}</span>
+                            <span class="zd-chip-label">Expired</span>
+                        </span>
+                    </div>
+                    <div class="zd-chip">
+                        <span class="zd-chip-icon green"><i class="ri-user-add-line"></i></span>
+                        <span class="zd-chip-body">
+                            <span class="zd-chip-value">{{ zalNum(st['new']) | number }}</span>
+                            <span class="zd-chip-label">New</span>
+                        </span>
+                    </div>
+                    <div class="zd-chip">
+                        <span class="zd-chip-icon rose"><i class="ri-calendar-event-line"></i></span>
+                        <span class="zd-chip-body">
+                            <span class="zd-chip-value">{{ zalNum(st['expiring2Weeks']) | number }}</span>
+                            <span class="zd-chip-label">Expiring 2wk</span>
+                        </span>
+                    </div>
+                </div>
+
+            </ng-container>
+            </ng-container>
+
+        </div>
+    </div>
+</div>

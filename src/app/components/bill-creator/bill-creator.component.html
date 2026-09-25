@@ -1,0 +1,278 @@
+<div class="container-fluid pt-3">
+
+    <!-- ══ Page Header ══ -->
+    <div class="bill-page-header mb-4">
+        <div class="bph-left">
+            <div class="bph-icon">
+                <i class="ri-bill-line"></i>
+            </div>
+            <div>
+                <h4 class="bph-title">Bill Creator</h4>
+                <p class="bph-sub">Generate monthly bills for cable &amp; internet subscribers</p>
+            </div>
+        </div>
+        <div class="bph-stats">
+            <div class="stat-pill">
+                <i class="ri-file-list-3-line"></i>
+                <span><strong>{{ bills.length }}</strong> Bill Runs</span>
+            </div>
+            <div class="stat-pill users">
+                <i class="ri-group-line"></i>
+                <span><strong>{{ totalUsersBilled | number }}</strong> Users</span>
+            </div>
+            <div class="stat-pill amount">
+                <i class="ri-money-rupee-circle-line"></i>
+                <span><strong>{{ totalAmountBilled | number }}</strong> Total</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ Loading Overlay ══ -->
+    <div *ngIf="isLoading" class="loading-overlay">
+        <div class="lo-box">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="lo-text">{{ overlayMessage }}</div>
+        </div>
+    </div>
+
+    <!-- ══ Bill Generator Card ══ -->
+    <div class="generator-card mb-4">
+
+        <div class="generator-header">
+            <div class="gh-icon">
+                <i class="ri-add-circle-line"></i>
+            </div>
+            <div>
+                <div class="gh-title">Generate New Bill</div>
+                <div class="gh-sub">Select a period, connection type and area — bills are added to every matching subscriber</div>
+            </div>
+        </div>
+
+        <div class="generator-body">
+            <div class="row g-3">
+
+                <!-- Month -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="gc-label"><i class="ri-calendar-line me-1"></i> Month</label>
+                    <select class="form-select gc-select" [(ngModel)]="selectedMonth" [disabled]="isLoading">
+                        <option value="" disabled>Select Month</option>
+                        <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
+                    </select>
+                </div>
+
+                <!-- Year -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="gc-label"><i class="ri-calendar-event-line me-1"></i> Year</label>
+                    <select class="form-select gc-select" [(ngModel)]="selectedYear" [disabled]="isLoading">
+                        <option value="" disabled>Select Year</option>
+                        <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+                    </select>
+                </div>
+
+                <!-- Connection Type -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="gc-label"><i class="ri-links-line me-1"></i> Connection Type</label>
+                    <select class="form-select gc-select" [(ngModel)]="connection_type" [disabled]="isLoading">
+                        <option value="" disabled>Select Connection</option>
+                        <option value="both">Both</option>
+                        <option value="tv_cable">Cable</option>
+                        <option value="internet">Internet</option>
+                    </select>
+                </div>
+
+                <!-- Sublocality -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="gc-label"><i class="ri-map-pin-2-line me-1"></i> Area</label>
+                    <app-search-select
+                      [(ngModel)]="sublocality"
+                      [options]="internetAreas"
+                      valueKey="sublocality"
+                      displayKey="sublocality"
+                      placeholder="Select Area"
+                      emptyLabel="All Areas"
+                      emptyValue="all"
+                      [allowEmpty]="true"
+                      [disabled]="isLoading">
+                    </app-search-select>
+                </div>
+
+                <!-- Summary bar + actions -->
+                <div class="col-12">
+                    <div class="gc-actions">
+
+                        <div class="gc-summary" [class.ready]="canCreate">
+                            <i [class]="canCreate ? 'ri-checkbox-circle-fill' : 'ri-information-line'"></i>
+                            <span *ngIf="!canCreate">Select all four fields to generate a bill run</span>
+                            <span *ngIf="canCreate">
+                                Billing
+                                <strong>{{ monthLabel(selectedMonth) }} {{ selectedYear }}</strong>
+                                ·
+                                <strong>{{ connectionLabel(connection_type) }}</strong>
+                                ·
+                                <strong>{{ areaLabel(sublocality) | titlecase }}</strong>
+                            </span>
+                        </div>
+
+                        <div class="gc-buttons">
+                            <button class="btn btn-gc-reset" (click)="resetFilters()"
+                                    [disabled]="isLoading || (!selectedMonth && !selectedYear && !connection_type && !sublocality)">
+                                <i class="ri-refresh-line"></i> Reset
+                            </button>
+                            <button class="btn btn-gc-create" (click)="createBill()" [disabled]="!canCreate || isLoading">
+                                <span *ngIf="!isLoading">
+                                    <i class="ri-add-line me-1"></i> Create Bill
+                                </span>
+                                <span *ngIf="isLoading">
+                                    <span class="spinner-border spinner-border-sm me-2"></span> Creating...
+                                </span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ Bill History ══ -->
+    <div class="history-card">
+        <div class="history-header">
+            <div class="hh-left">
+                <i class="ri-history-line"></i>
+                <span class="hh-title">Bill History</span>
+                <span class="hh-count" *ngIf="filteredBills.length">{{ filteredBills.length }}</span>
+            </div>
+            <div class="hh-right">
+                <div class="search-wrap">
+                    <i class="ri-search-line search-icon"></i>
+                    <input type="text" class="form-control search-input"
+                           placeholder="Search month, year, area, creator…"
+                           [(ngModel)]="searchTerm" (input)="onSearch()" />
+                </div>
+                <select class="form-select entries-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+                    <option [value]="10">10 / page</option>
+                    <option [value]="30">30 / page</option>
+                    <option [value]="50">50 / page</option>
+                    <option [value]="100">100 / page</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover bill-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:56px">#</th>
+                        <th><i class="ri-calendar-line me-1"></i>Billing Period</th>
+                        <th><i class="ri-group-line me-1"></i>Users</th>
+                        <th><i class="ri-money-rupee-circle-line me-1"></i>Amount</th>
+                        <th><i class="ri-links-line me-1"></i>Connection</th>
+                        <th><i class="ri-map-pin-2-line me-1"></i>Area</th>
+                        <th><i class="ri-time-line me-1"></i>Created</th>
+                        <th><i class="ri-user-line me-1"></i>Created By</th>
+                        <th class="text-center" style="width:80px">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let user of pagedUsers; let i = index">
+                        <td class="row-index">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+
+                        <td>
+                            <div class="period-cell">
+                                <span class="period-month">{{ user.month | titlecase }}</span>
+                                <span class="period-year">{{ user.year }}</span>
+                            </div>
+                        </td>
+
+                        <td><span class="users-chip"><i class="ri-user-3-line"></i>{{ user.users | number }}</span></td>
+
+                        <td><span class="amount-cell">Rs {{ user.amount | number }}</span></td>
+
+                        <td>
+                            <span class="conn-badge" [ngClass]="connectionClass(user.connection_type)">
+                                {{ connectionLabel(user.connection_type) }}
+                            </span>
+                        </td>
+
+                        <td><span class="area-tag">{{ areaLabel(user.sublocality) | titlecase }}</span></td>
+
+                        <td class="date-cell">{{ user.createdAt?.toDate() | date:'dd MMM yyyy, hh:mm a' }}</td>
+
+                        <td>
+                            <span class="creator-cell">
+                                <span class="creator-avatar">{{ (user.created_by || '?').charAt(0) | uppercase }}</span>
+                                {{ user.created_by }}
+                            </span>
+                        </td>
+
+                        <td class="text-center">
+                            <button class="btn btn-icon-danger" (click)="openDeleteModal(user.id, deleteModal)"
+                                    title="Delete bill run">
+                                <i class="ri-delete-bin-7-line"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="!isLoading && pagedUsers.length === 0">
+                        <td colspan="9" class="empty-state">
+                            <i class="ri-bill-line"></i>
+                            <div class="empty-title">No bills found</div>
+                            <div class="empty-sub">
+                                {{ searchTerm ? 'Try a different search term' : 'Generate your first bill run using the form above' }}
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="table-footer" *ngIf="pagedUsers.length > 0">
+            <small class="footer-info">
+                Showing <strong>{{ pagedUsers.length }}</strong> of <strong>{{ filteredBills.length }}</strong> entries
+            </small>
+            <nav *ngIf="totalPages > 1">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                        <button class="page-link" (click)="prevPage()">
+                            <i class="ri-arrow-left-s-line"></i>
+                        </button>
+                    </li>
+                    <li class="page-item" *ngFor="let page of visiblePages" [class.active]="currentPage === page">
+                        <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                        <button class="page-link" (click)="nextPage()">
+                            <i class="ri-arrow-right-s-line"></i>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Delete Confirm Modal ══ -->
+<ng-template #deleteModal let-modal>
+  <div class="gdm-wrap">
+    <button class="gdm-close" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="gdm-icon"><i class="ri-delete-bin-6-line"></i></div>
+    <h5 class="gdm-title">Delete Bill Run?</h5>
+    <p class="gdm-text">This removes the bill from every affected subscriber. This action cannot be undone.</p>
+    <div class="gdm-actions">
+      <button class="gdm-btn gdm-cancel" type="button" (click)="modal.dismiss()" [disabled]="isDeleting">Cancel</button>
+      <button class="gdm-btn gdm-confirm" type="button" (click)="confirmDelete(modal)" [disabled]="isDeleting">
+        <span *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</span>
+        <span *ngIf="isDeleting" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span> Deleting...
+        </span>
+      </button>
+    </div>
+  </div>
+</ng-template>

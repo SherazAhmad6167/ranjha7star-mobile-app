@@ -1,0 +1,369 @@
+<div class="um">
+
+  <!-- ══ Top bar ══ -->
+  <header class="um-top">
+    <button type="button" class="mk-tap mk-icon-btn" aria-label="Close" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="um-top-titles">
+      <span class="um-top-kicker">{{ editMode ? 'Update subscriber' : 'New subscriber' }}</span>
+      <span class="um-top-title">{{ (userForm.get('user_name')?.value | titlecase) || (editMode ? 'Edit details' : 'Fill in the details') }}</span>
+    </div>
+    <span class="um-top-icon">
+      <i [class]="editMode ? 'ri-user-settings-line' : 'ri-user-add-line'"></i>
+    </span>
+  </header>
+
+  <!-- Section shortcuts -->
+  <div class="um-jump">
+    <button type="button" class="mk-tap um-jump-chip" (click)="secProfile.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-user-3-line"></i> Profile
+    </button>
+    <button type="button" class="mk-tap um-jump-chip" (click)="secLocation.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-map-pin-2-line"></i> Location
+    </button>
+    <button type="button" class="mk-tap um-jump-chip" (click)="secService.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-wifi-line"></i> Service
+    </button>
+    <button type="button" class="mk-tap um-jump-chip" *ngIf="isCable || isInternet || isBoth"
+      (click)="secPackages.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+      <i class="ri-box-3-line"></i> Packages
+    </button>
+  </div>
+
+  <!-- ══ Loading ══ -->
+  <div *ngIf="isLoading" class="um-loading">
+    <div class="um-loading-inner">
+      <span class="spinner-border" role="status"></span>
+      <span>Loading…</span>
+    </div>
+  </div>
+
+  <form class="um-form" [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="um-body">
+
+      <!-- ── Profile ── -->
+      <div class="um-card" #secProfile>
+        <div class="um-photo">
+          <div class="um-avatar" [class.has-photo]="imagePreview" (click)="openImageModal()">
+            <img *ngIf="imagePreview" [src]="imagePreview" alt="Subscriber photo" />
+            <i *ngIf="!imagePreview" class="ri-user-3-line"></i>
+          </div>
+          <label class="um-camera" aria-label="Upload photo">
+            <i class="ri-camera-fill"></i>
+            <input type="file" accept="image/*" class="um-photo-input" (change)="onImageSelect($event)" />
+          </label>
+          <div class="um-photo-copy">
+            <strong>{{ imagePreview ? 'Photo added' : 'Add a photo' }}</strong>
+            <span *ngIf="userForm.get('photoName')?.value as photoName; else photoHint">
+              <i class="ri-file-image-line"></i> {{ photoName }}
+            </span>
+            <ng-template #photoHint><span>ID card or customer photo</span></ng-template>
+          </div>
+        </div>
+
+        <div class="um-section-title"><span class="um-dot blue"><i class="ri-user-line"></i></span> Personal information</div>
+
+        <div class="um-grid">
+          <div class="um-field um-span">
+            <label class="um-label">Customer name <span class="req">*</span></label>
+            <input type="text" class="mk-input" formControlName="user_name" placeholder="Full name"
+              [class.is-invalid]="userForm.get('user_name')?.invalid && userForm.get('user_name')?.touched" />
+            <span class="um-err" *ngIf="userForm.get('user_name')?.hasError('required') && userForm.get('user_name')?.touched">
+              Name is required
+            </span>
+          </div>
+
+          <div class="um-field">
+            <label class="um-label">Internet ID <span class="req">*</span></label>
+            <input type="text" class="mk-input" formControlName="internet_id" placeholder="e.g. 0042"
+              [class.is-invalid]="userForm.get('internet_id')?.invalid && userForm.get('internet_id')?.touched" />
+            <span class="um-err" *ngIf="userForm.get('internet_id')?.hasError('required') && userForm.get('internet_id')?.touched">
+              Internet ID is required
+            </span>
+          </div>
+
+          <div class="um-field">
+            <label class="um-label">Phone no <span class="req">*</span></label>
+            <input type="tel" inputmode="tel" class="mk-input" formControlName="mobile_no" placeholder="03xx-xxxxxxx"
+              [class.is-invalid]="userForm.get('mobile_no')?.invalid && userForm.get('mobile_no')?.touched" />
+            <span class="um-err" *ngIf="userForm.get('mobile_no')?.hasError('required') && userForm.get('mobile_no')?.touched">
+              Phone number is required
+            </span>
+            <span class="um-err" *ngIf="userForm.get('mobile_no')?.hasError('pattern') && userForm.get('mobile_no')?.touched">
+              Must start with "+"
+            </span>
+          </div>
+
+          <div class="um-field">
+            <label class="um-label">Date of birth</label>
+            <div class="um-affix">
+              <input type="text" class="mk-input um-has-suffix" placeholder="dd/mm/yyyy"
+                formControlName="date_of_birth" ngbDatepicker #dobPicker="ngbDatepicker"
+                [minDate]="minDob" [maxDate]="maxDob" [startDate]="maxDob"
+                container="body" placement="bottom-start" />
+              <button type="button" class="mk-tap um-suffix-btn" (click)="dobPicker.toggle()" aria-label="Open date picker">
+                <i class="ri-calendar-line"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="um-field">
+            <label class="um-label">Wire length</label>
+            <input type="text" class="mk-input" formControlName="wire" placeholder="e.g. 50m"
+              [class.is-invalid]="userForm.get('wire')?.invalid && userForm.get('wire')?.touched" />
+            <span class="um-err" *ngIf="userForm.get('wire')?.hasError('required') && userForm.get('wire')?.touched">
+              Wire is required
+            </span>
+          </div>
+
+          <div class="um-field um-span">
+            <label class="um-label">Address</label>
+            <input type="text" class="mk-input" formControlName="address" placeholder="Street, area, city" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Location ── -->
+      <div class="um-card" #secLocation>
+        <div class="um-section-title"><span class="um-dot green"><i class="ri-map-pin-2-line"></i></span> Location</div>
+
+        <div class="um-grid">
+          <div class="um-field um-span">
+            <label class="um-label">Area <span class="req">*</span></label>
+            <app-search-select
+              formControlName="sublocality"
+              [options]="areaOptions"
+              valueKey="sublocality"
+              displayKey="sublocality"
+              placeholder="Select area"
+              emptyLabel="Select area"
+              [allowEmpty]="false"
+              [isInvalid]="!!(userForm.get('sublocality')?.invalid && userForm.get('sublocality')?.touched)">
+            </app-search-select>
+            <span class="um-err" *ngIf="userForm.get('sublocality')?.hasError('required') && userForm.get('sublocality')?.touched">
+              Area is required
+            </span>
+          </div>
+
+          <div class="um-field um-span">
+            <label class="um-label">Sub area</label>
+            <app-search-select
+              formControlName="sub_area"
+              [options]="internetSubAreas"
+              valueKey="name"
+              displayKey="name"
+              placeholder="Select sub area (optional)"
+              emptyLabel="None (optional)"
+              [allowEmpty]="true">
+            </app-search-select>
+          </div>
+
+          <div class="um-field um-span">
+            <label class="um-label">Static IP</label>
+            <input type="text" inputmode="decimal" class="mk-input" formControlName="static_ip" placeholder="e.g. 192.168.1.100" />
+          </div>
+
+          <div class="um-field um-span">
+            <label class="um-label">GPS location</label>
+            <div class="um-gps">
+              <input type="text" class="mk-input" placeholder="Latitude, Longitude" [value]="locationText" readonly />
+              <button type="button" class="mk-tap um-gps-btn" (click)="getCurrentLocation()">
+                <i class="ri-focus-3-line"></i> Locate
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Service & payment ── -->
+      <div class="um-card" #secService>
+        <div class="um-section-title"><span class="um-dot purple"><i class="ri-wifi-line"></i></span> Service &amp; payment</div>
+
+        <div class="um-grid">
+          <div class="um-field um-span">
+            <label class="um-label">Connection type <span class="req">*</span></label>
+            <ion-segment class="um-segment" mode="ios" formControlName="connection_type"
+              [class.is-invalid]="userForm.get('connection_type')?.invalid && userForm.get('connection_type')?.touched">
+              <ion-segment-button value="both"><span class="um-seg"><i class="ri-links-line"></i> Both</span></ion-segment-button>
+              <ion-segment-button value="internet"><span class="um-seg"><i class="ri-wifi-line"></i> Internet</span></ion-segment-button>
+              <ion-segment-button value="tv_cable"><span class="um-seg"><i class="ri-tv-2-line"></i> Cable</span></ion-segment-button>
+            </ion-segment>
+            <span class="um-err" *ngIf="userForm.get('connection_type')?.hasError('required') && userForm.get('connection_type')?.touched">
+              Connection type is required
+            </span>
+          </div>
+
+          <div class="um-field um-span">
+            <label class="um-label">Connection provider</label>
+            <select class="mk-input um-select" formControlName="connection_provider">
+              <option value="" disabled>Select provider</option>
+              <option value="none">None</option>
+              <option *ngFor="let company of companies" [value]="company.company_name">
+                {{ company.company_name | titlecase }}
+              </option>
+            </select>
+          </div>
+
+          <div class="um-field um-span">
+            <label class="um-label">Customer status <span class="req">*</span></label>
+            <select class="mk-input um-select" formControlName="customer_status">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div class="um-field um-span">
+            <label class="um-label">Installation date</label>
+            <input type="date" class="mk-input" formControlName="installation_date" />
+          </div>
+
+          <div class="um-field">
+            <label class="um-label">Installation amount</label>
+            <div class="um-affix">
+              <span class="um-prefix">Rs</span>
+              <input type="text" inputmode="numeric" class="mk-input um-has-prefix" formControlName="installation_amount" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="um-field">
+            <label class="um-label">Other amount</label>
+            <div class="um-affix">
+              <span class="um-prefix">Rs</span>
+              <input type="text" inputmode="numeric" class="mk-input um-has-prefix" formControlName="other_amount" placeholder="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Packages (depend on the connection type) ── -->
+      <div #secPackages>
+        <div class="um-card um-card--tone amber" *ngIf="isCable || isBoth">
+          <div class="um-section-title">
+            <span class="um-dot amber"><i class="ri-tv-2-line"></i></span> Cable package
+            <span class="um-badge amber">Cable</span>
+          </div>
+
+          <div class="um-grid">
+            <div class="um-field um-span">
+              <label class="um-label">Cable package <span class="req">*</span></label>
+              <select class="mk-input um-select" formControlName="pkg_cable"
+                [class.is-invalid]="userForm.get('pkg_cable')?.invalid && userForm.get('pkg_cable')?.touched">
+                <option value="" disabled>Select cable package</option>
+                <option *ngFor="let cable of cablePackages" [value]="cable.package_name">
+                  {{ cable.package_name | titlecase }}
+                </option>
+              </select>
+              <span class="um-err" *ngIf="userForm.get('pkg_cable')?.hasError('required') && userForm.get('pkg_cable')?.touched">
+                Select a cable package
+              </span>
+            </div>
+
+            <div class="um-field">
+              <label class="um-label">Discount <span class="req">*</span></label>
+              <select class="mk-input um-select" formControlName="cable_discount">
+                <option value="no_discount">No Discount</option>
+                <option value="quarter">Quarter</option>
+                <option value="half">Half</option>
+                <option value="semi">Semi</option>
+                <option value="full_free">Full Free</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+
+            <div class="um-field">
+              <label class="um-label">Package fee <span class="req">*</span></label>
+              <div class="um-affix">
+                <span class="um-prefix">Rs</span>
+                <input type="text" inputmode="numeric" class="mk-input um-has-prefix"
+                  formControlName="cable_package_fee"
+                  [class.is-invalid]="userForm.get('cable_package_fee')?.invalid && userForm.get('cable_package_fee')?.touched"
+                  [readonly]="!cableFeeIsCustom"
+                  [placeholder]="cableFeeIsCustom ? 'Enter agreed amount' : '0'" />
+              </div>
+              <span class="um-err" *ngIf="userForm.get('cable_package_fee')?.hasError('required') && userForm.get('cable_package_fee')?.touched">
+                Fee is required
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="um-card um-card--tone blue" *ngIf="isInternet || isBoth">
+          <div class="um-section-title">
+            <span class="um-dot blue"><i class="ri-router-line"></i></span> Internet package
+            <span class="um-badge blue">Internet</span>
+          </div>
+
+          <div class="um-grid">
+            <div class="um-field um-span">
+              <label class="um-label">Internet package <span class="req">*</span></label>
+              <select class="mk-input um-select" formControlName="select_package"
+                [class.is-invalid]="userForm.get('select_package')?.invalid && userForm.get('select_package')?.touched">
+                <option value="" disabled>Select internet package</option>
+                <option *ngFor="let area of internetPackages" [value]="area.package_name">
+                  {{ area.package_name | titlecase }}
+                </option>
+              </select>
+              <span class="um-err" *ngIf="userForm.get('select_package')?.hasError('required') && userForm.get('select_package')?.touched">
+                Select a package
+              </span>
+            </div>
+
+            <div class="um-field">
+              <label class="um-label">Discount <span class="req">*</span></label>
+              <select class="mk-input um-select" formControlName="internet_discount">
+                <option value="no_discount">No Discount</option>
+                <option value="quarter">Quarter</option>
+                <option value="half">Half</option>
+                <option value="semi">Semi</option>
+                <option value="full_free">Full Free</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+
+            <div class="um-field">
+              <label class="um-label">Package fee <span class="req">*</span></label>
+              <div class="um-affix">
+                <span class="um-prefix">Rs</span>
+                <input type="text" inputmode="numeric" class="mk-input um-has-prefix"
+                  formControlName="internet_package_fee"
+                  [class.is-invalid]="userForm.get('internet_package_fee')?.invalid && userForm.get('internet_package_fee')?.touched"
+                  [readonly]="!internetFeeIsCustom"
+                  [placeholder]="internetFeeIsCustom ? 'Enter agreed amount' : '0'" />
+              </div>
+              <span class="um-err" *ngIf="userForm.get('internet_package_fee')?.hasError('required') && userForm.get('internet_package_fee')?.touched">
+                Fee is required
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ Actions ══ -->
+    <footer class="um-foot">
+      <button type="button" class="mk-tap mk-btn mk-btn--ghost" (click)="activeModal.close()">
+        Cancel
+      </button>
+      <button type="submit" class="mk-tap mk-btn mk-btn--primary um-save" [disabled]="isLoading || isSaving">
+        <ng-container *ngIf="!isSaving">
+          <i class="ri-check-line"></i> {{ editMode ? 'Update subscriber' : 'Save subscriber' }}
+        </ng-container>
+        <ng-container *ngIf="isSaving">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          {{ editMode ? 'Updating…' : 'Saving…' }}
+        </ng-container>
+      </button>
+    </footer>
+  </form>
+</div>
+
+
+<!-- ── Photo viewer ── -->
+<div class="um-viewer" *ngIf="showImageModal" (click)="closeImageModal()">
+  <button type="button" class="mk-tap um-viewer-close" (click)="closeImageModal()" aria-label="Close photo">
+    <i class="ri-close-line"></i>
+  </button>
+  <img [src]="imagePreview" class="um-viewer-img" alt="Subscriber photo" (click)="$event.stopPropagation()" />
+</div>

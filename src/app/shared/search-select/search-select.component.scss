@@ -1,0 +1,245 @@
+@use 'sass:color';
+
+/* ── Search Select ─────────────────────────────────────── */
+
+/* Make the host element a proper block so width:100% on .ss-wrapper resolves
+   against the parent flex/grid cell, not the inline content width.           */
+:host {
+  display: block;
+  min-width: 140px;
+}
+
+$accent:    #0d6efd;
+$accent-lt: rgba(13, 110, 253, 0.10);
+$accent-bg: #eff6ff;
+$border:    #e2e8f0;
+$radius:    8px;
+$text:      #1e293b;
+$muted:     #94a3b8;
+$error:     #ef4444;
+$error-lt:  rgba(239, 68, 68, 0.10);
+
+.ss-wrapper {
+  position: relative;
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+/* ── Trigger ── */
+.ss-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: #fff;
+  border: 1.5px solid $border;
+  border-radius: $radius;
+  cursor: pointer;
+  text-align: left;
+  color: $text;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-height: 40px;
+
+  &:hover {
+    border-color: color.adjust($border, $lightness: -8%);
+  }
+
+  &.ss-invalid {
+    border-color: $error;
+    box-shadow: 0 0 0 3px $error-lt;
+  }
+}
+
+.ss-open .ss-trigger {
+  border-color: $accent;
+  box-shadow: 0 0 0 3px $accent-lt;
+}
+
+.ss-value {
+  flex: 1;
+  font-size: 13px;
+  color: $text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.ss-placeholder {
+    color: $muted;
+  }
+}
+
+.ss-chevron {
+  flex-shrink: 0;
+  color: $muted;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.ss-open .ss-chevron {
+  transform: rotate(180deg);
+  color: $accent;
+}
+
+/* ── Panel – position/top/left/width injected via [ngStyle] in the component ── */
+.ss-panel {
+  background: #fff;
+  border: 1.5px solid $border;
+  border-radius: $radius + 4;
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,.07),
+    0 10px 28px -4px rgba(0,0,0,.12);
+  overflow: hidden;
+  animation: ssSlideIn 0.14s cubic-bezier(.25,.8,.25,1);
+}
+
+@keyframes ssSlideIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ── Search row ── */
+.ss-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid $border;
+  background: #f8fafc;
+}
+
+.ss-search-icon {
+  flex-shrink: 0;
+  color: $muted;
+  font-size: 14px;
+}
+
+.ss-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: $text;
+  min-width: 0;
+
+  &::placeholder { color: $muted; }
+}
+
+.ss-clear-search {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: $border;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 12px;
+  padding: 0;
+  transition: background 0.12s;
+
+  &:hover { background: color.adjust($border, $lightness: -8%); }
+}
+
+/* ── List ── */
+.ss-list {
+  max-height: 210px;
+  overflow-y: auto;
+  padding: 5px 0;
+
+  &::-webkit-scrollbar       { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: $border;
+    border-radius: 4px;
+  }
+}
+
+/* ── Option ── */
+.ss-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  color: #475569;
+  user-select: none;
+
+  &:hover {
+    background: $accent-bg;
+    color: $accent;
+  }
+
+  &.ss-active {
+    background: $accent-bg;
+    color: $accent;
+    font-weight: 600;
+  }
+}
+
+.ss-option-all {
+  color: #64748b;
+  font-style: italic;
+  border-bottom: 1px dashed $border;
+  margin-bottom: 4px;
+}
+
+/* coloured dot per option */
+.ss-opt-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: $border;
+  transition: background 0.12s;
+}
+.ss-opt-dot-active { background: $accent; }
+
+.ss-opt-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: $muted;
+}
+
+.ss-opt-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ss-check {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: $accent;
+  margin-left: auto;
+}
+
+/* ── No results ── */
+.ss-no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 12px;
+  color: $muted;
+  font-size: 12.5px;
+  text-align: center;
+
+  i { font-size: 22px; }
+  strong { color: #475569; }
+}
+
+/* ── Disabled ── */
+.ss-disabled .ss-trigger {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}

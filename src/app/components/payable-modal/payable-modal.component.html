@@ -1,0 +1,107 @@
+<div class="pm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="pm-header">
+    <div class="pm-header-left">
+      <div class="pm-header-icon"><i class="ri-bill-line"></i></div>
+      <div>
+        <h4 class="pm-title">{{ editMode ? 'Update' : 'Add' }} Payable</h4>
+        <p class="pm-subtitle">{{ editMode ? 'Edit payable details below' : 'Fill in the payable details below' }}</p>
+      </div>
+    </div>
+    <button type="button" class="pm-close-btn" aria-label="Close" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div *ngIf="isLoading" class="pm-loading">
+    <div class="spinner-border" style="color:#0369a1" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="pm-body">
+    <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+
+      <!-- ══ Section 1 — Payable Details ══ -->
+      <div class="pm-section">
+        <div class="pm-section-head">
+          <div class="pm-section-icon si-teal"><i class="ri-money-cny-circle-line"></i></div>
+          <span class="pm-section-title">Payable Details</span>
+        </div>
+        <div class="pm-section-body">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="pm-label">Payable Date <span class="req">*</span></label>
+              <input type="date" class="pm-input"
+                [class.pm-invalid]="expenseForm.get('borrow_date')?.invalid && expenseForm.get('borrow_date')?.touched"
+                formControlName="borrow_date">
+              <span class="pm-err" *ngIf="expenseForm.get('borrow_date')?.hasError('required') && expenseForm.get('borrow_date')?.touched">Date is required</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="pm-label">Name <span class="req">*</span></label>
+              <input type="text" class="pm-input"
+                [class.pm-invalid]="expenseForm.get('name')?.invalid && expenseForm.get('name')?.touched"
+                formControlName="name" placeholder="Payable to (name)">
+              <span class="pm-err" *ngIf="expenseForm.get('name')?.hasError('required') && expenseForm.get('name')?.touched">Name is required</span>
+            </div>
+
+            <div class="col-md-4">
+              <label class="pm-label">Area</label>
+              <input type="text" class="pm-input" formControlName="area" placeholder="Area / location">
+            </div>
+
+            <div class="col-md-4">
+              <label class="pm-label">Payable Amount</label>
+              <div class="pm-prefix-wrap">
+                <span class="pm-prefix">Rs</span>
+                <input type="number" class="pm-input pm-prefixed" formControlName="amount" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="pm-label">Received Amount</label>
+              <div class="pm-prefix-wrap">
+                <span class="pm-prefix">Rs</span>
+                <input type="number" class="pm-input pm-prefixed" formControlName="recieved_amount" placeholder="0">
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="pm-label">Promise Date</label>
+              <input type="date" class="pm-input" formControlName="promise_date">
+            </div>
+
+            <div class="col-md-4">
+              <label class="pm-label">Witness</label>
+              <input type="text" class="pm-input" formControlName="witness" placeholder="Witness name">
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Footer ── -->
+      <div class="pm-footer">
+        <button type="button" class="pm-btn pm-btn-cancel" (click)="activeModal.close()">
+          <i class="ri-close-line me-1"></i> Cancel
+        </button>
+        <button type="submit" class="pm-btn pm-btn-save" [disabled]="isLoading || isSaving">
+          <ng-container *ngIf="!isSaving">
+            <i class="ri-save-line me-1"></i>
+            {{ editMode ? 'Update Payable' : 'Save Payable' }}
+          </ng-container>
+          <ng-container *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            {{ editMode ? 'Updating...' : 'Saving...' }}
+          </ng-container>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

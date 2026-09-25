@@ -1,0 +1,53 @@
+<div class="container-fluid st-wrapper">
+
+  <!-- ── Page Header ── -->
+  <div class="st-page-header mb-4">
+    <div class="st-header-left">
+      <div class="st-header-icon"><i class="ri-settings-3-line"></i></div>
+      <div>
+        <h1 class="st-title">Settings</h1>
+        <p class="st-sub">Manage SMS message templates sent to customers</p>
+      </div>
+    </div>
+    <span class="st-stat-pill">
+      <i class="ri-message-2-line"></i>
+      <strong>{{ templates.length }}</strong> Templates
+    </span>
+  </div>
+
+  <!-- ── Templates Grid ── -->
+  <div class="st-grid">
+    <div class="st-card" *ngFor="let item of templates">
+
+      <!-- Card Header -->
+      <div class="st-card-header">
+        <div class="st-card-icon" [ngClass]="'icon-' + item.id">
+          <i [class]="getTemplateIcon(item.id)"></i>
+        </div>
+        <div>
+          <div class="st-card-title">{{ item.title }}</div>
+          <div class="st-card-sub">SMS Template</div>
+        </div>
+      </div>
+
+      <!-- Textarea -->
+      <div class="st-card-body">
+        <textarea class="st-textarea" rows="6" [(ngModel)]="item.message"
+          [placeholder]="'Enter ' + item.title + ' message...'"></textarea>
+        <div class="st-char-count">{{ item.message?.length || 0 }} characters</div>
+      </div>
+
+      <!-- Actions -->
+      <div class="st-card-footer">
+        <button class="st-btn save-btn" (click)="saveTemplate(item)">
+          <i class="ri-save-line"></i> Save
+        </button>
+        <button class="st-btn reset-btn" (click)="resetTemplate(item)">
+          <i class="ri-refresh-line"></i> Reset
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

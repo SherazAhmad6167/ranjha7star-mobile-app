@@ -1,0 +1,173 @@
+// ── Stock Stat Cards ─────────────────────────────────────────────────────────
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  background: #fff;
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    i { font-size: 1.5rem; }
+  }
+
+  .stat-body {
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+  }
+
+  &.stat-total     { .stat-icon { background: #e0e7ff; i { color: #4f46e5; } } .stat-value { color: #4f46e5; } }
+  &.stat-available { .stat-icon { background: #dcfce7; i { color: #16a34a; } } .stat-value { color: #16a34a; } }
+  &.stat-installed { .stat-icon { background: #dbeafe; i { color: #2563eb; } } .stat-value { color: #2563eb; } }
+  &.stat-returned  { .stat-icon { background: #fef3c7; i { color: #d97706; } } .stat-value { color: #d97706; } }
+  &.stat-faulty    { .stat-icon { background: #fee2e2; i { color: #dc2626; } } .stat-value { color: #dc2626; } }
+}
+
+// ── Status Badges ─────────────────────────────────────────────────────────────
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+
+  &.st-available { background: #dcfce7; color: #15803d; }
+  &.st-installed  { background: #dbeafe; color: #1d4ed8; }
+  &.st-returned   { background: #fef3c7; color: #b45309; }
+  &.st-faulty     { background: #fee2e2; color: #dc2626; }
+  &.st-none       { background: #f3f4f6; color: #6b7280; }
+}
+
+// ── Table ────────────────────────────────────────────────────────────────────
+.barcode-badge {
+  display: inline-block;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.78rem;
+  background: #f8f9fa;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+  color: #374151;
+  letter-spacing: 0.3px;
+}
+
+.empty-state {
+  i {
+    font-size: 3.5rem;
+    color: #adb5bd;
+    display: block;
+  }
+}
+
+// ── Generate Section ─────────────────────────────────────────────────────────
+.generate-section {
+  border: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  border-radius: 12px;
+
+  .card-header {
+    background: transparent;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1rem 1.25rem;
+
+    h5 { font-size: 1rem; }
+  }
+
+  .generate-info {
+    padding: 0.5rem;
+  }
+
+  .generate-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 1.6rem;
+      color: #1d4ed8;
+    }
+  }
+
+  code {
+    background: #f1f5f9;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.78rem;
+    color: #be185d;
+  }
+}
+
+// ── Barcode Preview ──────────────────────────────────────────────────────────
+.barcode-preview {
+  min-height: 200px;
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafbff;
+  transition: border-color 0.25s, background 0.25s;
+  padding: 1.5rem;
+
+  &.active {
+    border-color: #93c5fd;
+    background: #f0f7ff;
+    border-style: solid;
+  }
+
+  .barcode-placeholder {
+    text-align: center;
+    color: #94a3b8;
+
+    i {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    p { margin: 0; font-size: 0.875rem; }
+  }
+
+  .barcode-output {
+    text-align: center;
+    width: 100%;
+
+    .font-mono {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+    }
+
+    .barcode-canvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 4px;
+    }
+  }
+}
+

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Ranjha7star app icon">
+  <defs>
+    <linearGradient id="bg" x1="128" y1="96" x2="896" y2="928" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="0.52" stop-color="#123b4a"/>
+      <stop offset="1" stop-color="#0f9f7a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="278" y1="230" x2="748" y2="790" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="0.46" stop-color="#c7f9e8"/>
+      <stop offset="1" stop-color="#5eead4"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#020617" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <circle cx="512" cy="512" r="340" fill="#ffffff" opacity="0.06"/>
+  <path d="M220 350c167-134 415-134 582 0" fill="none" stroke="#9fffe7" stroke-width="54" stroke-linecap="round" opacity="0.34"/>
+  <path d="M300 444c119-92 305-92 424 0" fill="none" stroke="#9fffe7" stroke-width="50" stroke-linecap="round" opacity="0.56"/>
+  <path d="M386 536c72-50 180-50 252 0" fill="none" stroke="#9fffe7" stroke-width="46" stroke-linecap="round" opacity="0.78"/>
+
+  <g filter="url(#shadow)">
+    <path d="M294 700V320h188c89 0 151 52 151 132 0 55-28 96-76 116l91 132H532l-78-116h-58v116H294Zm102-196h76c36 0 58-18 58-50 0-31-22-49-58-49h-76v99Z" fill="url(#accent)"/>
+    <path d="M640 700l145-292H630v-88h280v72L766 700H640Z" fill="url(#accent)"/>
+  </g>
+
+  <path d="m739 195 21 48 52 5-39 35 11 51-45-26-45 26 11-51-39-35 52-5 21-48Z" fill="#facc15"/>
+</svg>

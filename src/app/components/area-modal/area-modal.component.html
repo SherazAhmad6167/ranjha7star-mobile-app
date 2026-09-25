@@ -1,0 +1,95 @@
+<div class="arm-wrapper">
+
+  <!-- ── Header ── -->
+  <div class="arm-header">
+    <div class="arm-header-left">
+      <div class="arm-header-icon"><i class="ri-map-pin-line"></i></div>
+      <div>
+        <h4 class="arm-title">{{ editMode ? 'Update' : 'Add' }} Area</h4>
+        <p class="arm-subtitle">{{ editMode ? 'Edit area details below' : 'Fill in the area details below' }}</p>
+      </div>
+    </div>
+    <button class="arm-close-btn" type="button" (click)="activeModal.dismiss()">
+      <i class="ri-close-line"></i>
+    </button>
+  </div>
+
+  <!-- ── Loading overlay ── -->
+  <div *ngIf="isLoading" class="arm-loading">
+    <div class="spinner-border" style="color:#0284c7" role="status"></div>
+    <span>Loading...</span>
+  </div>
+
+  <!-- ── Body ── -->
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="arm-body">
+
+      <!-- Section: Area Details -->
+      <div class="arm-section">
+        <div class="arm-section-head">
+          <div class="arm-section-icon si-sky"><i class="ri-map-pin-line"></i></div>
+          <span class="arm-section-title">Area Details</span>
+        </div>
+        <div class="arm-section-body">
+          <div class="row g-3">
+
+            <div class="col-12">
+              <label class="arm-label">Sublocality <span class="req">*</span></label>
+              <input type="text" class="arm-input"
+                [class.arm-invalid]="userForm.get('sublocality')?.invalid && userForm.get('sublocality')?.touched"
+                formControlName="sublocality" placeholder="Enter Sublocality">
+              <span class="arm-err"
+                *ngIf="userForm.get('sublocality')?.hasError('required') && userForm.get('sublocality')?.touched">
+                Sublocality is required
+              </span>
+            </div>
+
+            <!-- Dynamic Sub Areas -->
+            <div class="col-12" formArrayName="subAreas">
+              <div class="arm-subarea-head">
+                <span class="arm-subarea-label">Sub Areas</span>
+                <button type="button" class="arm-add-btn" (click)="addSubArea()">
+                  <i class="ri-add-line"></i> Add
+                </button>
+              </div>
+
+              <div *ngIf="subAreas.length > 0">
+                <div *ngFor="let sub of subAreas.controls; let i = index"
+                  [formGroupName]="i" class="arm-subarea-row">
+                  <input type="text" formControlName="name" class="arm-input"
+                    placeholder="Enter Sub Area">
+                  <button type="button" class="arm-remove-btn" (click)="removeSubArea(i)">
+                    <i class="ri-close-line"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="subAreas.length === 0" class="arm-empty">
+                No sub areas added yet. Click "Add" to create one.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="arm-footer">
+      <button type="button" class="arm-btn arm-btn-cancel" (click)="activeModal.close()">
+        Cancel
+      </button>
+      <button type="submit" class="arm-btn arm-btn-save" [disabled]="isLoading || isSaving">
+        <span *ngIf="!isSaving">
+          <i class="ri-save-line me-1"></i>{{ editMode ? 'Update' : 'Save' }}
+        </span>
+        <span *ngIf="isSaving" class="d-flex align-items-center gap-2">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          {{ editMode ? 'Updating...' : 'Saving...' }}
+        </span>
+      </button>
+    </div>
+  </form>
+
+</div>

@@ -1,0 +1,412 @@
+<div class="rd rd-theme">
+
+  <!-- ══ Summary ══ -->
+  <div class="rd-hero">
+    <span class="rd-hero-glow" aria-hidden="true"></span>
+
+    <div class="rd-hero-top">
+      <div class="rd-hero-copy">
+        <span class="rd-hero-kicker"><i class="ri-hand-coin-fill"></i> Recovery</span>
+        <div class="rd-hero-count">
+          <span class="num">{{ users.length | number }}</span>
+          <span class="unit">total</span>
+        </div>
+      </div>
+
+      <div class="rd-hero-stats">
+        <div class="rd-stat">
+          <span class="rd-stat-label">Recovery</span>
+          <span class="rd-stat-value"><small>Rs</small>{{ totalRecovery | number }}</span>
+        </div>
+        <div class="rd-stat rd-stat--expense">
+          <span class="rd-stat-label">Expenses</span>
+          <span class="rd-stat-value"><small>Rs</small>{{ totalExpenses | number }}</span>
+        </div>
+        <div class="rd-stat rd-stat--remaining">
+          <span class="rd-stat-label">Remaining</span>
+          <span class="rd-stat-value"><small>Rs</small>{{ remainingAmount | number }}</span>
+        </div>
+      </div>
+
+      <div class="rd-hero-actions">
+        <button class="mk-tap rd-hero-icon ion-activatable" type="button" (click)="loadExpenses()"
+          [disabled]="isLoading" aria-label="Refresh list">
+          <i class="ri-refresh-line" [class.is-spinning]="isLoading"></i>
+          <ion-ripple-effect></ion-ripple-effect>
+        </button>
+        <button class="mk-tap rd-hero-add ion-activatable" type="button" (click)="openExpenseModal()">
+          <i class="ri-add-line"></i><span>Add</span>
+          <ion-ripple-effect></ion-ripple-effect>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Search + inline filters ══ -->
+  <div class="rd-filter-area">
+    <div class="rd-inline-filters">
+      <div class="rd-filter-heading">
+        <div class="rd-filter-title">
+          <span><i class="ri-equalizer-line"></i> Filters</span>
+          <small>{{ filteredUsers.length | number }} / {{ users.length | number }}</small>
+        </div>
+        <button class="mk-tap rd-filter-reset" type="button" (click)="resetFilters()"
+          [disabled]="!activeFilterCount" aria-label="Reset filters" title="Reset filters">
+          <i class="ri-refresh-line"></i>
+        </button>
+      </div>
+
+      <div class="rd-filter-grid" [class.rd-filter-grid--solo]="role !== 'admin'">
+        <div class="rd-filter-field" *ngIf="role === 'admin'">
+          <span class="rd-filter-label"><i class="ri-user-settings-line"></i> Operator</span>
+          <app-sheet-select
+            [(ngModel)]="operatorName"
+            (selectionChange)="onFilterChange()"
+            [options]="internetOperators"
+            valueKey="operator_name"
+            displayKey="operator_name"
+            title="Operator"
+            icon="ri-user-settings-line"
+            emptyLabel="All operators">
+          </app-sheet-select>
+        </div>
+
+        <label class="rd-filter-field">
+          <span class="rd-filter-label"><i class="ri-calendar-2-line"></i> Month</span>
+          <span class="rd-select-wrap">
+            <select [(ngModel)]="selectedMonth" (change)="onFilterChange()" aria-label="Filter by month">
+              <option [ngValue]="null">All</option>
+              <option value="january">January</option>
+              <option value="february">February</option>
+              <option value="march">March</option>
+              <option value="april">April</option>
+              <option value="may">May</option>
+              <option value="june">June</option>
+              <option value="july">July</option>
+              <option value="august">August</option>
+              <option value="september">September</option>
+              <option value="october">October</option>
+              <option value="november">November</option>
+              <option value="december">December</option>
+            </select>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </span>
+        </label>
+
+        <label class="rd-filter-field rd-filter-field--page">
+          <span class="rd-filter-label"><i class="ri-list-settings-line"></i> Per page</span>
+          <span class="rd-select-wrap">
+            <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" aria-label="Records per page">
+              <option *ngFor="let size of pageSizes" [ngValue]="size">{{ size }}</option>
+            </select>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </span>
+        </label>
+      </div>
+
+      <div class="rd-date-grid">
+        <label class="rd-filter-field">
+          <span class="rd-filter-label"><i class="ri-calendar-event-line"></i> From</span>
+          <input class="rd-date-input" type="date" [(ngModel)]="fromDate" (change)="filterByDateRange()"
+            aria-label="From date" />
+        </label>
+        <label class="rd-filter-field">
+          <span class="rd-filter-label"><i class="ri-calendar-check-line"></i> To</span>
+          <input class="rd-date-input" type="date" [(ngModel)]="toDate" (change)="filterByDateRange()"
+            aria-label="To date" />
+        </label>
+      </div>
+    </div>
+
+    <ion-searchbar
+      class="mk-searchbar rd-searchbar"
+      placeholder="Search recovery..."
+      inputmode="search"
+      enterkeyhint="search"
+      [value]="searchTerm"
+      [debounce]="250"
+      (ionInput)="onSearchInput($event)">
+    </ion-searchbar>
+
+    <span class="mk-progress" *ngIf="isLoading" aria-hidden="true"></span>
+  </div>
+
+  <!-- ══ List ══ -->
+  <div class="mk-list-head" #listTop *ngIf="pagedUsers.length">
+    <span><strong>{{ pageStart | number }}–{{ pageEnd | number }}</strong> of {{ filteredUsers.length | number }}</span>
+    <span class="mk-list-page">Page {{ currentPage }} / {{ totalPages }}</span>
+  </div>
+
+  <!-- First load: skeleton cards -->
+  <div class="rd-list" *ngIf="isLoading && !users.length">
+    <div class="mk-skel" *ngFor="let row of skeletonRows">
+      <ion-skeleton-text class="mk-skel-avatar" [animated]="true"></ion-skeleton-text>
+      <div class="mk-skel-lines">
+        <ion-skeleton-text [animated]="true" style="width: 58%; height: 14px"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 34%; height: 10px"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 76%; height: 10px"></ion-skeleton-text>
+      </div>
+    </div>
+  </div>
+
+  <div class="rd-list" *ngIf="!(isLoading && !users.length)">
+    <article
+      class="rd-card"
+      *ngFor="let user of pagedUsers; let i = index; trackBy: trackByRecord"
+      [ngClass]="statusClass(user)"
+      [style.--i]="i">
+
+      <div class="rd-card-main ion-activatable" role="button" tabindex="0"
+        (click)="openDetailSheet(user)" (keydown.enter)="openDetailSheet(user)">
+        <div class="mk-avatar">
+          <span>{{ userInitial(user) }}</span>
+          <span class="mk-avatar-badge"><i [class]="statusIcon(user)"></i></span>
+        </div>
+
+        <div class="rd-card-info">
+          <span class="rd-card-name">{{ (user.operator_name | titlecase) || 'No operator' }}</span>
+          <div class="mk-tags">
+            <span class="mk-id">{{ (user.date | date: 'dd MMM yyyy') || '—' }}</span>
+            <span class="mk-tone-pill">{{ statusLabel(user) }}</span>
+          </div>
+          <span class="rd-card-area">
+            <i class="ri-map-pin-2-line"></i>
+            <span>{{ (user.sublocality | titlecase) || 'All areas' }}<ng-container *ngIf="user.recieved_by"> · {{ user.recieved_by }}</ng-container></span>
+          </span>
+        </div>
+
+        <div class="rd-card-fee">
+          <strong><small>Rs</small>{{ (user.total_recovery || 0) | number }}</strong>
+          <span>Net Rs {{ (user.remaining_amount || 0) | number }}</span>
+        </div>
+
+        <ion-ripple-effect></ion-ripple-effect>
+      </div>
+
+      <div class="rd-card-actions">
+        <a class="mk-tap rd-act rd-act--call" *ngIf="getContact(user) as phone" [href]="'tel:' + phone">
+          <i class="ri-phone-fill"></i><span>Call</span>
+        </a>
+        <span class="rd-act rd-act--none" *ngIf="!getContact(user)">
+          <i class="ri-phone-line"></i><span>No phone</span>
+        </span>
+        <button class="mk-tap rd-act rd-act--msg" type="button" (click)="openMsgModal(user)">
+          <i class="ri-whatsapp-line"></i><span>Message</span>
+        </button>
+        <button class="mk-tap rd-act rd-act--edit" type="button" (click)="editUser(user)">
+          <i class="ri-edit-2-line"></i><span>Edit</span>
+        </button>
+        <button class="mk-tap rd-act rd-act--more" type="button" (click)="openDetailSheet(user)" aria-label="More actions">
+          <i class="ri-more-2-fill"></i>
+        </button>
+      </div>
+    </article>
+
+    <!-- Empty -->
+    <div class="mk-empty" *ngIf="!isLoading && pagedUsers.length === 0">
+      <div class="mk-empty-art"><i class="ri-hand-coin-line"></i></div>
+      <strong>No recovery records found</strong>
+      <p>{{ hasAnyFilter ? 'Nothing matches this search or filter. Try something else.' : 'Add your first recovery entry to get started.' }}</p>
+      <button class="mk-tap mk-btn mk-btn--ghost" type="button" *ngIf="hasAnyFilter" (click)="clearFilters()">
+        <i class="ri-filter-off-line"></i> Clear filters
+      </button>
+      <button class="mk-tap mk-btn mk-btn--primary" type="button" *ngIf="!hasAnyFilter" (click)="openExpenseModal()">
+        <i class="ri-add-line"></i> Add recovery
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ Pagination ══ -->
+  <div class="mk-pager" *ngIf="totalPages > 1 && pagedUsers.length">
+    <div class="mk-pager-row">
+      <button class="mk-tap mk-icon-btn" type="button" (click)="goPrev()" [disabled]="currentPage === 1"
+        aria-label="Previous page">
+        <i class="ri-arrow-left-s-line"></i>
+      </button>
+
+      <div class="mk-pager-pages">
+        <ng-container *ngFor="let slot of pageWindow">
+          <span class="mk-page-gap" *ngIf="slot === 'gap'">…</span>
+          <button *ngIf="slot !== 'gap'" class="mk-tap mk-page" type="button"
+            [class.is-active]="slot === currentPage"
+            [class.is-near]="slot !== currentPage && slot !== 1 && slot !== totalPages"
+            [attr.aria-current]="slot === currentPage ? 'page' : null"
+            (click)="changePage(slot)">
+            {{ slot }}
+          </button>
+        </ng-container>
+      </div>
+
+      <button class="mk-tap mk-icon-btn" type="button" (click)="goNext()" [disabled]="currentPage === totalPages"
+        aria-label="Next page">
+        <i class="ri-arrow-right-s-line"></i>
+      </button>
+    </div>
+
+    <ion-range
+      *ngIf="totalPages > 5"
+      class="mk-scrub"
+      aria-label="Jump to page"
+      [min]="1"
+      [max]="totalPages"
+      [step]="1"
+      [pin]="true"
+      [value]="currentPage"
+      (ionChange)="onPageScrub($event)">
+    </ion-range>
+
+    <div class="mk-pager-meta">
+      <span>Showing <strong>{{ pageStart | number }}–{{ pageEnd | number }}</strong> of <strong>{{ filteredUsers.length | number }}</strong></span>
+      <span class="rd-page-size"><i class="ri-list-settings-line"></i> {{ pageSize }} / page</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════ Recovery detail sheet ══════════════ -->
+<ion-modal class="rd-theme mk-sheet" [isOpen]="detailSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="onDetailSheetDismiss()">
+  <ng-template>
+    <div class="mk-sheet-wrap" *ngIf="detailUser as u" [ngClass]="statusClass(u)">
+      <div class="mk-sheet-head mk-sheet-head--profile">
+        <div class="mk-avatar mk-avatar--lg">
+          <span>{{ userInitial(u) }}</span>
+          <span class="mk-avatar-badge"><i [class]="statusIcon(u)"></i></span>
+        </div>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">{{ (u.operator_name | titlecase) || 'No operator' }}</span>
+          <div class="mk-tags">
+            <span class="mk-id">{{ (u.date | date: 'dd MMM yyyy') || '—' }}</span>
+            <span class="mk-tone-pill">{{ statusLabel(u) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="mk-fee-tile">
+          <div>
+            <span class="mk-fee-label">Total recovery</span>
+            <span class="mk-fee-value"><small>Rs</small>{{ (u.total_recovery || 0) | number }}</span>
+          </div>
+          <span class="mk-fee-pkg"><i class="ri-map-pin-2-line"></i>{{ (u.sublocality | titlecase) || 'All areas' }}</span>
+        </div>
+
+        <div class="rd-money">
+          <div class="rd-money-cell rd-money-cell--expense">
+            <span>Expenses</span>
+            <strong><small>Rs</small>{{ (u.total_expenses || 0) | number }}</strong>
+          </div>
+          <div class="rd-money-cell rd-money-cell--remaining">
+            <span>Remaining</span>
+            <strong><small>Rs</small>{{ (u.remaining_amount || 0) | number }}</strong>
+          </div>
+        </div>
+
+        <div class="mk-info">
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-user-settings-line"></i></span>
+            <span class="mk-info-label">Operator</span>
+            <span class="mk-info-value">{{ (u.operator_name | titlecase) || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-phone-line"></i></span>
+            <span class="mk-info-label">Contact</span>
+            <span class="mk-info-value mk-mono">{{ getContact(u) || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-map-pin-2-line"></i></span>
+            <span class="mk-info-label">Area</span>
+            <span class="mk-info-value">{{ (u.sublocality | titlecase) || 'All areas' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-calendar-line"></i></span>
+            <span class="mk-info-label">Date</span>
+            <span class="mk-info-value">{{ (u.date | date: 'dd MMM yyyy') || '—' }}</span>
+          </div>
+          <div class="mk-info-row">
+            <span class="mk-info-icon"><i class="ri-user-received-line"></i></span>
+            <span class="mk-info-label">Received</span>
+            <span class="mk-info-value">{{ u.recieved_by || 'Not received' }}</span>
+          </div>
+        </div>
+
+        <div class="mk-grid">
+          <a class="mk-tap mk-grid-btn mk-g-blue" *ngIf="getContact(u) as phone" [href]="'tel:' + phone">
+            <span class="mk-grid-icon"><i class="ri-phone-fill"></i></span>Call
+          </a>
+          <button class="mk-tap mk-grid-btn mk-g-green" type="button" (click)="fromDetailSheet('message')">
+            <span class="mk-grid-icon"><i class="ri-whatsapp-line"></i></span>Message
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-violet" type="button" (click)="fromDetailSheet('edit')">
+            <span class="mk-grid-icon"><i class="ri-edit-2-line"></i></span>Edit
+          </button>
+          <button class="mk-tap mk-grid-btn mk-g-rose" type="button" (click)="fromDetailSheet('delete')">
+            <span class="mk-grid-icon"><i class="ri-delete-bin-6-line"></i></span>Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Messaging sheet ══════════════ -->
+<ion-modal class="rd-theme mk-sheet" [isOpen]="msgSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  (didDismiss)="msgSheetOpen = false">
+  <ng-template>
+    <div class="mk-sheet-wrap">
+      <div class="mk-sheet-head">
+        <span class="mk-sheet-icon mk-sheet-icon--wa"><i class="ri-message-3-line"></i></span>
+        <div class="mk-sheet-titles">
+          <span class="mk-sheet-title">Send message</span>
+          <span class="mk-sheet-sub" *ngIf="selectedMsgUser">
+            {{ (selectedMsgUser.operator_name | titlecase) || 'No operator' }} · {{ getContact(selectedMsgUser) || 'No phone' }}
+          </span>
+        </div>
+        <button class="mk-tap mk-icon-btn" type="button" (click)="closeMsgSheet()" aria-label="Close">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="mk-sheet-scroll ion-content-scroll-host">
+        <div class="mk-msg">
+          <div class="mk-msg-row">
+            <span class="mk-msg-icon mk-t-blue"><i class="ri-hand-coin-line"></i></span>
+            <div class="mk-msg-copy"><strong>Recovery details</strong><span>Send this recovery to the operator</span></div>
+          </div>
+          <div class="mk-msg-send">
+            <button class="mk-tap mk-send mk-send--wa" type="button" (click)="sendWhatsapp(selectedMsgUser); closeMsgSheet()">
+              <i class="ri-whatsapp-line"></i> WhatsApp
+            </button>
+            <button class="mk-tap mk-send mk-send--sms" type="button" (click)="sendSms(selectedMsgUser); closeMsgSheet()">
+              <i class="ri-message-2-line"></i> SMS
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
+
+
+<!-- ══════════════ Delete confirmation ══════════════ -->
+<ion-modal class="rd-theme mk-sheet" [isOpen]="deleteSheetOpen" [breakpoints]="[0, 1]" [initialBreakpoint]="1"
+  [backdropDismiss]="!isDeleting" (didDismiss)="deleteSheetOpen = false">
+  <ng-template>
+    <div class="mk-sheet-wrap mk-confirm">
+      <div class="mk-confirm-art"><i class="ri-delete-bin-6-fill"></i></div>
+      <span class="mk-sheet-title">Delete record?</span>
+      <p class="mk-confirm-text">This recovery record will be permanently removed. This action cannot be undone.</p>
+
+      <div class="mk-sheet-foot">
+        <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="deleteSheet.dismiss()" [disabled]="isDeleting">
+          Cancel
+        </button>
+        <button class="mk-tap mk-btn mk-btn--danger" type="button" (click)="confirmDelete(deleteSheet)" [disabled]="isDeleting">
+          <ng-container *ngIf="!isDeleting"><i class="ri-delete-bin-6-line"></i> Delete</ng-container>
+          <ng-container *ngIf="isDeleting"><ion-spinner name="crescent"></ion-spinner> Deleting…</ng-container>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

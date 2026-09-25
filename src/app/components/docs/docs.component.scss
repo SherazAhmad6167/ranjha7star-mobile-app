@@ -1,0 +1,32 @@
+/* ═══════════════════════════════════════
+   UPLOAD DOCS PAGE
+   ═══════════════════════════════════════ */
+
+$accent: #0891b2;
+$accent-dark: #0e7490;
+$accent-light: #ecfeff;
+$accent-border: #a5f3fc;
+
+.ud-wrapper { padding-top: 16px; padding-bottom: 40px; }
+
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 1050;
+}
+
+/* ── Page Header ── */
+.ud-page-header {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.ud-header-left { display: flex; align-items: center; gap: 14px; }
+.ud-header-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: linear-gradient(135deg, $accent, $accent-dark);
+  display: flex; align-items: center; justify-content: center; font-size: 22px; color: #fff; flex-shrink: 0;
+}
+.ud-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 0; }
+.ud-sub   { font-size: 13px; color: #64748b; margin: 0; }
+
+@media (max-width: 767px) {
+  .ud-wrapper { padding-top: 24px; padding-bottom: 24px; }
+}
