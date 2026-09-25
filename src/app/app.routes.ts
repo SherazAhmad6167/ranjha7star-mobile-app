@@ -15,6 +15,7 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 /** Same check LoginComponent and AuthGuard use. */
 const isLoggedIn = () => !!(localStorage.getItem('username') && localStorage.getItem('role'));
 
+
 // Mobile app surface: keep only the screens requested for the Ionic app.
 // Other web/admin components are intentionally not registered in mobile routes.
 export const routes: Routes = [

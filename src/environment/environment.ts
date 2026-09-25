@@ -20,6 +20,7 @@ export const environment = {
 };
 
 
+
 export const whatsappConfig = {
   accessToken: 'EAAdBLJK6irIBQ2jZA5dIyCdZALr2N9x9S2Xej8lm0cEP4LvwhSFGZBRZBdA7MGv5YhnhkHdJZC9IMzF9aA2hkedqYRiZCUBZBwD37DMZAGXIgGyGmmycmX5isP6IcHPsnrXRq7RA3q8GEgZAGNiBx1d7hoalZA2JfswfzmRZCWtetywVqmt3iEBlwSyDRLK2n5uTwZDZD',
   phoneNumberId: '1084132054774250',
