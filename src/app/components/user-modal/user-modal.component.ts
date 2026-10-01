@@ -22,11 +22,16 @@ import {
   NgbModal,
 } from '@ng-bootstrap/ng-bootstrap';
 import { IonSegment, IonSegmentButton, Platform } from '@ionic/angular';
-import { DD_MM_YYYY_DATE_PROVIDERS } from '../../shared/date-picker.config';
+import {
+  DD_MM_YYYY_DATE_PROVIDERS,
+  optionalDateValue,
+  storedOptionalDate,
+} from '../../shared/date-picker.config';
 import { FileShareService } from '../../shared/file-share.service';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { whatsappConfig } from '../../../environment/environment';
 import { Subscription } from 'rxjs';
+import { toWhatsappNumber } from '../../shared/phone';
 
 @Component({
   selector: 'app-user-modal',
@@ -94,7 +99,8 @@ export class UserModalComponent implements OnDestroy {
     this.userForm = this.fb.group({
       internet_id: ['', [Validators.required]],
       user_name: ['', [Validators.required]],
-      date_of_birth: [''],
+      // Optional: null when blank - the datepicker rejects ''.
+      date_of_birth: [null as string | null],
       address: [''],
       mobile_no: ['', [Validators.required]],
       sublocality: ['', [Validators.required]],
@@ -278,7 +284,7 @@ export class UserModalComponent implements OnDestroy {
       this.userForm.patchValue({
         internet_id: this.userData.internet_id ?? '',
         user_name: this.userData.user_name ?? '',
-        date_of_birth: this.userData.date_of_birth ?? '',
+        date_of_birth: optionalDateValue(this.userData.date_of_birth),
         address: this.userData.address ?? '',
         mobile_no: this.userData?.mobile_no || this.userData?.phone_no,
         sublocality: this.userData.sublocality ?? '',
@@ -485,6 +491,10 @@ export class UserModalComponent implements OnDestroy {
     try {
       const payload = {
         ...this.userForm.getRawValue(),
+        date_of_birth: storedOptionalDate(
+          this.userForm.get('date_of_birth')?.value,
+          this.userData?.date_of_birth,
+        ),
         updatedAt: new Date(),
       };
 
@@ -552,26 +562,9 @@ export class UserModalComponent implements OnDestroy {
     }
   }
 
+  /** International digits for WhatsApp - see toWhatsappNumber for the formats handled. */
   formatPhoneNumber(phone: string): string {
-    phone = phone.replace(/\D/g, ''); // remove spaces/dashes
-
-    if (phone.startsWith('03')) {
-      return '92' + phone.substring(1);
-    }
-
-    if (phone.startsWith('3')) {
-      return '92' + phone;
-    }
-
-    if (phone.startsWith('92')) {
-      return phone;
-    }
-
-    if (phone.startsWith('+92')) {
-      return phone.substring(1);
-    }
-
-    return phone;
+    return toWhatsappNumber(phone);
   }
 
   async checkWhatsAppNumber(phone: string): Promise<boolean> {

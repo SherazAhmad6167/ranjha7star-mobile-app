@@ -17,6 +17,7 @@ import { MaterialFormComponent } from '../material-form/material-form.component'
 import html2canvas from 'html2canvas';
 import html2pdf from 'html2pdf.js';
 import { FileShareService } from '../../shared/file-share.service';
+import { toWhatsappNumber } from '../../shared/phone';
 
 @Component({
   selector: 'app-material-details',
@@ -305,27 +306,9 @@ getFilteredItems() {
     return heightPx * pxToMm + 10; // +10mm buffer for margins
   }
 
-   formatPhoneNumber(phone: string): string {
-    console.log('Phone Number:', phone);
-    phone = phone.replace(/\D/g, ''); // remove spaces/dashes
-
-    if (phone.startsWith('03')) {
-      return '92' + phone.substring(1);
-    }
-
-    if (phone.startsWith('3')) {
-      return '92' + phone;
-    }
-
-    if (phone.startsWith('92')) {
-      return phone;
-    }
-
-    if (phone.startsWith('+92')) {
-      return phone.substring(1);
-    }
-
-    return phone;
+  /** International digits for WhatsApp - see toWhatsappNumber for the formats handled. */
+  formatPhoneNumber(phone: string): string {
+    return toWhatsappNumber(phone);
   }
 
 

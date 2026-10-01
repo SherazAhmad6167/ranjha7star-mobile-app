@@ -57,3 +57,28 @@ export const DD_MM_YYYY_DATE_PROVIDERS = [
   { provide: NgbDateAdapter, useClass: IsoDateAdapter },
   { provide: NgbDateParserFormatter, useClass: DdMmYyyyDateFormatter },
 ];
+
+/**
+ * Form value for an OPTIONAL datepicker field. ngbDatepicker validates its
+ * control itself and treats '' as an invalid date (only null counts as
+ * empty), so a blank optional date left as '' blocked the whole form.
+ * Returns the stored 'yyyy-mm-dd', or null when blank or unreadable.
+ */
+export function optionalDateValue(value: any): string | null {
+  if (value?.toDate) {
+    const date: Date = value.toDate(); // Firestore Timestamp
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  }
+  if (typeof value !== 'string' || !value.trim()) return null;
+  return new IsoDateAdapter().fromModel(value) ? value : null;
+}
+
+/**
+ * What to store for an optional date on save: the picked date, else '' as
+ * before - except an old value the picker couldn't read (so it showed blank)
+ * is kept as it was rather than wiped.
+ */
+export function storedOptionalDate(formValue: any, original: any): any {
+  if (formValue) return formValue;
+  return original && optionalDateValue(original) === null ? original : '';
+}

@@ -168,6 +168,9 @@ export class MaterialFormComponent {
         addDoc(collection(this.firestore, 'materialDetails'), {
           ...payload,
           createdAt: new Date(),
+          // Shows in the admin's "New Material" notification until ticked.
+          adminSeen: false,
+          addedBy: localStorage.getItem('name') || localStorage.getItem('username') || '',
         });
         if (!navigator.onLine) {
           this.toastr.info(

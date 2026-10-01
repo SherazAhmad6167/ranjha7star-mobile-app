@@ -26,7 +26,11 @@ import {
   NgbModal,
 } from '@ng-bootstrap/ng-bootstrap';
 import { IonSegment, IonSegmentButton, Platform } from '@ionic/angular';
-import { DD_MM_YYYY_DATE_PROVIDERS } from '../../shared/date-picker.config';
+import {
+  DD_MM_YYYY_DATE_PROVIDERS,
+  optionalDateValue,
+  storedOptionalDate,
+} from '../../shared/date-picker.config';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { MikrotikService, MikrotikServer } from '../../shared/mikrotik.service';
 import { ZalService } from '../../shared/zal.service';
@@ -150,7 +154,8 @@ export class NewConnectionModalComponent implements OnDestroy {
       user_name: ['', [Validators.required]],
       father_name: [''],
       cnic: [''],
-      date_of_birth: [''],
+      // Optional: null when blank - the datepicker rejects ''.
+      date_of_birth: [null as string | null],
       mobile_no: ['', [Validators.required]],
       alter_mobile_no: [''],
       sublocality: ['', [Validators.required]],
@@ -237,7 +242,7 @@ export class NewConnectionModalComponent implements OnDestroy {
         user_name: this.userData.user_name || '',
         father_name: this.userData.father_name || '',
         cnic: this.userData.cnic || '',
-        date_of_birth: this.userData.date_of_birth || '',
+        date_of_birth: optionalDateValue(this.userData.date_of_birth),
         mobile_no: this.userData.mobile_no || '',
         alter_mobile_no: this.userData.alter_mobile_no || '',
         sublocality: this.userData.sublocality || '',
@@ -819,6 +824,7 @@ export class NewConnectionModalComponent implements OnDestroy {
 
   try {
     const raw = this.userForm.getRawValue();
+    raw.date_of_birth = storedOptionalDate(raw.date_of_birth, this.userData?.date_of_birth);
     if (this.editMode) delete raw.provisioning; // set once, at creation
 
     const payload = {

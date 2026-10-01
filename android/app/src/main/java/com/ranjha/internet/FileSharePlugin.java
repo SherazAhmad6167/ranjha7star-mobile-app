@@ -142,9 +142,24 @@ public class FileSharePlugin extends Plugin {
         if (phone != null && !phone.isEmpty()) chat.appendQueryParameter("phone", phone);
         if (text != null && !text.isEmpty()) chat.appendQueryParameter("text", text);
 
+        Intent chatIntent = new Intent(Intent.ACTION_VIEW, chat.build());
         JSObject result = new JSObject();
+
+        // The app picked in the WhatsApp settings sheet opens directly.
+        String preferred = preferredPackage(call);
+        if (preferred != null) {
+            try {
+                getActivity().startActivity(new Intent(chatIntent).setPackage(preferred));
+                result.put("app", preferred);
+                call.resolve(result);
+                return;
+            } catch (ActivityNotFoundException chosenNotInstalled) {
+                // Not on this phone - let whichever WhatsApp is installed take it.
+            }
+        }
+
         try {
-            getActivity().startActivity(new Intent(Intent.ACTION_VIEW, chat.build()));
+            getActivity().startActivity(chatIntent);
             result.put("app", "whatsapp");
         } catch (ActivityNotFoundException notInstalled) {
             Uri.Builder web = Uri.parse("https://wa.me/" + (phone == null ? "" : phone)).buildUpon();
@@ -200,7 +215,7 @@ public class FileSharePlugin extends Plugin {
             // Undocumented but long-standing: jumps to this number's chat instead of the contact picker.
             if (phone != null && !phone.isEmpty()) whatsapp.putExtra("jid", phone + "@s.whatsapp.net");
 
-            for (String pkg : WHATSAPP_PACKAGES) {
+            for (String pkg : orderedPackages(preferredPackage(call))) {
                 whatsapp.setPackage(pkg);
                 try {
                     getActivity().startActivity(whatsapp);
@@ -220,5 +235,25 @@ public class FileSharePlugin extends Plugin {
         } catch (Exception e) {
             call.reject("Could not share file: " + e.getMessage(), e);
         }
+    }
+
+    /** "whatsapp" / "business" as saved in the app; null when nothing was picked. */
+    private static String preferredPackage(PluginCall call) {
+        String app = call.getString("app", "");
+        if ("business".equals(app)) return "com.whatsapp.w4b";
+        if ("whatsapp".equals(app)) return "com.whatsapp";
+        return null;
+    }
+
+    /** WHATSAPP_PACKAGES with the preferred one tried first. */
+    private static String[] orderedPackages(String preferred) {
+        if (preferred == null) return WHATSAPP_PACKAGES;
+        String[] ordered = new String[WHATSAPP_PACKAGES.length];
+        ordered[0] = preferred;
+        int i = 1;
+        for (String pkg : WHATSAPP_PACKAGES) {
+            if (!pkg.equals(preferred)) ordered[i++] = pkg;
+        }
+        return ordered;
     }
 }

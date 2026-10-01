@@ -551,9 +551,6 @@
             <ion-spinner *ngIf="receiptBusy === 'save'" name="crescent"></ion-spinner>
             <i *ngIf="receiptBusy !== 'save'" class="ri-download-line"></i> Save
           </button>
-          <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="printReceipt()">
-            <i class="ri-printer-cloud-line"></i> Web print
-          </button>
           <button class="mk-tap mk-btn mk-btn--ghost" type="button" (click)="shareReceiptImage()" [disabled]="!!receiptBusy">
             <ion-spinner *ngIf="receiptBusy === 'share'" name="crescent"></ion-spinner>
             <i *ngIf="receiptBusy !== 'share'" class="ri-whatsapp-line"></i> Share

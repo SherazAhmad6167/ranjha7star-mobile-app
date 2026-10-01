@@ -116,6 +116,9 @@
                 <i class="ri-calendar-line"></i>
               </button>
             </div>
+            <span class="nm-err" *ngIf="userForm.get('date_of_birth')?.invalid && userForm.get('date_of_birth')?.touched">
+              Enter a valid date (dd/mm/yyyy) or leave it empty
+            </span>
           </div>
 
           <div class="nm-field nm-span">

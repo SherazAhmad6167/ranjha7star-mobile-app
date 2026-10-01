@@ -13,7 +13,9 @@ import {
   Firestore,
   getDoc,
   getDocs,
+  getDocsFromCache,
   query,
+  QuerySnapshot,
   where,
 } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
@@ -32,7 +34,6 @@ import {
   IonSpinner,
 } from '@ionic/angular';
 import { UserModalComponent } from '../user-modal/user-modal.component';
-import html2canvas from 'html2canvas';
 import html2pdf from 'html2pdf.js';
 import { TemplateMapperService } from '../../shared/template-mapper.service';
 import { SheetSelectComponent } from '../../shared/sheet-select/sheet-select.component';
@@ -206,34 +207,29 @@ export class UserDetailsComponent {
     return this.filteredUsers.slice(start, end);
   }
 
-  async loadUsers() {
+  /**
+   * `afterSave`: first shows the phone's own copy, which already has the
+   * change just saved, instead of the old list until the server answers -
+   * that can take long on mobile data, or stall after the app was in the
+   * background, so edits looked lost until the app was restarted.
+   */
+  async loadUsers(afterSave = false) {
     this.isLoading = true;
+    const usersRef = collection(this.firestore, 'users');
+
+    if (afterSave) {
+      const page = this.currentPage;
+      try {
+        this.setUsers(await getDocsFromCache(usersRef));
+        this.currentPage = Math.min(page, this.totalPages);
+      } catch {
+        // Nothing cached yet - the server load below covers it.
+      }
+    }
 
     try {
-      const usersRef = collection(this.firestore, 'users');
       const snapshot = await getDocs(usersRef);
-
-      this.users = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-      }));
-
-      this.users.sort((a, b) => {
-        const getNumericPrefix = (id: string) => {
-          if (!id) return 0;
-          const match = id.match(/^0*(\d+)/);
-          return match ? parseInt(match[1], 10) : 0;
-        };
-
-        const numA = getNumericPrefix(a.internet_id);
-        const numB = getNumericPrefix(b.internet_id);
-
-        return numA - numB;
-      });
-
-      // this.filteredUsers = this.users;
-      this.onFilterChange();
-      this.updateTotalPages();
+      this.setUsers(snapshot);
 
       console.log('Fetched users:', this.users);
     } catch (error) {
@@ -242,6 +238,30 @@ export class UserDetailsComponent {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private setUsers(snapshot: QuerySnapshot) {
+    this.users = snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...docSnap.data(),
+    }));
+
+    this.users.sort((a, b) => {
+      const getNumericPrefix = (id: string) => {
+        if (!id) return 0;
+        const match = id.match(/^0*(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+      };
+
+      const numA = getNumericPrefix(a.internet_id);
+      const numB = getNumericPrefix(b.internet_id);
+
+      return numA - numB;
+    });
+
+    // this.filteredUsers = this.users;
+    this.onFilterChange();
+    this.updateTotalPages();
   }
 
   onSearch() {
@@ -350,7 +370,7 @@ export class UserDetailsComponent {
       if (result) {
         const prevPage = this.currentPage;
 
-        this.loadUsers().then(() => {
+        this.loadUsers(true).then(() => {
           this.currentPage = prevPage;
         });
       }
@@ -530,61 +550,13 @@ export class UserDetailsComponent {
     }
   }
 
-  printReceipt() {
-    // Make sure modal is visible
-    if (!this.showReceiptModal) {
-      console.warn('Receipt modal is not visible');
-      return;
-    }
-
-    // Target the modal body
-    const receipt = document.getElementById('receipt');
-    if (!receipt) {
-      console.warn('Receipt element not found');
-      return;
-    }
-
-    // Use html2canvas with proper options
-    html2canvas(receipt, {
-      scale: 2, // Higher resolution
-      useCORS: true, // For external images, if any
-      backgroundColor: '#fff', // Force white background
-    })
-      .then((canvas) => {
-        const dataUrl = canvas.toDataURL('image/png');
-
-        const printWindow = window.open('', '', 'height=600,width=400');
-        if (!printWindow) return;
-
-        printWindow.document.write(`
-      <html>
-        <head>
-          <title>Receipt</title>
-          <style>
-            body { margin: 0; padding: 0; text-align: center; }
-            img { max-width: 100%; height: auto; }
-          </style>
-        </head>
-        <body>
-          <img src="${dataUrl}" />
-        </body>
-      </html>
-    `);
-
-        printWindow.document.close();
-        printWindow.focus();
-
-        setTimeout(() => {
-          printWindow.print();
-          printWindow.close();
-        }, 200);
-      })
-      .catch((err) => {
-        console.error('Error printing receipt:', err);
-      });
-  }
-
-  /** Sends the receipt image to the customer's WhatsApp chat. */
+  /**
+   * Sends the receipt to the customer's own WhatsApp number. The image is
+   * uploaded and its link sent into their chat: a file share only lands in
+   * the chat when the number is saved in the phone's contacts, otherwise
+   * WhatsApp shows its contact picker. No number, or the upload fails
+   * (offline) - falls back to sharing the image itself.
+   */
   async shareReceiptImage() {
     const receipt = document.getElementById('receipt');
     if (!receipt || this.receiptBusy) return;
@@ -592,6 +564,20 @@ export class UserDetailsComponent {
     this.receiptBusy = 'share';
     try {
       const image = await this.fileShare.capture(receipt);
+      const phone = this.receiptData?.whatsapp;
+
+      if (phone) {
+        try {
+          const link = await this.fileShare.uploadImage(image);
+          await this.fileShare.openWhatsApp(phone, this.receiptShareMessage(link));
+          return;
+        } catch (err) {
+          console.error('Receipt upload failed, sharing the image instead', err);
+        }
+      } else {
+        this.toastr.info('No WhatsApp number for this customer - pick the chat');
+      }
+
       const result = await this.fileShare.shareToWhatsApp(
         image,
         this.fileShare.fileName('receipt', this.receiptData?.internetId, 'png'),
@@ -609,6 +595,17 @@ export class UserDetailsComponent {
     } finally {
       this.receiptBusy = null;
     }
+  }
+
+  private receiptShareMessage(link: string): string {
+    return `Assalam-o-Alaikum ${this.receiptData?.name || ''},
+
+Your Ranjha7star receipt (ID: ${this.receiptData?.internetId || '-'}) is ready.
+
+View receipt:
+${link}
+
+Thank you!`;
   }
 
   @ViewChild('pdfContent') pdfContent!: ElementRef;

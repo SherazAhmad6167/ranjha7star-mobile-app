@@ -8,8 +8,10 @@ import {
   Firestore,
   getDoc,
   getDocs,
+  getDocsFromCache,
   orderBy,
   query,
+  QuerySnapshot,
   setDoc,
   where,
 } from '@angular/fire/firestore';
@@ -32,6 +34,7 @@ import {
   IonSkeletonText,
   IonSpinner,
 } from '@ionic/angular';
+import { toWhatsappNumber } from '../../shared/phone';
 
 type PageSlot = number | 'gap';
 
@@ -277,64 +280,28 @@ export class NewConnectionComponent {
     }
   }
 
-  async loadExpenses(keepFilter: boolean = false) {
+  /**
+   * `afterSave`: first shows the phone's own copy, which already has the
+   * change just saved, instead of the old list until the server answers -
+   * that can take long on mobile data, or stall after the app was in the
+   * background, so edits looked lost until the app was restarted.
+   */
+  async loadExpenses(keepFilter: boolean = false, afterSave = false) {
     this.isLoading = true;
+    const usersRef = collection(this.firestore, 'newConnection');
+    const q = query(usersRef, orderBy('createdAt', 'desc'));
+
+    if (afterSave) {
+      try {
+        this.setConnections(await getDocsFromCache(q), keepFilter);
+      } catch {
+        // Nothing cached yet - the server load below covers it.
+      }
+    }
 
     try {
-      const usersRef = collection(this.firestore, 'newConnection');
-      const q = query(usersRef, orderBy('createdAt', 'desc'));
-
       const [snapshot] = await Promise.all([getDocs(q), this.loadInactiveUserIds()]);
-
-      this.users = snapshot.docs.map((docSnap) => {
-        const data: any = docSnap.data();
-
-        const remaining_amount =
-          Number(data.installation_amount) - Number(data.recieved_amount);
-
-        return {
-          id: docSnap.id,
-          ...data,
-          createdAt: data.createdAt?.toDate
-            ? data.createdAt.toDate()
-            : new Date(data.createdAt),
-          remaining_amount,
-          // The packages picked in the form; older records only have the
-          // typed-in package_name.
-          package_label:
-            [data.select_package, data.pkg_cable].filter(Boolean).join(' + ') ||
-            data.package_name ||
-            '',
-        };
-      });
-
-      this.users.sort((a: any, b: any) => {
-        return b.createdAt - a.createdAt;
-      });
-
-      this.recievedByList = [
-        ...new Set(
-          this.users
-            .map((u: any) => u.recieved_by)
-            .filter((name: string) => !!name), // remove null/undefined
-        ),
-      ];
-
-      this.operatorList = [
-        ...new Set(
-          this.users
-            .map((u: any) => u.operator_name)
-            .filter((name: string) => !!name), // remove null/undefined
-        ),
-      ];
-
-      if (keepFilter) {
-        this.applyAllFilters();
-      } else {
-        this.filteredUsers = this.users;
-      }
-      this.updateTotalPages();
-      this.calculateTotals(this.users);
+      this.setConnections(snapshot, keepFilter);
 
       console.log('Fetched users:', this.users);
     } catch (error) {
@@ -343,6 +310,58 @@ export class NewConnectionComponent {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private setConnections(snapshot: QuerySnapshot, keepFilter: boolean) {
+    this.users = snapshot.docs.map((docSnap) => {
+      const data: any = docSnap.data();
+
+      const remaining_amount =
+        Number(data.installation_amount) - Number(data.recieved_amount);
+
+      return {
+        id: docSnap.id,
+        ...data,
+        createdAt: data.createdAt?.toDate
+          ? data.createdAt.toDate()
+          : new Date(data.createdAt),
+        remaining_amount,
+        // The packages picked in the form; older records only have the
+        // typed-in package_name.
+        package_label:
+          [data.select_package, data.pkg_cable].filter(Boolean).join(' + ') ||
+          data.package_name ||
+          '',
+      };
+    });
+
+    this.users.sort((a: any, b: any) => {
+      return b.createdAt - a.createdAt;
+    });
+
+    this.recievedByList = [
+      ...new Set(
+        this.users
+          .map((u: any) => u.recieved_by)
+          .filter((name: string) => !!name), // remove null/undefined
+      ),
+    ];
+
+    this.operatorList = [
+      ...new Set(
+        this.users
+          .map((u: any) => u.operator_name)
+          .filter((name: string) => !!name), // remove null/undefined
+      ),
+    ];
+
+    if (keepFilter) {
+      this.applyAllFilters();
+    } else {
+      this.filteredUsers = this.users;
+    }
+    this.updateTotalPages();
+    this.calculateTotals(this.users);
   }
 
   get pagedUsers() {
@@ -447,7 +466,7 @@ export class NewConnectionComponent {
 
     modalRef.closed.subscribe((result) => {
       if (result) {
-        this.loadExpenses(true);
+        this.loadExpenses(true, true);
       }
     });
   }
@@ -747,27 +766,9 @@ export class NewConnectionComponent {
     const heightPx = element.scrollHeight;
     return heightPx * pxToMm + 10; // +10mm buffer for margins
   }
+  /** International digits for WhatsApp - see toWhatsappNumber for the formats handled. */
   formatPhoneNumber(phone: string): string {
-    console.log('Phone Number:', phone);
-    phone = phone.replace(/\D/g, ''); // remove spaces/dashes
-
-    if (phone.startsWith('03')) {
-      return '92' + phone.substring(1);
-    }
-
-    if (phone.startsWith('3')) {
-      return '92' + phone;
-    }
-
-    if (phone.startsWith('92')) {
-      return phone;
-    }
-
-    if (phone.startsWith('+92')) {
-      return phone.substring(1);
-    }
-
-    return phone;
+    return toWhatsappNumber(phone);
   }
 
   async sendPdfToWhatsApp() {

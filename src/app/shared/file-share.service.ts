@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import html2canvas from 'html2canvas';
+import { getWhatsappApp } from './whatsapp';
 
 interface FileSharePlugin {
   saveFile(options: { data: string; fileName: string; mimeType: string }): Promise<{ folder: string }>;
@@ -10,8 +11,10 @@ interface FileSharePlugin {
     mimeType: string;
     text?: string;
     phone?: string;
+    /** 'whatsapp' | 'business' - opened first when installed. */
+    app?: string;
   }): Promise<{ app: string }>;
-  openWhatsApp(options: { phone?: string; text?: string }): Promise<{ app: string }>;
+  openWhatsApp(options: { phone?: string; text?: string; app?: string }): Promise<{ app: string }>;
 }
 
 /** Native side: android/app/src/main/java/com/ranjha/internet/FileSharePlugin.java */
@@ -109,6 +112,7 @@ export class FileShareService {
         mimeType: blob.type,
         text: options.text,
         phone: options.phone,
+        app: getWhatsappApp() ?? undefined,
       });
       return 'shared';
     }
@@ -140,7 +144,7 @@ export class FileShareService {
   async openWhatsApp(phone: string, text: string): Promise<void> {
     if (Capacitor.isNativePlatform()) {
       try {
-        await FileShare.openWhatsApp({ phone, text });
+        await FileShare.openWhatsApp({ phone, text, app: getWhatsappApp() ?? undefined });
         return;
       } catch (err) {
         // An older APK without the method - fall back to the link.
@@ -149,6 +153,25 @@ export class FileShareService {
     }
 
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+  }
+
+  /**
+   * Uploads an image (same Cloudinary preset as the installation form) and
+   * returns its public link - for sending to a chat by number, which a file
+   * share can't reliably target.
+   */
+  async uploadImage(blob: Blob): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', blob);
+    formData.append('upload_preset', 'pdf_upload');
+
+    const res: any = await fetch('https://api.cloudinary.com/v1_1/mghs1aiu/image/upload', {
+      method: 'POST',
+      body: formData,
+    }).then((r) => r.json());
+
+    if (!res?.secure_url) throw new Error('Upload failed');
+    return res.secure_url;
   }
 
   /** `receipt_ranjha123_1726640000000.png` - no spaces or characters a file system rejects. */

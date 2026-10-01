@@ -16,6 +16,7 @@ import { Subscription, take } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { BluetoothService } from '../../shared/bluetooth.service';
 import { PageRefreshService } from '../../shared/page-refresh.service';
+import { getWhatsappApp, setWhatsappApp, WhatsappApp } from '../../shared/whatsapp';
 
 type PageMeta = {
   title: string;
@@ -95,6 +96,9 @@ export class ApplayoutComponent implements OnInit, OnDestroy {
   private routerSub?: Subscription;
 
   @ViewChild('logoutModal') logoutModal!: TemplateRef<any>;
+  @ViewChild('whatsappModal') whatsappModal!: TemplateRef<any>;
+  // Selection inside the WhatsApp sheet; only stored on Save.
+  whatsappChoice: WhatsappApp | null = null;
   @ViewChild('topbar', { static: true }) topbar!: ElementRef<HTMLElement>;
   @ViewChild('scrollArea', { static: true }) scrollArea!: ElementRef<HTMLElement>;
 
@@ -185,6 +189,20 @@ export class ApplayoutComponent implements OnInit, OnDestroy {
     this.logoutRef = this.modalService.open(this.logoutModal, { windowClass: 'mk-bottom-window' });
   }
 
+  openWhatsappModal() {
+    this.whatsappChoice = getWhatsappApp();
+    this.modalService.open(this.whatsappModal, { windowClass: 'mk-bottom-window' });
+  }
+
+  saveWhatsappApp(modal: any) {
+    if (!this.whatsappChoice) return;
+    setWhatsappApp(this.whatsappChoice);
+    this.toastr.success(
+      `Messages will open in ${this.whatsappChoice === 'business' ? 'WhatsApp Business' : 'WhatsApp'}`,
+    );
+    modal.close();
+  }
+
   logout(modal: any) {
     if (this.signingOut) return;
     this.signingOut = true;
@@ -194,11 +212,13 @@ export class ApplayoutComponent implements OnInit, OnDestroy {
       if (signedOut) return;
       signedOut = true;
 
-      // The printer belongs to the phone, not the account: keep it paired.
+      // The printer and WhatsApp choice belong to the phone, not the account: keep them.
       const printerDevice = localStorage.getItem('printer.device');
+      const whatsappApp = localStorage.getItem('whatsappApp');
       localStorage.clear();
       localStorage.setItem('ranjha-theme', 'light');
       if (printerDevice) localStorage.setItem('printer.device', printerDevice);
+      if (whatsappApp) localStorage.setItem('whatsappApp', whatsappApp);
       document.body.classList.remove('dark-mode');
       this.router.navigate(['/login'], { replaceUrl: true });
     };

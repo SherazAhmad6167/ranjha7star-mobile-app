@@ -41,15 +41,18 @@
         <span class="tb-print-dot" aria-hidden="true"><i class="ri-bluetooth-fill"></i></span>
       </a>
 
-      <div
+      <button
+        type="button"
         class="tb-user"
         *ngIf="userName"
         [class.is-offline]="!isOnline"
         [attr.title]="userName + (isOnline ? ' - online' : ' - offline')"
+        aria-label="WhatsApp settings"
+        (click)="openWhatsappModal()"
       >
         <span class="tb-avatar">{{ userInitial }}</span>
         <span class="tb-status" aria-hidden="true"></span>
-      </div>
+      </button>
 
       <button class="tb-logout-btn" (click)="openLogoutModal()" title="Sign out" aria-label="Sign out">
         <i class="ri-logout-circle-r-line"></i>
@@ -145,6 +148,62 @@
       </button>
       <button type="button" class="mk-tap mk-btn mk-btn--danger" (click)="logout(modal)">
         <i class="ri-logout-box-r-line"></i> Sign out
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #whatsappModal let-modal>
+  <div class="wa-sheet">
+    <span class="lo-handle" aria-hidden="true"></span>
+
+    <div class="wa-sheet-icon" aria-hidden="true"><i class="ri-whatsapp-fill"></i></div>
+    <h4 class="lo-title">WhatsApp for messages</h4>
+    <p class="lo-text">Customer messages and receipts will open in the app you pick here.</p>
+
+    <div class="wa-sheet-options" role="radiogroup">
+      <button
+        type="button"
+        class="mk-tap wa-sheet-option"
+        role="radio"
+        [attr.aria-checked]="whatsappChoice === 'whatsapp'"
+        [class.is-selected]="whatsappChoice === 'whatsapp'"
+        (click)="whatsappChoice = 'whatsapp'"
+      >
+        <span class="wa-sheet-option-icon"><i class="ri-whatsapp-fill"></i></span>
+        <span class="wa-sheet-option-copy">
+          <strong>WhatsApp</strong>
+          <span>Personal WhatsApp</span>
+        </span>
+        <i class="wa-sheet-radio" [class.ri-checkbox-circle-fill]="whatsappChoice === 'whatsapp'"
+          [class.ri-checkbox-blank-circle-line]="whatsappChoice !== 'whatsapp'"></i>
+      </button>
+
+      <button
+        type="button"
+        class="mk-tap wa-sheet-option is-business"
+        role="radio"
+        [attr.aria-checked]="whatsappChoice === 'business'"
+        [class.is-selected]="whatsappChoice === 'business'"
+        (click)="whatsappChoice = 'business'"
+      >
+        <span class="wa-sheet-option-icon"><i class="ri-briefcase-4-fill"></i></span>
+        <span class="wa-sheet-option-copy">
+          <strong>WhatsApp Business</strong>
+          <span>Business account</span>
+        </span>
+        <i class="wa-sheet-radio" [class.ri-checkbox-circle-fill]="whatsappChoice === 'business'"
+          [class.ri-checkbox-blank-circle-line]="whatsappChoice !== 'business'"></i>
+      </button>
+    </div>
+
+    <div class="lo-actions">
+      <button type="button" class="mk-tap mk-btn mk-btn--ghost" (click)="modal.dismiss()">
+        Cancel
+      </button>
+      <button type="button" class="mk-tap mk-btn mk-btn--primary" [disabled]="!whatsappChoice"
+        (click)="saveWhatsappApp(modal)">
+        <i class="ri-save-3-line"></i> Save
       </button>
     </div>
   </div>
