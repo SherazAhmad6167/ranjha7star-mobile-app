@@ -18,6 +18,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { TemplateMapperService } from '../../shared/template-mapper.service';
 import { ActivatedRoute } from '@angular/router';
+import { isCarried } from '../../shared/bill-carry';
 
 @Component({
   selector: 'app-sms',
@@ -383,7 +384,10 @@ export class SmsComponent {
   }
 
   mapTemplate(message: string, user: any): string {
-    const unpaidBill = (user?.bills || []).find((b: any) => b.status === 'unpaid');
+    // A carried month's balance is already inside the newer bill's amount
+    const unpaidBill = (user?.bills || []).find(
+      (b: any) => b.status === 'unpaid' && !isCarried(b),
+    );
     return this.templateMapper.map(message, user, {
       amount: unpaidBill?.amount ?? unpaidBill?.remaining_amount ?? user?.internet_package_fee,
       overdueAmount: unpaidBill?.remaining_amount ?? unpaidBill?.amount ?? user?.internet_package_fee,

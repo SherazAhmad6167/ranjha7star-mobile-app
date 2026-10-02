@@ -15,6 +15,7 @@ import {
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Toast, ToastrModule, ToastrService } from 'ngx-toastr';
+import { isCarried, markCarried, releaseCarried, settleCarried } from '../../shared/bill-carry';
 
 @Component({
   selector: 'app-bill-creator',
@@ -345,6 +346,7 @@ export class BillCreatorComponent {
       ) {
         if (!exists('cable') && !hasAdvanceForMonth('cable')) {
           let amount = Number(userData['cable_package_fee']);
+          const prevBill = this.findPreviousOwedBill(bills, 'cable');
           const prevRemaining = this.getPreviousMonthRemaining(
             bills,
             this.selectedMonth,
@@ -364,7 +366,7 @@ export class BillCreatorComponent {
             }
           }
 
-          bills.push({
+          const bill: any = {
             bill_id: crypto.randomUUID(),
             month: this.selectedMonth,
             year: this.selectedYear,
@@ -373,7 +375,9 @@ export class BillCreatorComponent {
             status: 'unpaid',
             remaining_amount: amount,
             createdAt: new Date(),
-          });
+          };
+          this.linkCarriedBalance(bills, prevBill, bill, prevRemaining);
+          bills.push(bill);
 
           totalAmount += amount;
         }
@@ -388,6 +392,7 @@ export class BillCreatorComponent {
         if (!exists('internet') && !hasAdvanceForMonth('internet')) {
           let amount = Number(userData['internet_package_fee']);
 
+          const prevBill = this.findPreviousOwedBill(bills, 'internet');
           const prevRemaining = this.getPreviousMonthRemaining(
             bills,
             this.selectedMonth,
@@ -407,7 +412,7 @@ export class BillCreatorComponent {
             }
           }
 
-          bills.push({
+          const bill: any = {
             bill_id: crypto.randomUUID(),
             month: this.selectedMonth,
             year: this.selectedYear,
@@ -417,7 +422,9 @@ export class BillCreatorComponent {
             status: 'unpaid',
             remaining_amount: amount,
             createdAt: new Date(),
-          });
+          };
+          this.linkCarriedBalance(bills, prevBill, bill, prevRemaining);
+          bills.push(bill);
 
           totalAmount += amount;
         }
@@ -463,19 +470,46 @@ export class BillCreatorComponent {
     year: string,
     type: string,
   ) {
-    const prevBill = bills.find(
-      (b: any) =>
-        b.type === type &&
-        // case 1: unpaid bill → amount = remaining
-        (b.status === 'unpaid' ||
-          // case 2: paid but partial remaining
-          (b.status === 'paid' && Number(b.remaining_amount) > 0)),
-    );
+    const prevBill = this.findPreviousOwedBill(bills, type);
 
     if (!prevBill) return 0;
 
     // unpaid me remaining_amount nahi hota
     return Number(prevBill.remaining_amount ?? prevBill.amount ?? 0);
+  }
+
+  /** The owed bill whose balance rolls into the next one - never one already carried forward. */
+  private findPreviousOwedBill(bills: any[], type: string): any {
+    return bills.find(
+      (b: any) =>
+        b.type === type &&
+        !isCarried(b) &&
+        // case 1: unpaid bill → amount = remaining
+        (b.status === 'unpaid' ||
+          // case 2: paid but partial remaining
+          (b.status === 'paid' && Number(b.remaining_amount) > 0)),
+    );
+  }
+
+  /**
+   * Ties the previous bill to the new one that now includes its balance, so
+   * paying the new bill closes it too (see shared/bill-carry).
+   */
+  private linkCarriedBalance(bills: any[], prevBill: any, bill: any, prevRemaining: number) {
+    if (!prevBill || !(prevRemaining > 0)) return;
+
+    markCarried(prevBill, bill, prevRemaining);
+
+    // Extra advance already covered the whole bill, balance included
+    if (!(Number(bill.amount) > 0)) {
+      settleCarried(bills, bill.bill_id);
+      return;
+    }
+
+    // Same fields the Update form uses, so receipts show the balance separately
+    // (never more than the bill, when advance took part of it)
+    bill.previous_remaining = Math.min(prevRemaining, Number(bill.amount));
+    bill.previous_remaining_month = prevBill.month;
   }
 
   async confirmDelete(modal: any) {
@@ -534,6 +568,13 @@ export class BillCreatorComponent {
       );
 
       if (updatedBills.length !== bills.length) {
+        // Balances carried into removed bills go back onto the bills they came from
+        const removedIds = new Set<string>(
+          bills
+            .filter((b: any) => !updatedBills.includes(b) && b.bill_id)
+            .map((b: any) => b.bill_id),
+        );
+        releaseCarried(updatedBills, removedIds);
         await updateDoc(ref, { bills: updatedBills });
       }
     }

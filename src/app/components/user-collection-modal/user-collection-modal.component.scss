@@ -186,7 +186,19 @@
 
   &.is-paid { --tone: #16a34a; --tone-soft: #dcfce7; }
   &.is-unpaid { --tone: #d97706; --tone-soft: #fef3c7; }
+  &.is-carried { --tone: #64748b; --tone-soft: #e2e8f0; }
   &.is-advance { --tone: #4f46e5; --tone-soft: #e0e7ff; }
+}
+
+// Where a carried balance went ("Paid with October 2026 bill")
+.ucm-item-note {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  color: var(--tone);
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .ucm-item-head {

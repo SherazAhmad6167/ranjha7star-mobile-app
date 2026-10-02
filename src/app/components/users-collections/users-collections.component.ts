@@ -8,6 +8,7 @@ import {
   Firestore,
   getDoc,
   getDocs,
+  runTransaction,
   updateDoc,
 } from '@angular/fire/firestore';
 import {
@@ -36,6 +37,14 @@ import {
   IonSpinner,
 } from '@ionic/angular';
 import { toWhatsappNumber } from '../../shared/phone';
+import {
+  carriedToLabel,
+  isCarried,
+  linkUntrackedCarries,
+  releaseCarried,
+  settleCarried,
+  unsettleCarried,
+} from '../../shared/bill-carry';
 
 type PageSlot = number | 'gap';
 
@@ -137,7 +146,10 @@ export class UsersCollectionsComponent {
   isBulkSubmitting = false;
   userForm: FormGroup;
   internetOriginalPrice = 0;
-  selectedMonth: string | null = null;
+  /** Opens on the current month, e.g. 'october'; null = all months. */
+  selectedMonth: string | null = new Date()
+    .toLocaleString('en-US', { month: 'long' })
+    .toLowerCase();
   /** '' = everyone; 'active' also takes customers with no status set. */
   customerStatus: '' | 'active' | 'inactive' = '';
   paymentRecievedTemplate: any;
@@ -340,16 +352,34 @@ export class UsersCollectionsComponent {
       const paidRows: any[] = [];
       const unpaidMap = new Map<string, any>();
       const advanceRows: any[] = [];
+      // Users whose old-method bills get linked below, saved once the list shows
+      const carryFixes: string[] = [];
 
       snapshot.docs.forEach((docSnap) => {
         const user = docSnap.data();
         const userDocId = docSnap.id;
 
-        const bills = user['bills'] || [];
+        let bills = user['bills'] || [];
         const advances = user['advancePayments'] || [];
+
+        // Bills made before carry tracking: a month already included in a later
+        // bill is linked to it (same check as Bill Creator's fix), so it is not
+        // listed twice and is closed once that later bill is paid.
+        const linkedBills = bills.map((b: any) => ({ ...b }));
+        if (linkUntrackedCarries(linkedBills, this.carryFees(user)).linked) {
+          bills = linkedBills;
+          carryFixes.push(userDocId);
+        }
 
         /* ================= BILLS ================= */
         bills.forEach((bill: any) => {
+          // Balance moved into a later bill - it is collected there, not twice.
+          // A part-paid one still lists its collection, with nothing left due.
+          if (isCarried(bill)) {
+            if (!(Number(bill.collected_amount) > 0)) return;
+            bill = { ...bill, remaining_amount: 0 };
+          }
+
           const baseRow = {
             user_name: user['user_name'],
             internet_id: user['internet_id'],
@@ -469,6 +499,8 @@ export class UsersCollectionsComponent {
         });
       });
 
+      if (carryFixes.length) this.saveCarryLinks(carryFixes);
+
       const unpaidRows = Array.from(unpaidMap.values()).map((u) => ({
         ...u,
         month: u.months.join(', '),
@@ -498,6 +530,48 @@ export class UsersCollectionsComponent {
       this.toastr.error('Failed to load users bills');
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  /** Monthly fee per bill type - what an old-method bill added on top of a carried balance. */
+  private carryFees(user: any): Record<string, number> {
+    return {
+      cable: Number(user?.['cable_package_fee']) || 0,
+      internet: Number(user?.['internet_package_fee']) || 0,
+    };
+  }
+
+  private savingCarryLinks = false;
+
+  /**
+   * Saves the links loadUsers found. Each user is re-read and written in a
+   * transaction, so a payment saved meanwhile from another phone is never
+   * overwritten. Skipped offline - anything left is retried on the next load.
+   */
+  private async saveCarryLinks(userIds: string[]) {
+    if (this.savingCarryLinks || !navigator.onLine) return;
+
+    this.savingCarryLinks = true;
+    try {
+      for (const id of userIds) {
+        const ref = doc(this.firestore, 'users', id);
+        try {
+          await runTransaction(this.firestore, async (tx) => {
+            const snap = await tx.get(ref);
+            if (!snap.exists()) return;
+
+            const data = snap.data();
+            const bills = data['bills'] || [];
+            if (linkUntrackedCarries(bills, this.carryFees(data)).linked) {
+              tx.update(ref, { bills });
+            }
+          });
+        } catch (err) {
+          console.error('Could not link carried bills for user', id, err);
+        }
+      }
+    } finally {
+      this.savingCarryLinks = false;
     }
   }
 
@@ -732,6 +806,17 @@ export class UsersCollectionsComponent {
 
       let updated = false;
 
+      // Its unpaid part already sits on a later bill - reverting would lose it.
+      const carried = bills.find(
+        (b: any) => b.bill_id && b.bill_id === billRow.bill_id && isCarried(b),
+      );
+      if (carried) {
+        this.toastr.warning(
+          `This bill's balance was moved to the ${carriedToLabel(carried)} bill, so it can't be reverted`,
+        );
+        return;
+      }
+
       bills.forEach((bill: any) => {
         if (
           bill.status === 'paid' &&
@@ -741,6 +826,9 @@ export class UsersCollectionsComponent {
               bill.month === billRow.month &&
               bill.year === billRow.year))
         ) {
+          // Earlier months closed by this payment are owed again
+          unsettleCarried(bills, bill.bill_id);
+
           // 🔁 revert
           bill.status = 'unpaid';
           bill.collected_by = null;
@@ -1352,6 +1440,15 @@ export class UsersCollectionsComponent {
       const userData = userSnap.data();
       const bills = userData['bills'] || [];
       let existingAdvance = Number(userData['extra_advance'] || 0);
+
+      // Old-method bill that already includes earlier months: link them, so
+      // paying this bill in full closes them too (see loadUsers)
+      const payingIds = new Set<string>(
+        (this.selectedBill.bills || [this.selectedBill])
+          .map((b: any) => b.bill_id)
+          .filter(Boolean),
+      );
+      linkUntrackedCarries(bills, this.carryFees(userData), payingIds);
       let newAdvanceTotal = existingAdvance;
       let updatedSelectedBill: any = null;
 
@@ -1459,6 +1556,8 @@ export class UsersCollectionsComponent {
               this.captureArrearsForReceipt(bill);
               bill.previous_remaining = null;
               bill.previous_remaining_month = null;
+              // Earlier months whose balance was added to this bill are paid too
+              settleCarried(bills, bill.bill_id);
             }
 
             remainingPayment -= pay;
@@ -1532,6 +1631,8 @@ export class UsersCollectionsComponent {
               this.captureArrearsForReceipt(bill);
               bill.previous_remaining = null;
               bill.previous_remaining_month = null;
+              // Earlier months whose balance was added to this bill are paid too
+              settleCarried(bills, bill.bill_id);
             }
 
             bill.collected_by = this.userName;
@@ -1652,6 +1753,13 @@ export class UsersCollectionsComponent {
         const userData = userSnap.data();
         const bills = userData['bills'] || [];
         let rowCollected = 0;
+
+        // Same as a single collection: link the earlier months these bills include
+        linkUntrackedCarries(
+          bills,
+          this.carryFees(userData),
+          new Set<string>((row.bills || []).map((b: any) => b.bill_id).filter(Boolean)),
+        );
         let lastPaidBill: any = null;
 
         // Amount typed for this row, spread over its bills in order.
@@ -1682,6 +1790,9 @@ export class UsersCollectionsComponent {
             bill.collected_amount = newCollected;
             bill.remaining_amount = remaining > 0 ? remaining : 0;
             bill.status = 'paid';
+
+            // Earlier months whose balance was added to this bill are paid too
+            if (bill.remaining_amount === 0) settleCarried(bills, bill.bill_id);
 
             bill.collected_by = this.userName;
             bill.collected_date = new Date();
@@ -1870,6 +1981,14 @@ export class UsersCollectionsComponent {
       const userData = userSnap.data();
       const bills = userData['bills'] || [];
 
+      // Old-method bill: pick up the earlier month it already includes first,
+      // so that balance is replaced below instead of added a second time
+      linkUntrackedCarries(
+        bills,
+        this.carryFees(userData),
+        new Set([this.selectedRow.bills[0].bill_id]),
+      );
+
       // Read oldFee from fresh Firestore data, not from the potentially stale UI row
       const oldFee = Number(userData['internet_package_fee'] || 0);
       const difference = newFee - oldFee;
@@ -1895,6 +2014,12 @@ export class UsersCollectionsComponent {
         }
         return bill;
       });
+
+      // Previous balance taken off this bill - the months it came from are
+      // owed on their own again.
+      if (!previousRemaining) {
+        releaseCarried(updatedBills, new Set([this.selectedRow.bills[0].bill_id]));
+      }
 
       await updateDoc(userRef, {
         select_package: newPackage,

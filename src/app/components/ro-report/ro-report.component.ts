@@ -13,6 +13,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
+import { isCarried } from '../../shared/bill-carry';
 
 interface Bill {
   amount: number;
@@ -173,6 +174,9 @@ export class RoReportComponent {
         let userUnpaid = false;
 
         u.bills?.forEach((b: any) => {
+          // Its balance is counted in the later bill it was carried into
+          if (isCarried(b) && !(Number(b.collected_amount) > 0)) return;
+
           totalAmount += Number(b.amount);
 
           if (b.status === 'paid') {

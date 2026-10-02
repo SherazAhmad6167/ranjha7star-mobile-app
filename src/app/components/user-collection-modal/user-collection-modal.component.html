@@ -69,11 +69,16 @@
 
         <div class="ucm-list">
           <div class="ucm-item" *ngFor="let bill of user.bills"
-            [class.is-paid]="bill.status === 'paid'" [class.is-unpaid]="bill.status !== 'paid'">
+            [class.is-paid]="bill.status === 'paid'" [class.is-carried]="isCarriedOpen(bill)"
+            [class.is-unpaid]="bill.status !== 'paid' && !isCarriedOpen(bill)">
             <div class="ucm-item-head">
               <span class="ucm-item-period">{{ bill.month | titlecase }} {{ bill.year }}</span>
-              <span class="ucm-pill">{{ bill.status | titlecase }}</span>
+              <span class="ucm-pill">{{ isCarriedOpen(bill) ? 'Carried' : (bill.status | titlecase) }}</span>
               <strong class="ucm-item-amount"><small>Rs</small>{{ bill.amount }}</strong>
+            </div>
+
+            <div class="ucm-item-note" *ngIf="carryNote(bill)">
+              <i class="ri-links-line"></i> {{ carryNote(bill) }}
             </div>
 
             <div class="ucm-item-grid">

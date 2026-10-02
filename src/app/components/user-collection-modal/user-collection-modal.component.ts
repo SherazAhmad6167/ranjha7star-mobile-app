@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { doc, Firestore, getDoc } from '@angular/fire/firestore';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { carriedToLabel, isCarried } from '../../shared/bill-carry';
 
 @Component({
   selector: 'app-user-collection-modal',
@@ -15,6 +16,18 @@ export class UserCollectionModalComponent {
   isLoading = false;
 
   constructor(public activeModal: NgbActiveModal, private firestore: Firestore) {}
+
+  /** Unpaid, but its balance is now collected on a later bill. */
+  isCarriedOpen(bill: any): boolean {
+    return isCarried(bill) && bill.status !== 'paid';
+  }
+
+  /** Where a carried balance went, e.g. "Paid with October 2026 bill". */
+  carryNote(bill: any): string {
+    if (!isCarried(bill)) return '';
+    const label = carriedToLabel(bill);
+    return bill.settled_with ? `Paid with ${label} bill` : `Added to ${label} bill`;
+  }
 
   async ngOnInit() {
     if (!this.docId) return;

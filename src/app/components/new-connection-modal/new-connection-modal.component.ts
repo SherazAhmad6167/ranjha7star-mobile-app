@@ -1070,7 +1070,7 @@ export class NewConnectionModalComponent implements OnDestroy {
     } catch (err: any) {
       this.cameraError =
         err.name === 'NotAllowedError'
-          ? 'Camera permission denied. Please allow camera access and try again.'
+          ? 'Camera permission denied. Allow Camera for this app in phone Settings > Apps > Permissions, then try again.'
           : 'Camera not available on this device. Please upload an image instead.';
     }
   }

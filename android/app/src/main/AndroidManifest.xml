@@ -39,6 +39,12 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- CNIC photos (new connection) and barcode scan (router) open the camera
+         from the web view. Capacitor asks for CAMERA at runtime, but Android
+         denies it straight away unless it is declared here. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <!-- Saving receipts to the gallery (FileSharePlugin). Android 10+ writes
          through MediaStore and needs no permission. -->
     <uses-permission
